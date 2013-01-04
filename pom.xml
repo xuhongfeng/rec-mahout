@@ -1,0 +1,44 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>hongfeng.xu.rec.mahout</groupId>
+  <artifactId>rec-mahout</artifactId>
+  <packaging>jar</packaging>
+  <version>0.1</version>
+  <name>rec-mahout</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+	    <groupId>org.apache.mahout</groupId>
+	    <artifactId>mahout-core</artifactId>
+	    <version>0.7</version>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.mahout</groupId>
+	    <artifactId>mahout-math</artifactId>
+	    <version>0.7</version>
+	</dependency>
+  </dependencies>
+    <repositories>
+        <repository>
+          <id>omedia</id>
+          <url>http://166.111.137.72:8070/nexus/content/groups/public/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+     <pluginRepositories>
+        <pluginRepository>
+          <id>omedia</id>
+          <url>http://166.111.137.72:8070/nexus/content/groups/public/</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+</project>
