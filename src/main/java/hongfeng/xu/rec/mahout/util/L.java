@@ -14,6 +14,21 @@ import org.slf4j.LoggerFactory;
  */
 public class L {
     
+    public static void i(Object tag, Throwable e) {
+        LOG(tag).info("", e);
+    }
+    
+    public static void i(Object tag, String msg, Object ...args) {
+        LOG(tag).info(String.format(msg, args));
+    }
+    
+    public static void i(Object tag, String msg) {
+        LOG(tag).info(msg);;
+    }
+    public static void i(Object tag, String msg, Throwable e) {
+        LOG(tag).info(msg, e);
+    }
+    
     public static void e(Object tag, Throwable e) {
         LOG(tag).error("", e);
     }
