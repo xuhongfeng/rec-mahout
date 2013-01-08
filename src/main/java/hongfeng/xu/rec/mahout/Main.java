@@ -32,12 +32,12 @@ public class Main {
         
         ItemBasedRecommenderBuilder recommenderBuilder = new ItemBasedRecommenderBuilder();
         
-        int N = 100;
+        int N = 40;
         
         RecallRateEvaluator recallRateEvaluator = new RecallRateEvaluator();
         try {
             double recallRate = recallRateEvaluator.evaluate(recommenderBuilder,
-                    dataModel, 0.8, 0.2, N);
+                    dataModel, 0.8, 1, N);
             L.i("Main", "recall rate = %.2f%%", recallRate*100);
         } catch (TasteException e) {
             L.e("main", e);
@@ -47,7 +47,7 @@ public class Main {
         PrecisionRateEvaluator precisionRateEvaluator = new PrecisionRateEvaluator();
         try {
             double precisionRate = precisionRateEvaluator.evaluate(recommenderBuilder,
-                    dataModel, 0.8, 0.2, N);
+                    dataModel, 0.8, 1, N);
             L.i("Main", "precision rate = %.2f%%", precisionRate*100);
         } catch (TasteException e) {
             L.e("main", e);
