@@ -15,6 +15,7 @@ import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
  *
  */
 public class MovielensModel extends FileDataModel {
+    private static final long serialVersionUID = 1647594091122073867L;
 
     /**
      * @param dataFile

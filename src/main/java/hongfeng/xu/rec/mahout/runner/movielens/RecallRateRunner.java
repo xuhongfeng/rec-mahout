@@ -5,12 +5,11 @@
  */
 package hongfeng.xu.rec.mahout.runner.movielens;
 
+import hongfeng.xu.rec.mahout.eval.RecallRateEvaluator;
 import hongfeng.xu.rec.mahout.runner.AbsRecallRateRunner;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
+import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.recommender.Recommender;
 
 /**
  * @author xuhongfeng
@@ -18,17 +17,9 @@ import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
  */
 public class RecallRateRunner extends AbsRecallRateRunner {
 
-    @Override
-    protected FileDataModel createModel(File file) throws IOException {
-        return MovieLensRunnerDelegate.getDataModel(file);
+    public RecallRateRunner(RecallRateEvaluator evaluator,
+            Recommender recommender, DataModel testDataModel) {
+        super(evaluator, recommender, testDataModel);
     }
 
-    @Override
-    protected String getFilePath() {
-        return MovieLensRunnerDelegate.getFilePath();
-    }
-    
-    public static void main(String[] args) {
-        new RecallRateRunner().exec();
-    }
 }

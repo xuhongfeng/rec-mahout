@@ -5,6 +5,8 @@
  */
 package hongfeng.xu.rec.mahout.eval;
 
+import hongfeng.xu.rec.mahout.util.L;
+
 import java.util.List;
 
 import org.apache.mahout.cf.taste.common.TasteException;
@@ -18,11 +20,11 @@ import org.apache.mahout.cf.taste.recommender.Recommender;
  * @author xuhongfeng
  *
  */
-public abstract class AbsHitRateEvaluator extends AbsTopNEvaluator {
+public abstract class AbsHitRateEvaluator implements TopNEvaluator {
 
     @Override
-    final protected double evaluate(Recommender recommender, DataModel testModel,
-            int N) throws TasteException {
+    public double evaluate(Recommender recommender, DataModel testModel, int N)
+            throws TasteException {
         int all = 0;
         int hit = 0;
         
@@ -30,7 +32,9 @@ public abstract class AbsHitRateEvaluator extends AbsTopNEvaluator {
         while(it.hasNext()) {
             long userId = it.next();
             FastIDSet userItemIds = testModel.getItemIDsFromUser(userId);
+            L.i(this, "recommend in");
             List<RecommendedItem> recommendItems = recommender.recommend(userId, N);
+            L.i(this, "recommend out");
             for (RecommendedItem item:recommendItems) {
                 if (userItemIds.contains(item.getItemID())) {
                     hit++;

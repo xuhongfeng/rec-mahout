@@ -4,16 +4,22 @@
  */
 package hongfeng.xu.rec.mahout;
 
-import hongfeng.xu.rec.mahout.eval.ItemBasedRecommenderBuilder;
 import hongfeng.xu.rec.mahout.eval.PrecisionRateEvaluator;
 import hongfeng.xu.rec.mahout.eval.RecallRateEvaluator;
 import hongfeng.xu.rec.mahout.model.MovielensModel;
+import hongfeng.xu.rec.mahout.recommender.movielens.ItemBasedPearsonRecommender;
+import hongfeng.xu.rec.mahout.runner.movielens.PrecisionRateRunner;
+import hongfeng.xu.rec.mahout.runner.movielens.RecallRateRunner;
+import hongfeng.xu.rec.mahout.util.DataModelUtils;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.common.Pair;
+
 
 /**
  * @author xuhongfeng
@@ -21,37 +27,50 @@ import org.apache.mahout.cf.taste.common.TasteException;
  */
 public class Main {
     public static void main(String[] args) {
-        File dataFile = new File("data/u.data");
-        MovielensModel dataModel = null;
+        
+        /* step 1. create data model */
+        L.i("Main", "create data model");
+        File file = new File("data/u.data");
+        MovielensModel totalDataModel = null;
         try {
-            dataModel = new MovielensModel(dataFile);
+            totalDataModel = new MovielensModel(file);
         } catch (IOException e) {
             L.e("main", e);
             return;
         }
         
-        ItemBasedRecommenderBuilder recommenderBuilder = new ItemBasedRecommenderBuilder();
+        /* step 2. split data model */
+        L.i("Main", "split data model");
+        DataModel trainingDataModel = null;
+        DataModel testDataModel = null;
+        try {
+            Pair<DataModel, DataModel> models =
+                    DataModelUtils.split(totalDataModel, 1, 0.8);
+            trainingDataModel = models.getFirst();
+            testDataModel = models.getSecond();
+        } catch (TasteException e) {
+            L.e("main", e);
+            return;
+        }
         
-        int N = 40;
+        /* step 3. build Recommender */
+        L.i("Main", "build recommender");
+        ItemBasedPearsonRecommender recommender = null;
+        try {
+            recommender = new ItemBasedPearsonRecommender(trainingDataModel);
+        } catch (TasteException e) {
+            L.e("main", e);
+            return;
+        }
         
+        /* step 4. evaluate recall rate */
+        L.i("Main", "evaluate recall rate");
         RecallRateEvaluator recallRateEvaluator = new RecallRateEvaluator();
-        try {
-            double recallRate = recallRateEvaluator.evaluate(recommenderBuilder,
-                    dataModel, 0.8, 1, N);
-            L.i("Main", "recall rate = %.2f%%", recallRate*100);
-        } catch (TasteException e) {
-            L.e("main", e);
-            return;
-        }
+        new RecallRateRunner(recallRateEvaluator, recommender, testDataModel).exec();
         
+        /* step 5. evaluate precision rate */
+        L.i("Main", "evaluate precision rate");
         PrecisionRateEvaluator precisionRateEvaluator = new PrecisionRateEvaluator();
-        try {
-            double precisionRate = precisionRateEvaluator.evaluate(recommenderBuilder,
-                    dataModel, 0.8, 1, N);
-            L.i("Main", "precision rate = %.2f%%", precisionRate*100);
-        } catch (TasteException e) {
-            L.e("main", e);
-            return;
-        }
+        new PrecisionRateRunner(precisionRateEvaluator, recommender, testDataModel).exec();
     }
 }

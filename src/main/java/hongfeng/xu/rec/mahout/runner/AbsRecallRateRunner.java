@@ -6,8 +6,10 @@
 package hongfeng.xu.rec.mahout.runner;
 
 import hongfeng.xu.rec.mahout.eval.AbsHitRateEvaluator;
-import hongfeng.xu.rec.mahout.eval.RecallRateEvaluator;
 import hongfeng.xu.rec.mahout.util.L;
+
+import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.recommender.Recommender;
 
 
 /**
@@ -16,9 +18,9 @@ import hongfeng.xu.rec.mahout.util.L;
  */
 public abstract class AbsRecallRateRunner extends AbsHitRateRunner {
 
-    @Override
-    protected AbsHitRateEvaluator createEvaluator() {
-        return new RecallRateEvaluator();
+    public AbsRecallRateRunner(AbsHitRateEvaluator evaluator,
+            Recommender recommender, DataModel testDataModel) {
+        super(evaluator, recommender, testDataModel);
     }
 
     @Override
