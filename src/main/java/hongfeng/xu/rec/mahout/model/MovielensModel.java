@@ -22,7 +22,7 @@ public class MovielensModel extends FileDataModel {
      * @throws IOException
      */
     public MovielensModel(File dataFile) throws IOException {
-        super(dataFile);
+        super(dataFile, false, Long.MAX_VALUE);
     }
 
 

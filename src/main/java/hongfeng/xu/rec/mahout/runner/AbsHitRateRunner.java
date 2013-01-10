@@ -17,6 +17,10 @@ import org.apache.mahout.cf.taste.recommender.Recommender;
  *
  */
 public abstract class AbsHitRateRunner implements Runner {
+    public static final int MAX_N = 100;
+    public static final int MIN_N = 10;
+    public static final int STEP = 10;
+    
     protected final AbsHitRateEvaluator evaluator;
     protected final Recommender recommender;
     protected final DataModel testDataModel;
@@ -31,7 +35,7 @@ public abstract class AbsHitRateRunner implements Runner {
 
     @Override
     public final void exec() {
-        for (int N=10; N<=100; N+=10) {
+        for (int N=MIN_N; N<=MAX_N; N+=STEP) {
             try {
                 double rate = evaluator.evaluate(recommender, testDataModel, N);
                 L.i(this, "N = " + N);
