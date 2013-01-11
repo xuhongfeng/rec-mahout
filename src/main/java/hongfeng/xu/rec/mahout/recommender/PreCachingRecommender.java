@@ -3,7 +3,7 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.recommender.movielens;
+package hongfeng.xu.rec.mahout.recommender;
 
 import java.util.Collection;
 import java.util.List;

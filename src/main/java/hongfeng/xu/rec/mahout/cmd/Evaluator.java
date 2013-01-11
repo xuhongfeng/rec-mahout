@@ -5,13 +5,17 @@
  */
 package hongfeng.xu.rec.mahout.cmd;
 
+import hongfeng.xu.rec.mahout.eval.CoverageEvaluator;
+import hongfeng.xu.rec.mahout.eval.PopularityEvaluator;
 import hongfeng.xu.rec.mahout.eval.PrecisionRateEvaluator;
 import hongfeng.xu.rec.mahout.eval.RecallRateEvaluator;
 import hongfeng.xu.rec.mahout.model.MovielensModel;
-import hongfeng.xu.rec.mahout.recommender.movielens.PreCachingRecommender;
+import hongfeng.xu.rec.mahout.recommender.PreCachingRecommender;
 import hongfeng.xu.rec.mahout.runner.AbsHitRateRunner;
-import hongfeng.xu.rec.mahout.runner.movielens.PrecisionRateRunner;
-import hongfeng.xu.rec.mahout.runner.movielens.RecallRateRunner;
+import hongfeng.xu.rec.mahout.runner.CoverageRateRunner;
+import hongfeng.xu.rec.mahout.runner.PopularityRunner;
+import hongfeng.xu.rec.mahout.runner.PrecisionRateRunner;
+import hongfeng.xu.rec.mahout.runner.RecallRateRunner;
 import hongfeng.xu.rec.mahout.util.DataModelUtils;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -86,11 +90,23 @@ public class Evaluator {
         /* step 5. evaluate recall rate */
         L.i("Main", "evaluate recall rate");
         RecallRateEvaluator recallRateEvaluator = new RecallRateEvaluator();
-        new RecallRateRunner(recallRateEvaluator, recommender, testDataModel).exec();
+        new RecallRateRunner(recallRateEvaluator, recommender, totalDataModel, testDataModel).exec();
         
         /* step 6. evaluate precision rate */
         L.i("Main", "evaluate precision rate");
         PrecisionRateEvaluator precisionRateEvaluator = new PrecisionRateEvaluator();
-        new PrecisionRateRunner(precisionRateEvaluator, recommender, testDataModel).exec();
+        new PrecisionRateRunner(precisionRateEvaluator, recommender, totalDataModel, testDataModel).exec();
+        
+        /* step 7. evaluate coverage rage */
+        CoverageEvaluator coverageEvaluator = new CoverageEvaluator();
+        CoverageRateRunner coverageRateRunner = new CoverageRateRunner(coverageEvaluator,
+                recommender, totalDataModel, testDataModel);
+        coverageRateRunner.exec();
+        
+        /* step 8. evaluate popularity */
+        PopularityEvaluator popularityEvaluator = new PopularityEvaluator();
+        PopularityRunner popularityRunner = new PopularityRunner(popularityEvaluator,
+                recommender, totalDataModel, testDataModel);
+        popularityRunner.exec();
     }
 }

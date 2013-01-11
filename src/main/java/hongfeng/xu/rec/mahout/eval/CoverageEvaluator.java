@@ -1,5 +1,5 @@
 /**
- * 2013-1-6
+ * 2013-1-11
  * 
  * xuhongfeng
  */
@@ -18,29 +18,22 @@ import org.apache.mahout.cf.taste.recommender.Recommender;
  * @author xuhongfeng
  *
  */
-public abstract class AbsHitRateEvaluator implements TopNEvaluator {
+public class CoverageEvaluator implements TopNEvaluator {
 
     @Override
     public double evaluate(Recommender recommender, DataModel totalDataModel
             ,DataModel testDataModel, int N)
             throws TasteException {
-        int all = 0;
-        int hit = 0;
-        
+        int numItems = totalDataModel.getNumItems();
+        FastIDSet recommendIdSet = new FastIDSet();
         LongPrimitiveIterator it = testDataModel.getUserIDs();
-        while(it.hasNext()) {
-            long userId = it.next();
-            FastIDSet userItemIds = testDataModel.getItemIDsFromUser(userId);
+        while (it.hasNext()) {
+            long userId = it.nextLong();
             List<RecommendedItem> recommendItems = recommender.recommend(userId, N);
             for (RecommendedItem item:recommendItems) {
-                if (userItemIds.contains(item.getItemID())) {
-                    hit++;
-                }
+                recommendIdSet.add(item.getItemID());
             }
-            all = calculateAll(all, recommendItems.size(), userItemIds.size());
         }
-        return hit/(all*1.0);
+        return recommendIdSet.size()/(numItems*1.0f);
     }
-    
-    protected abstract int calculateAll(int oldAll, int recomendSize, int userItemSize);
 }
