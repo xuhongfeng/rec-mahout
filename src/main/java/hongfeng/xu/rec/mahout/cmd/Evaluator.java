@@ -26,6 +26,7 @@ import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
+import org.apache.mahout.cf.taste.impl.recommender.ItemAverageRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.RandomRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.CachingItemSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.CachingUserSimilarity;
@@ -127,6 +128,14 @@ public class Evaluator {
             L.e("main", e);
             return;
         }
+        PreCachingRecommender itemAverageRecommender = null;
+        try {
+            ItemAverageRecommender originRecommender = new ItemAverageRecommender(trainingDataModel);
+            itemAverageRecommender = new PreCachingRecommender(originRecommender, AbsHitRateRunner.MAX_N);
+        } catch (TasteException e) {
+            L.e("main", e);
+            return;
+        }
         
         /* step 5. evaluate recall rate */
         RecallRateEvaluator recallRateEvaluator = new RecallRateEvaluator();
@@ -136,6 +145,8 @@ public class Evaluator {
         new RecallRateRunner(recallRateEvaluator, userBasedRecommender, totalDataModel, testDataModel).exec();
         L.i("Main", "\n\n******************* random recommender recall rate *****************\n\n");
         new RecallRateRunner(recallRateEvaluator, randomRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* average recommender recall rate *****************\n\n");
+        new RecallRateRunner(recallRateEvaluator, itemAverageRecommender, totalDataModel, testDataModel).exec();
         
         /* step 6. evaluate precision rate */
         PrecisionRateEvaluator precisionRateEvaluator = new PrecisionRateEvaluator();
@@ -145,6 +156,8 @@ public class Evaluator {
         new PrecisionRateRunner(precisionRateEvaluator, userBasedRecommender, totalDataModel, testDataModel).exec();
         L.i("Main", "\n\n******************* random recommender precision rate *****************\n\n");
         new PrecisionRateRunner(precisionRateEvaluator, randomRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* average recommender precision rate *****************\n\n");
+        new PrecisionRateRunner(precisionRateEvaluator, itemAverageRecommender, totalDataModel, testDataModel).exec();
         
         /* step 7. evaluate coverage rage */
         CoverageEvaluator coverageEvaluator = new CoverageEvaluator();
@@ -154,6 +167,8 @@ public class Evaluator {
         new CoverageRateRunner(coverageEvaluator, userBasedRecommender, totalDataModel, testDataModel).exec();
         L.i("Main", "\n\n******************* random recommender coverage rate *****************\n\n");
         new CoverageRateRunner(coverageEvaluator, randomRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* average recommender coverage rate *****************\n\n");
+        new CoverageRateRunner(coverageEvaluator, itemAverageRecommender, totalDataModel, testDataModel).exec();
         
         /* step 8. evaluate popularity */
         PopularityEvaluator popularityEvaluator = new PopularityEvaluator();
@@ -163,5 +178,7 @@ public class Evaluator {
         new PopularityRunner(popularityEvaluator, userBasedRecommender, totalDataModel, testDataModel).exec();
         L.i("Main", "\n\n******************* random recommender popularity *****************\n\n");
         new PopularityRunner(popularityEvaluator, randomRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* average recommender popularity *****************\n\n");
+        new PopularityRunner(popularityEvaluator, itemAverageRecommender, totalDataModel, testDataModel).exec();
     }
 }
