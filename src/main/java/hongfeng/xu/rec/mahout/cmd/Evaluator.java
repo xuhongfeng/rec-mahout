@@ -28,6 +28,7 @@ import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.ItemAverageRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.RandomRecommender;
+import org.apache.mahout.cf.taste.impl.recommender.slopeone.SlopeOneRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.CachingItemSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.CachingUserSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
@@ -136,6 +137,14 @@ public class Evaluator {
             L.e("main", e);
             return;
         }
+        PreCachingRecommender slopeOneRecommender = null;
+        try {
+            SlopeOneRecommender originRecommender = new SlopeOneRecommender(trainingDataModel);
+            slopeOneRecommender = new PreCachingRecommender(originRecommender, AbsHitRateRunner.MAX_N);
+        } catch (TasteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         
         /* step 5. evaluate recall rate */
         RecallRateEvaluator recallRateEvaluator = new RecallRateEvaluator();
@@ -147,6 +156,8 @@ public class Evaluator {
         new RecallRateRunner(recallRateEvaluator, randomRecommender, totalDataModel, testDataModel).exec();
         L.i("Main", "\n\n******************* average recommender recall rate *****************\n\n");
         new RecallRateRunner(recallRateEvaluator, itemAverageRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* slope one recommender recall rate *****************\n\n");
+        new RecallRateRunner(recallRateEvaluator, slopeOneRecommender, totalDataModel, testDataModel).exec();
         
         /* step 6. evaluate precision rate */
         PrecisionRateEvaluator precisionRateEvaluator = new PrecisionRateEvaluator();
@@ -158,6 +169,8 @@ public class Evaluator {
         new PrecisionRateRunner(precisionRateEvaluator, randomRecommender, totalDataModel, testDataModel).exec();
         L.i("Main", "\n\n******************* average recommender precision rate *****************\n\n");
         new PrecisionRateRunner(precisionRateEvaluator, itemAverageRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* slope one recommender precision rate *****************\n\n");
+        new PrecisionRateRunner(precisionRateEvaluator, slopeOneRecommender, totalDataModel, testDataModel).exec();
         
         /* step 7. evaluate coverage rage */
         CoverageEvaluator coverageEvaluator = new CoverageEvaluator();
@@ -169,6 +182,8 @@ public class Evaluator {
         new CoverageRateRunner(coverageEvaluator, randomRecommender, totalDataModel, testDataModel).exec();
         L.i("Main", "\n\n******************* average recommender coverage rate *****************\n\n");
         new CoverageRateRunner(coverageEvaluator, itemAverageRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* slope one recommender coverage rate *****************\n\n");
+        new CoverageRateRunner(coverageEvaluator, slopeOneRecommender, totalDataModel, testDataModel).exec();
         
         /* step 8. evaluate popularity */
         PopularityEvaluator popularityEvaluator = new PopularityEvaluator();
@@ -180,5 +195,7 @@ public class Evaluator {
         new PopularityRunner(popularityEvaluator, randomRecommender, totalDataModel, testDataModel).exec();
         L.i("Main", "\n\n******************* average recommender popularity *****************\n\n");
         new PopularityRunner(popularityEvaluator, itemAverageRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* slope one recommender popularity *****************\n\n");
+        new PopularityRunner(popularityEvaluator, slopeOneRecommender, totalDataModel, testDataModel).exec();
     }
 }
