@@ -23,12 +23,16 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
+import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.CachingItemSimilarity;
+import org.apache.mahout.cf.taste.impl.similarity.CachingUserSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.common.Pair;
+
 
 /**
  * @author xuhongfeng
@@ -55,7 +59,7 @@ public class Evaluator {
         DataModel testDataModel = null;
         try {
             Pair<DataModel, DataModel> models =
-                    DataModelUtils.split(totalDataModel, 1, 0.8);
+                    DataModelUtils.split(totalDataModel, 0.1, 0.8);
             trainingDataModel = models.getFirst();
             testDataModel = models.getSecond();
         } catch (TasteException e) {
@@ -63,11 +67,23 @@ public class Evaluator {
             return;
         }
         /* step 3.  build similarity */
-        CachingItemSimilarity similarity = null;
+        PearsonCorrelationSimilarity pearsonSimilarity = null;
         try {
-            similarity = new CachingItemSimilarity(
-                    new PearsonCorrelationSimilarity(trainingDataModel)
-                    , trainingDataModel);
+            pearsonSimilarity = new PearsonCorrelationSimilarity(trainingDataModel);
+        } catch (TasteException e) {
+            L.e("main", e);
+            return;
+        }
+        CachingItemSimilarity itemSimilarity = null;
+        try {
+            itemSimilarity = new CachingItemSimilarity(pearsonSimilarity, trainingDataModel);
+        } catch (TasteException e) {
+            L.e("main", e);
+            return;
+        }
+        CachingUserSimilarity userSimilarity = null;
+        try {
+            userSimilarity = new CachingUserSimilarity(pearsonSimilarity, trainingDataModel);
         } catch (TasteException e) {
             L.e("main", e);
             return;
@@ -75,38 +91,60 @@ public class Evaluator {
         
         /* step 4. build Recommender */
         L.i("Main", "build recommender");
-        PreCachingRecommender recommender = null;
+        PreCachingRecommender itemBasedRecommender = null;
         try {
             Recommender originRecommender= new GenericItemBasedRecommender(trainingDataModel,
-                    similarity);
+                    itemSimilarity);
 //            Recommender originRecommender = new KnnItemBasedRecommender(trainingDataModel,
 //                    similarity, new NonNegativeQuadraticOptimizer(), 20);
-            recommender = new PreCachingRecommender(originRecommender, AbsHitRateRunner.MAX_N);
+            itemBasedRecommender = new PreCachingRecommender(originRecommender, AbsHitRateRunner.MAX_N);
+        } catch (TasteException e) {
+            L.e("main", e);
+            return;
+        }
+        NearestNUserNeighborhood neighborhood = null;
+        try {
+            neighborhood = new NearestNUserNeighborhood(trainingDataModel.getNumUsers(),
+                    userSimilarity, trainingDataModel);
+        } catch (TasteException e) {
+            L.e("main", e);
+            return;
+        }
+        PreCachingRecommender userBasedRecommender = null;
+        try {
+            Recommender originRecommender = new GenericUserBasedRecommender(trainingDataModel, neighborhood, userSimilarity);
+            userBasedRecommender = new PreCachingRecommender(originRecommender, AbsHitRateRunner.MAX_N);
         } catch (TasteException e) {
             L.e("main", e);
             return;
         }
         
         /* step 5. evaluate recall rate */
-        L.i("Main", "evaluate recall rate");
         RecallRateEvaluator recallRateEvaluator = new RecallRateEvaluator();
-        new RecallRateRunner(recallRateEvaluator, recommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* itemBased recall rate *****************\n\n");
+        new RecallRateRunner(recallRateEvaluator, itemBasedRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* userBased recall rate *****************\n\n");
+        new RecallRateRunner(recallRateEvaluator, userBasedRecommender, totalDataModel, testDataModel).exec();
         
         /* step 6. evaluate precision rate */
-        L.i("Main", "evaluate precision rate");
         PrecisionRateEvaluator precisionRateEvaluator = new PrecisionRateEvaluator();
-        new PrecisionRateRunner(precisionRateEvaluator, recommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* itemBased precision rate *****************\n\n");
+        new PrecisionRateRunner(precisionRateEvaluator, itemBasedRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* itemBased precision rate *****************\n\n");
+        new PrecisionRateRunner(precisionRateEvaluator, userBasedRecommender, totalDataModel, testDataModel).exec();
         
         /* step 7. evaluate coverage rage */
         CoverageEvaluator coverageEvaluator = new CoverageEvaluator();
-        CoverageRateRunner coverageRateRunner = new CoverageRateRunner(coverageEvaluator,
-                recommender, totalDataModel, testDataModel);
-        coverageRateRunner.exec();
+        L.i("Main", "\n\n******************* itemBased coverage rate *****************\n\n");
+        new CoverageRateRunner(coverageEvaluator, itemBasedRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* userBased coverage rate *****************\n\n");
+        new CoverageRateRunner(coverageEvaluator, userBasedRecommender, totalDataModel, testDataModel).exec();
         
         /* step 8. evaluate popularity */
         PopularityEvaluator popularityEvaluator = new PopularityEvaluator();
-        PopularityRunner popularityRunner = new PopularityRunner(popularityEvaluator,
-                recommender, totalDataModel, testDataModel);
-        popularityRunner.exec();
+        L.i("Main", "\n\n******************* itemBased popularity *****************\n\n");
+        new PopularityRunner(popularityEvaluator, itemBasedRecommender, totalDataModel, testDataModel).exec();
+        L.i("Main", "\n\n******************* userBased popularity *****************\n\n");
+        new PopularityRunner(popularityEvaluator, userBasedRecommender, totalDataModel, testDataModel).exec();
     }
 }
