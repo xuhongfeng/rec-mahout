@@ -16,13 +16,15 @@ import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
  */
 public class MovielensModel extends FileDataModel {
     private static final long serialVersionUID = 1647594091122073867L;
+//    private static final String DATA_FILE = "data/movielens-1m/ratings.dat";
+    private static final File DATA_FILE = new File("data/movielens-100k/u.data");
 
     /**
      * @param dataFile
      * @throws IOException
      */
-    public MovielensModel(File dataFile) throws IOException {
-        super(dataFile, false, Long.MAX_VALUE);
+    public MovielensModel() throws IOException {
+        super(DATA_FILE, false, Long.MAX_VALUE);
     }
 
 

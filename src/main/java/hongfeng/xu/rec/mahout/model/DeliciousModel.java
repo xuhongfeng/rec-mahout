@@ -17,14 +17,11 @@ import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 public class DeliciousModel extends FileDataModel {
 
     private static final long serialVersionUID = -6867259254161762214L;
+    
+    private static final File DATA_FILE  = new File("data/hetrec2011-delicious-2k/user-bookmark-count.data");
 
-    public DeliciousModel(File dataFile, boolean transpose,
-            long minReloadIntervalMS) throws IOException {
-        super(dataFile, transpose, minReloadIntervalMS);
-    }
-
-    public DeliciousModel(File dataFile) throws IOException {
-        super(dataFile);
+    public DeliciousModel() throws IOException {
+        super(DATA_FILE);
     }
     
     
