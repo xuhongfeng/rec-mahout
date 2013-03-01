@@ -173,8 +173,26 @@ public class DeliciousDataModel extends AbstractDataModel {
     public static class RawDataSet {
         private final FastByIDMap<RawDataLineArray> map = new FastByIDMap<RawDataLineArray>();
         
+        public List<RawDataLineArray> getArrays() {
+            List<RawDataLineArray> list = new ArrayList<RawDataLineArray>(arrayCount());
+            for (Map.Entry<Long, RawDataLineArray> entry:map.entrySet()) {
+                list.add(entry.getValue());
+            }
+            return list;
+        }
+        
+        public int arrayCount() {
+            return map.size();
+        }
+        
         public RawDataLineArray get(long userId) {
             return map.get(userId);
+        }
+        
+        public void add(RawDataLineArray array) {
+            if (array.size() > 0) {
+                map.put(array.getUserId(), array);
+            }
         }
         
         public void add(RawDataLine line) {
@@ -233,6 +251,10 @@ public class DeliciousDataModel extends AbstractDataModel {
     
     public static class RawDataLineArray implements Iterable<RawDataLine> {
         private final List<RawDataLine> list = new ArrayList<RawDataLine>();
+        
+        public long getUserId() {
+            return list.get(0).userId;
+        }
         
         public void add(RawDataLine line) {
             list.add(line);

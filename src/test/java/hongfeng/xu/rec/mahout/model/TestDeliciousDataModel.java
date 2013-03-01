@@ -9,6 +9,8 @@ import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.model.DeliciousDataModel.RawDataLine;
 import hongfeng.xu.rec.mahout.model.DeliciousDataModel.RawDataLineArray;
 import hongfeng.xu.rec.mahout.model.DeliciousDataModel.RawDataSet;
+import hongfeng.xu.rec.mahout.util.DataModelUtils;
+import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.common.Pair;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -89,6 +92,26 @@ public class TestDeliciousDataModel {
                     rawDataLine.tagId), (float)countUT);
             Assert.assertEquals(dataModel.getBookmarkTagValue(rawDataLine.bookmarkId,
                     rawDataLine.tagId), (float)countBT);
+        } catch (TasteException e) {
+            Assert.fail("", e);
+        }
+    }
+    
+    @Test
+    public void testSplit() {
+        try {
+            Pair<DeliciousDataModel, DeliciousDataModel> pair = DataModelUtils.splitDeliciousDataModel(dataModel
+                    , 0.5, 0.8);
+            DeliciousDataModel trainingDataModel = pair.getFirst();
+            DeliciousDataModel testDataModel = pair.getSecond();
+            
+            RawDataSet trainingDataSet = trainingDataModel.getRawDataSet();
+            RawDataSet testDataSet = testDataModel.getRawDataSet();
+            
+            double actualTrainingPercentage = ((double)trainingDataSet.lineCount())/dataModel.getRawDataSet().lineCount();
+            double actualTestPercentage = ((double)testDataSet.lineCount())/dataModel.getRawDataSet().lineCount();
+            L.i(this, "actualTrainingPercentage = " + actualTrainingPercentage);
+            L.i(this, "actualTestPercentage= " + actualTestPercentage);
         } catch (TasteException e) {
             Assert.fail("", e);
         }
