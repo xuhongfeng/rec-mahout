@@ -79,6 +79,14 @@ public class DeliciousDataModel extends AbstractDataModel {
     public float getBookmarkTagValue(long bookmarkID, long tagID) throws TasteException {
         return getBookmarkTagModel().getPreferenceValue(bookmarkID, tagID);
     }
+    
+    public PreferenceArray getUserTagPrefArray(long userID) throws TasteException {
+        return getUserTagModel().getPreferencesFromUser(userID);
+    }
+    
+    public LongPrimitiveIterator getBookmarkIds() throws TasteException {
+        return getItemIDs();
+    }
 
     @Override
     public LongPrimitiveIterator getUserIDs() throws TasteException {
