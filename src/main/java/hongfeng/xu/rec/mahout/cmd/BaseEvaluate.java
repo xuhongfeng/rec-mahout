@@ -57,9 +57,8 @@ public abstract class BaseEvaluate {
         return DEFAULT_DATA_PERCENTAGE;
     }
     
-    private void initDataModel() {
+    protected void initDataModel() {
         L.i(this, "create data model");
-        totalDataModel = null;
         try {
             totalDataModel = getDataModel();
         } catch (IOException e) {
@@ -67,8 +66,6 @@ public abstract class BaseEvaluate {
             return;
         }
         L.i(this, "split data model");
-        trainingDataModel = null;
-        testDataModel = null;
         try {
             Pair<DataModel, DataModel> models =
                     DataModelUtils.split(totalDataModel, getDataPercentage(), 0.8);

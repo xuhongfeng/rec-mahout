@@ -5,7 +5,6 @@
  */
 package hongfeng.xu.rec.mahout.cmd;
 
-import hongfeng.xu.rec.mahout.model.DeliciousModel;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.IOException;
@@ -69,6 +68,14 @@ public class EvaluateDelicious extends BaseEvaluate {
     
     @Override
     protected DataModel getDataModel() throws IOException {
-        return new DeliciousModel();
+        //TODO
+//        return new DeliciousDataModel();
+        return null;
+    }
+    
+    @Override
+    protected void initDataModel() {
+        //TODO
+//        File file = new File(DeliciousDataParser.INPUT_PATH);
     }
 }
