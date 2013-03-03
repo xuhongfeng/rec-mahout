@@ -61,6 +61,8 @@ public class DeliciousDataModel extends AbstractDataModel {
         bookmarkTag = models[2];
     }
     
+    /** get or set DataModel **/
+    
     public RawDataSet getRawDataSet() {
         return rawDataSet;
     }
@@ -77,6 +79,8 @@ public class DeliciousDataModel extends AbstractDataModel {
     public DataModel getBookmarkTagModel() {
         return bookmarkTag;
     }
+    
+    /** get preference **/
     
     public Float getUserBookmarkValue(long userID, long bookmarkID) throws TasteException {
         try {
@@ -102,6 +106,16 @@ public class DeliciousDataModel extends AbstractDataModel {
         }
     }
     
+    /** get preference array **/
+    
+    public PreferenceArray getBookmarkTagPrefArray(long bookmarkId) throws TasteException {
+        try {
+            return getBookmarkTagModel().getPreferencesFromUser(bookmarkId);
+        } catch (NoSuchUserException e) {
+            return new GenericUserPreferenceArray(0);
+        }
+    }
+    
     public PreferenceArray getUserTagPrefArray(long userID) throws TasteException {
         try {
             return getUserTagModel().getPreferencesFromUser(userID);
@@ -110,6 +124,8 @@ public class DeliciousDataModel extends AbstractDataModel {
         }
     }
     
+    /** getIds **/
+    
     public LongPrimitiveIterator getBookmarkIds() throws TasteException {
         return getItemIDs();
     }
@@ -117,6 +133,9 @@ public class DeliciousDataModel extends AbstractDataModel {
     public LongPrimitiveIterator getTagIds() throws TasteException {
         return userTag.getItemIDs();
     }
+    
+    
+    /** delegate **/
 
     @Override
     public LongPrimitiveIterator getUserIDs() throws TasteException {
@@ -243,8 +262,12 @@ public class DeliciousDataModel extends AbstractDataModel {
             return count;
         }
         
-        public Iterator<Long> userIdIterator() {
+        public LongPrimitiveIterator userIdIterator() {
             return map.keySetIterator();
+        }
+        
+        public Iterator<RawDataLine> lineIterator() {
+            return new RawDataLineIterator(this);
         }
         
         public DataModel[] calculateDataModel() {
@@ -347,6 +370,13 @@ public class DeliciousDataModel extends AbstractDataModel {
                 return false;
             return true;
         }
+
+        @Override
+        public String toString() {
+            return "RawDataLine [userId=" + userId + ", bookmarkId="
+                    + bookmarkId + ", tagId=" + tagId + "]";
+        }
+        
     }
     
     /**
@@ -463,6 +493,49 @@ public class DeliciousDataModel extends AbstractDataModel {
         }
         public void setCount(int count) {
             this.count = count;
+        }
+    }
+    
+    private static class RawDataLineIterator implements Iterator<RawDataLine> {
+        private final RawDataSet rawDataSet;
+        private LongPrimitiveIterator userIdIterator;
+        private Iterator<RawDataLine> lineIterator;
+
+        public RawDataLineIterator(RawDataSet rawDataSet) {
+            super();
+            this.rawDataSet = rawDataSet;
+            userIdIterator = rawDataSet.userIdIterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (lineIterator == null || !lineIterator.hasNext()) {
+                if (userIdIterator.hasNext()) {
+                    long userId = userIdIterator.next();
+                    RawDataLineArray array = rawDataSet.get(userId);
+                    lineIterator = array.iterator();
+                    return hasNext();
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public RawDataLine next() {
+            if (lineIterator==null || !lineIterator.hasNext()) {
+                long userId = userIdIterator.next();
+                RawDataLineArray array = rawDataSet.get(userId);
+                lineIterator = array.iterator();
+                return next();
+            }
+            return lineIterator.next();
+        }
+
+        @Override
+        public void remove() {
+            lineIterator.remove();
         }
     }
 }
