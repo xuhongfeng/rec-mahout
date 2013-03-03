@@ -6,6 +6,8 @@
 package hongfeng.xu.rec.mahout.tag;
 
 import hongfeng.xu.rec.mahout.model.DeliciousDataModel;
+import hongfeng.xu.rec.mahout.tag.TagAllocator.AllocateItem;
+import hongfeng.xu.rec.mahout.util.L;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,58 +22,72 @@ import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
-import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 
 /**
  * @author xuhongfeng
  *
  */
 public class TagFlatter {
-    public DeliciousDataModel flat(DeliciousDataModel originDataModel,
-            ItemSimilarity tagSimilarity) throws TasteException {
-        DataModel userTag = originDataModel.getUserTagModel();
+    public DeliciousDataModel flat(DeliciousDataModel originDataModel) throws TasteException {
+        long start = System.currentTimeMillis();
+        DataModel bookmarkTagModel = originDataModel.getBookmarkTagModel();
+        TagAllocator tagAllocator = new TagAllocator(bookmarkTagModel);
         
-        // <userId, newPrefArray>
-        FastByIDMap<PreferenceArray> map = new FastByIDMap<PreferenceArray>();
-        LongPrimitiveIterator userIdIterator = userTag.getUserIDs();
-        while (userIdIterator.hasNext()) {
-            long userId = userIdIterator.nextLong();
-            PreferenceArray oldPrefArray = originDataModel.getUserTagPrefArray(userId);
-            // <tagId, pref>
-            FastByIDMap<Preference> prefMap = new FastByIDMap<Preference>();
-            for (Preference oldPref:oldPrefArray) {
-                long tagId = oldPref.getItemID();
-                incr(prefMap, userId, tagId, oldPref.getValue());
-                long[] similarTagIds = tagSimilarity.allSimilarItemIDs(tagId);
-                double[] similarityValue = tagSimilarity.itemSimilarities(tagId, similarTagIds);
-                for (int i=0; i<similarTagIds.length; i++) {
-                    long otherTagId = similarTagIds[i];
-                    double sim = similarityValue[i];
-                    if (sim > 0) {
-                        float incr = (float) (oldPref.getValue()*sim);
-                        incr(prefMap, userId, otherTagId, incr);
-                    }
-                }
+        DataModel userTagModel = originDataModel.getUserTagModel();
+        FastByIDMap<PreferenceArray> userTagMap = new FastByIDMap<PreferenceArray>();
+        LongPrimitiveIterator userIdsIterator = userTagModel.getUserIDs();
+        L.i(this, "user id count = " + userTagModel.getNumUsers());
+        while (userIdsIterator.hasNext()) {
+            long userId = userIdsIterator.nextLong();
+            PreferenceArray originPrefArray = userTagModel.getPreferencesFromUser(userId);
+            if (originPrefArray.length() == 0) {
+                L.i(this, "originPrefArray.length=0");
+                continue;
             }
-            List<Preference> newPrefs = new ArrayList<Preference>();
-            for (Map.Entry<Long, Preference> entry:prefMap.entrySet()) {
-                newPrefs.add(entry.getValue());
-            }
-            PreferenceArray newArray = new GenericUserPreferenceArray(newPrefs);
-            map.put(userId, newArray);
+            PreferenceArray newPrefArray = flatPreferenceArray(userId, originPrefArray, tagAllocator);
+            userTagMap.put(userId, newPrefArray);
+//            L.i(this, "user tag map size = " + userTagMap.size());
         }
-        DataModel newUserTag = new GenericDataModel(map);
+        
+        DataModel newUserTagModel = new GenericDataModel(userTagMap); 
         DeliciousDataModel newDataModel = new DeliciousDataModel(originDataModel.getRawDataSet());
-        newDataModel.setUserTagModel(newUserTag);
+        newDataModel.setUserTagModel(newUserTagModel);
+        
+        L.i(this, "flat tag cost = " + (System.currentTimeMillis() - start));
         return newDataModel;
     }
     
+    private PreferenceArray flatPreferenceArray(long userId, PreferenceArray prefs, TagAllocator tagAllocator) throws TasteException {
+        FastByIDMap<Preference> prefMap = new FastByIDMap<Preference>();
+        for (Preference pref:prefs) {
+            long tagId = pref.getItemID();
+            float value = pref.getValue();
+            incr(prefMap, userId, tagId, value);
+            List<AllocateItem> items = tagAllocator.allocateTag(tagId);
+            for (AllocateItem item:items) {
+                incr(prefMap, userId, item.getId(), (float) (value*item.getValue()));
+            }
+        }
+        
+        List<Preference> list = new ArrayList<Preference>();
+        for (Map.Entry<Long, Preference> entry:prefMap.entrySet()) {
+            list.add(entry.getValue());
+        }
+        PreferenceArray newPrefs = new GenericUserPreferenceArray(list);
+        return newPrefs;
+    }
+    
     private void incr(FastByIDMap<Preference> map, long userId, long tagId, float value) {
+        if (value == 0) {
+            L.i(this, "value = " + value);
+            return;
+        }
         Preference pref = map.get(tagId);
         if (pref == null) {
             pref = new GenericPreference(userId, tagId, value);
             map.put(tagId, pref);
+        } else {
+            pref.setValue(pref.getValue() + value);
         }
-        pref.setValue(pref.getValue() + value);
     }
 }

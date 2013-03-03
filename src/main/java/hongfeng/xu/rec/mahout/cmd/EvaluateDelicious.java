@@ -8,6 +8,7 @@ package hongfeng.xu.rec.mahout.cmd;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.model.DeliciousDataModel;
 import hongfeng.xu.rec.mahout.recommender.SimpleTagBasedRecommender;
+import hongfeng.xu.rec.mahout.tag.TagFlatter;
 import hongfeng.xu.rec.mahout.util.DataModelUtils;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -26,6 +27,7 @@ public class EvaluateDelicious extends BaseEvaluate {
     private Recommender popularRecommender;
     private Recommender randomRecommender;
     private Recommender simpleTagBasedRecommender;
+    private Recommender advancedTagBasedRecommender;
 
     public static void main(String[] args) {
         EvaluateDelicious evaluator = new EvaluateDelicious();
@@ -39,8 +41,10 @@ public class EvaluateDelicious extends BaseEvaluate {
         try {
             popularRecommender = createPopularRecommender();
             randomRecommender = createRandomRecommender();
-            SimpleTagBasedRecommender tagBasedRecommender = new SimpleTagBasedRecommender((DeliciousDataModel) trainingDataModel);
-            this.simpleTagBasedRecommender = wrapPreCacheRecommender(tagBasedRecommender);
+            this.simpleTagBasedRecommender = wrapPreCacheRecommender(
+                    new SimpleTagBasedRecommender(getTrainingDataMode()));
+            this.advancedTagBasedRecommender = wrapPreCacheRecommender(
+                    new SimpleTagBasedRecommender(new TagFlatter().flat(getTrainingDataMode())));
         } catch (TasteException e) {
             L.e(this, e);
         }
@@ -55,6 +59,8 @@ public class EvaluateDelicious extends BaseEvaluate {
         evaluateRecallRate(popularRecommender, "popular");
         L.i(this, "\n\n******************* simple tag based recommender recall rate *****************\n\n");
         evaluateRecallRate(simpleTagBasedRecommender, "SimpleTagBased");
+        L.i(this, "\n\n******************* advanced tag based recommender recall rate *****************\n\n");
+        evaluateRecallRate(advancedTagBasedRecommender, "advancedTagBased");
         drawChart(recallResult, "recall rate", "recall rate", "recallRate.png", true);
         
         L.i(this, "\n\n******************* random recommender precision rate *****************\n\n");
@@ -63,6 +69,8 @@ public class EvaluateDelicious extends BaseEvaluate {
         evaluatePrecisionRate(popularRecommender, "popular");
         L.i(this, "\n\n******************* simple tag based recommender precision rate *****************\n\n");
         evaluatePrecisionRate(simpleTagBasedRecommender, "SimpleTagBased");
+        L.i(this, "\n\n******************* advanced tag based recommender precision rate *****************\n\n");
+        evaluatePrecisionRate(advancedTagBasedRecommender, "AdvancedTagBased");
         drawChart(precisionResult, "precision rate", "precision rate", "precisionRate.png", true);
         
         L.i(this, "\n\n******************* random recommender coverage rate *****************\n\n");
@@ -71,6 +79,8 @@ public class EvaluateDelicious extends BaseEvaluate {
         evaluateCoverageRate(popularRecommender, "popular");
         L.i(this, "\n\n******************* simple tag based recommender coverage rate *****************\n\n");
         evaluateCoverageRate(simpleTagBasedRecommender, "SimpleTagBased");
+        L.i(this, "\n\n******************* advanced tag based recommender coverage rate *****************\n\n");
+        evaluateCoverageRate(advancedTagBasedRecommender, "AdvancedTagBased");
         drawChart(coverageResult, "coverage rate", "coverage rate", "coverageRate.png", true);
         
         L.i(this, "\n\n******************* random recommender popularity *****************\n\n");
@@ -79,6 +89,8 @@ public class EvaluateDelicious extends BaseEvaluate {
         evaluatePopularity(popularRecommender, "popular");
         L.i(this, "\n\n******************* simple tag based recommender popularity *****************\n\n");
         evaluatePopularity(simpleTagBasedRecommender, "SimpleTagBased");
+        L.i(this, "\n\n******************* advanced tag based recommender popularity *****************\n\n");
+        evaluatePopularity(advancedTagBasedRecommender, "AdvancedTagBased");
         drawChart(popularityResult, "popularity", "polularity", "popularity.png", false);
     }
     

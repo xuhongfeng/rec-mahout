@@ -58,9 +58,9 @@ public class TestTagSimilarity {
         try {
 //            LongPrimitiveIterator tagIdIterator = totalDataModel.getTagIds();
 //            long tagId = tagIdIterator.nextLong();
-            long tagId = 993;
-            FixedSizePriorityQueue<Item> queue = new FixedSizePriorityQueue<Item>(
-                    10, INCR_COMPARATOR);
+            long tagId = 1631;
+//            FixedSizePriorityQueue<Item> queue = new FixedSizePriorityQueue<Item>(
+//                    10, INCR_COMPARATOR);
 //            similarity.itemSimilarity(993, 9);
             long[] otherIds = similarity.allSimilarItemIDs(tagId);
             double[] similaritys = similarity.itemSimilarities(tagId, otherIds);
