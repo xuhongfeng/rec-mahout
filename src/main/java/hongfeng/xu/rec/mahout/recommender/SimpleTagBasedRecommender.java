@@ -8,11 +8,11 @@ package hongfeng.xu.rec.mahout.recommender;
 import hongfeng.xu.rec.mahout.model.DeliciousDataModel;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.PriorityQueue;
 
 import org.apache.mahout.cf.taste.common.Refreshable;
 import org.apache.mahout.cf.taste.common.TasteException;
@@ -31,30 +31,26 @@ import com.beust.jcommander.internal.Lists;
  */
 public class SimpleTagBasedRecommender extends AbstractRecommender {
 
-    protected SimpleTagBasedRecommender(DeliciousDataModel dataModel) {
+    public SimpleTagBasedRecommender(DeliciousDataModel dataModel) {
         super(dataModel);
     }
 
     @Override
     public List<RecommendedItem> recommend(long userID, int howMany,
             IDRescorer rescorer) throws TasteException {
-        
         Iterator<Long> bookmarkIdIterator = getDataModel().getBookmarkIds();
-        Set<RecommendedItem> items = new TreeSet<RecommendedItem>(COMPARATOR);
+        InnerPriorityQueue queue = new InnerPriorityQueue(howMany);
         while (bookmarkIdIterator.hasNext()) {
             long bookmarkID = bookmarkIdIterator.next();
             if (getDataModel().getPreferenceValue(userID, bookmarkID) == null) {
-                items.add(new GenericRecommendedItem(bookmarkID, estimatePreference(userID, bookmarkID)));
+                queue.add(new GenericRecommendedItem(bookmarkID, calculatePreference(userID, bookmarkID)));
             }
         }
         List<RecommendedItem> result = Lists.newArrayList(howMany);
-        for (RecommendedItem item:items) {
+        for (RecommendedItem item:queue) {
             result.add(item);
-            if (result.size() == howMany) {
-                break;
-            }
         }
-        
+        Collections.sort(result, DECR_COMPARATOR);
         return result;
     }
 
@@ -70,8 +66,10 @@ public class SimpleTagBasedRecommender extends AbstractRecommender {
         PreferenceArray userTagPrefArray = getDataModel().getUserTagPrefArray(userID);
         for (Preference userTagPref:userTagPrefArray) {
             long tagId = userTagPref.getItemID();
-            float bookmarkTagValue = getDataModel().getBookmarkTagValue(bookmarkID, tagId);
-            value += userTagPref.getValue()*bookmarkTagValue;
+            Float bookmarkTagValue = getDataModel().getBookmarkTagValue(bookmarkID, tagId);
+            if (bookmarkTagValue != null) {
+                value += userTagPref.getValue()*bookmarkTagValue;
+            }
         }
         return value;
     }
@@ -86,16 +84,44 @@ public class SimpleTagBasedRecommender extends AbstractRecommender {
         getDataModel().refresh(alreadyRefreshed);
     }
     
-    private static Comparator<RecommendedItem> COMPARATOR = new Comparator<RecommendedItem>() {
+    private static class InnerPriorityQueue extends PriorityQueue<RecommendedItem> {
+        private static final long serialVersionUID = -2407213710283867159L;
+        
+        private final int size;
+        public InnerPriorityQueue(int size) {
+            super(size, INCR_COMPARATOR);
+            this.size = size;
+        }
+        
+        @Override
+        public boolean add(RecommendedItem e) {
+            if (size()==size) {
+                if (INCR_COMPARATOR.compare(peek(), e)<0) {
+                    poll();
+                    return super.add(e);
+                } else {
+                    return false;
+                }
+            } else {
+                return super.add(e);
+            }
+        }
+    }
+    
+    private static Comparator<RecommendedItem> INCR_COMPARATOR = new Comparator<RecommendedItem>() {
         @Override
         public int compare(RecommendedItem o1, RecommendedItem o2) {
-            if (o1.getItemID() == o2.getItemID()) {
-                return 0;
-            }
-            if (o1.getValue() > o2.getValue()) {
+            if (o1.getValue() < o2.getValue()) {
                 return -1;
+            } else {
+                return 1;
             }
-            return 1;
+        }
+    };
+    private static Comparator<RecommendedItem> DECR_COMPARATOR = new Comparator<RecommendedItem>() {
+        @Override
+        public int compare(RecommendedItem o1, RecommendedItem o2) {
+            return -INCR_COMPARATOR.compare(o1, o2);
         }
     };
 }

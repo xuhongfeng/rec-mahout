@@ -179,7 +179,7 @@ public class EvaluateMovielens extends BaseEvaluate {
     }
 
     @Override
-    protected DataModel getDataModel() throws IOException {
+    protected DataModel createDataModel() throws IOException {
         return new MovielensModel();
     }
 }

@@ -60,7 +60,7 @@ public abstract class BaseEvaluate {
     protected void initDataModel() {
         L.i(this, "create data model");
         try {
-            totalDataModel = getDataModel();
+            totalDataModel = createDataModel();
         } catch (IOException e) {
             L.e(this, e);
             return;
@@ -141,9 +141,9 @@ public abstract class BaseEvaluate {
         popularityEvaluator = new PopularityEvaluator();
     }
     
-    protected abstract DataModel getDataModel() throws IOException;
+    protected abstract DataModel createDataModel() throws IOException;
     
-    private Recommender wrapPreCacheRecommender(Recommender originRecommender) throws TasteException {
+    protected Recommender wrapPreCacheRecommender(Recommender originRecommender) throws TasteException {
         return new PreCachingRecommender(originRecommender, AbsHitRateRunner.MAX_N);
     }
     

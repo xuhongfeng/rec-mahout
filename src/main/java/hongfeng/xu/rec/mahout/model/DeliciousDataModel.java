@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.common.Refreshable;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
@@ -68,29 +69,58 @@ public class DeliciousDataModel extends AbstractDataModel {
         return userTag;
     }
     
+    public void setUserTagModel(DataModel model) {
+        this.userTag = model;
+        this.rawDataSet = null;
+    }
+    
     public DataModel getBookmarkTagModel() {
         return bookmarkTag;
     }
     
-    public float getUserTagValue(long userID, long tagID) throws TasteException {
-        return getUserTagModel().getPreferenceValue(userID, tagID);
+    public Float getUserBookmarkValue(long userID, long bookmarkID) throws TasteException {
+        try {
+            return userBookmark.getPreferenceValue(userID, bookmarkID);
+        } catch (NoSuchUserException e) {
+            return null;
+        }
     }
     
-    public float getBookmarkTagValue(long bookmarkID, long tagID) throws TasteException {
-        return getBookmarkTagModel().getPreferenceValue(bookmarkID, tagID);
+    public Float getUserTagValue(long userID, long tagID) throws TasteException {
+        try {
+            return getUserTagModel().getPreferenceValue(userID, tagID);
+        } catch (NoSuchUserException e) {
+            return null;
+        }
+    }
+    
+    public Float getBookmarkTagValue(long bookmarkID, long tagID) throws TasteException {
+        try {
+            return getBookmarkTagModel().getPreferenceValue(bookmarkID, tagID);
+        } catch (NoSuchUserException e) {
+            return null;
+        }
     }
     
     public PreferenceArray getUserTagPrefArray(long userID) throws TasteException {
-        return getUserTagModel().getPreferencesFromUser(userID);
+        try {
+            return getUserTagModel().getPreferencesFromUser(userID);
+        } catch (NoSuchUserException e) {
+            return new GenericUserPreferenceArray(0);
+        }
     }
     
     public LongPrimitiveIterator getBookmarkIds() throws TasteException {
         return getItemIDs();
     }
+    
+    public LongPrimitiveIterator getTagIds() throws TasteException {
+        return userTag.getItemIDs();
+    }
 
     @Override
     public LongPrimitiveIterator getUserIDs() throws TasteException {
-        return null;
+        return userBookmark.getUserIDs();
     }
 
     @Override
@@ -118,7 +148,7 @@ public class DeliciousDataModel extends AbstractDataModel {
     @Override
     public Float getPreferenceValue(long userID, long itemID)
             throws TasteException {
-        return userBookmark.getPreferenceValue(userID, itemID);
+        return getUserBookmarkValue(userID, itemID);
     }
 
     @Override
