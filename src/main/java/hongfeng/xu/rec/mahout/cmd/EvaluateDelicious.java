@@ -8,7 +8,7 @@ package hongfeng.xu.rec.mahout.cmd;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.model.DeliciousDataModel;
 import hongfeng.xu.rec.mahout.recommender.SimpleTagBasedRecommender;
-import hongfeng.xu.rec.mahout.tag.TagFlatter;
+import hongfeng.xu.rec.mahout.recommender.TF_IDF_Recommender;
 import hongfeng.xu.rec.mahout.util.DataModelUtils;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -27,7 +27,8 @@ public class EvaluateDelicious extends BaseEvaluate {
     private Recommender popularRecommender;
     private Recommender randomRecommender;
     private Recommender simpleTagBasedRecommender;
-    private Recommender advancedTagBasedRecommender;
+//    private Recommender advancedTagBasedRecommender;
+    private Recommender tfIdfRecommender;
 
     public static void main(String[] args) {
         EvaluateDelicious evaluator = new EvaluateDelicious();
@@ -43,8 +44,9 @@ public class EvaluateDelicious extends BaseEvaluate {
             randomRecommender = createRandomRecommender();
             this.simpleTagBasedRecommender = wrapPreCacheRecommender(
                     new SimpleTagBasedRecommender(getTrainingDataMode()));
-            this.advancedTagBasedRecommender = wrapPreCacheRecommender(
-                    new SimpleTagBasedRecommender(new TagFlatter().flat(getTrainingDataMode())));
+//            this.advancedTagBasedRecommender = wrapPreCacheRecommender(
+//                    new SimpleTagBasedRecommender(new TagFlatter().flat(getTrainingDataMode())));
+            this.tfIdfRecommender = wrapPreCacheRecommender(new TF_IDF_Recommender(getTrainingDataMode()));
         } catch (TasteException e) {
             L.e(this, e);
         }
@@ -59,8 +61,10 @@ public class EvaluateDelicious extends BaseEvaluate {
         evaluateRecallRate(popularRecommender, "popular");
         L.i(this, "\n\n******************* simple tag based recommender recall rate *****************\n\n");
         evaluateRecallRate(simpleTagBasedRecommender, "SimpleTagBased");
-        L.i(this, "\n\n******************* advanced tag based recommender recall rate *****************\n\n");
-        evaluateRecallRate(advancedTagBasedRecommender, "advancedTagBased");
+//        L.i(this, "\n\n******************* advanced tag based recommender recall rate *****************\n\n");
+//        evaluateRecallRate(advancedTagBasedRecommender, "advancedTagBased");
+        L.i(this, "\n\n******************* TF-IDF recommender recall rate *****************\n\n");
+        evaluateRecallRate(tfIdfRecommender, "TF-IDF");
         drawChart(recallResult, "recall rate", "recall rate", "recallRate.png", true);
         
         L.i(this, "\n\n******************* random recommender precision rate *****************\n\n");
@@ -69,8 +73,10 @@ public class EvaluateDelicious extends BaseEvaluate {
         evaluatePrecisionRate(popularRecommender, "popular");
         L.i(this, "\n\n******************* simple tag based recommender precision rate *****************\n\n");
         evaluatePrecisionRate(simpleTagBasedRecommender, "SimpleTagBased");
-        L.i(this, "\n\n******************* advanced tag based recommender precision rate *****************\n\n");
-        evaluatePrecisionRate(advancedTagBasedRecommender, "AdvancedTagBased");
+//        L.i(this, "\n\n******************* advanced tag based recommender precision rate *****************\n\n");
+//        evaluatePrecisionRate(advancedTagBasedRecommender, "AdvancedTagBased");
+        L.i(this, "\n\n******************* TF-IDF recommender precision rate *****************\n\n");
+        evaluatePrecisionRate(tfIdfRecommender, "TF-IDF");
         drawChart(precisionResult, "precision rate", "precision rate", "precisionRate.png", true);
         
         L.i(this, "\n\n******************* random recommender coverage rate *****************\n\n");
@@ -79,8 +85,10 @@ public class EvaluateDelicious extends BaseEvaluate {
         evaluateCoverageRate(popularRecommender, "popular");
         L.i(this, "\n\n******************* simple tag based recommender coverage rate *****************\n\n");
         evaluateCoverageRate(simpleTagBasedRecommender, "SimpleTagBased");
-        L.i(this, "\n\n******************* advanced tag based recommender coverage rate *****************\n\n");
-        evaluateCoverageRate(advancedTagBasedRecommender, "AdvancedTagBased");
+//        L.i(this, "\n\n******************* advanced tag based recommender coverage rate *****************\n\n");
+//        evaluateCoverageRate(advancedTagBasedRecommender, "AdvancedTagBased");
+        L.i(this, "\n\n******************* TF-IDF recommender coverage rate *****************\n\n");
+        evaluateCoverageRate(tfIdfRecommender, "TF-IDF");
         drawChart(coverageResult, "coverage rate", "coverage rate", "coverageRate.png", true);
         
         L.i(this, "\n\n******************* random recommender popularity *****************\n\n");
@@ -89,8 +97,10 @@ public class EvaluateDelicious extends BaseEvaluate {
         evaluatePopularity(popularRecommender, "popular");
         L.i(this, "\n\n******************* simple tag based recommender popularity *****************\n\n");
         evaluatePopularity(simpleTagBasedRecommender, "SimpleTagBased");
-        L.i(this, "\n\n******************* advanced tag based recommender popularity *****************\n\n");
-        evaluatePopularity(advancedTagBasedRecommender, "AdvancedTagBased");
+//        L.i(this, "\n\n******************* advanced tag based recommender popularity *****************\n\n");
+//        evaluatePopularity(advancedTagBasedRecommender, "AdvancedTagBased");
+        L.i(this, "\n\n******************* TF-IDF recommender popularity *****************\n\n");
+        evaluatePopularity(tfIdfRecommender, "TF-IDF");
         drawChart(popularityResult, "popularity", "polularity", "popularity.png", false);
     }
     

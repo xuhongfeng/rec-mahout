@@ -44,10 +44,10 @@ public class TF {
         if (value == null) {
             return 0;
         } else {
-            PreferenceArray prefs = dataModel.getBookmarkTagPrefArray(bookmarkId);
             Double total = totalCache.get(bookmarkId);
             if (total == null) {
                 total = 0.0;
+                PreferenceArray prefs = dataModel.getBookmarkTagPrefArray(bookmarkId);
                 for (Preference pref:prefs) {
                     total += pref.getValue();
                 }
