@@ -134,6 +134,18 @@ public class DeliciousDataModel extends AbstractDataModel {
         return userTag.getItemIDs();
     }
     
+    /** get size  **/
+    public int getNumBookmarkIds() throws TasteException {
+        return getNumItems();
+    }
+    
+    public int getNumBookmarkForTag(long tagId) throws TasteException {
+        return getBookmarkTagModel().getNumUsersWithPreferenceFor(tagId);
+    }
+    
+    public int getNumTagIds() throws TasteException {
+        return getBookmarkTagModel().getNumItems();
+    }
     
     /** delegate **/
 
