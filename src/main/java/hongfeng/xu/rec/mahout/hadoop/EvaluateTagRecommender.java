@@ -14,16 +14,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.cf.taste.hadoop.item.ItemIDIndexMapper;
-import org.apache.mahout.cf.taste.hadoop.item.ItemIDIndexReducer;
+import org.apache.mahout.cf.taste.hadoop.preparation.PreparePreferenceMatrixJob;
 import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.common.HadoopUtil;
-import org.apache.mahout.math.VarIntWritable;
-import org.apache.mahout.math.VarLongWritable;
 
 /**
  * @author xuhongfeng
@@ -66,28 +60,128 @@ public class EvaluateTagRecommender extends AbstractJob {
             });
         }
         
+//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+//            Path inputPath = RawDataParser.getUserItemPath();
+//            Path outputPath = getItemIndexPath();
+//            if (HadoopHelper.isFileExists(outputPath, getConf())) {
+//                if (!hasOption(OPTION_REUSE) || !getOption(OPTION_REUSE).equals("true")) {
+//                    HadoopUtil.delete(getConf(), outputPath);
+//                    Job job= prepareJob(inputPath, outputPath, TextInputFormat.class,
+//                            ItemIDIndexMapper.class, VarIntWritable.class, VarLongWritable.class,
+//                            ItemIDIndexReducer.class, VarIntWritable.class, VarLongWritable.class,
+//                            SequenceFileOutputFormat.class);
+//                    job.setCombinerClass(ItemIDIndexReducer.class);
+//                    if (!job.waitForCompletion(true)) {
+//                        return -1;
+//                    }
+//                }
+//            }
+//        }
+        
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             Path inputPath = RawDataParser.getUserItemPath();
-            Path outputPath = getItemIndexPath();
+            Path outputPath = getUserItemMatrixPath();
+            boolean needRun = true;
             if (HadoopHelper.isFileExists(outputPath, getConf())) {
-                if (!hasOption(OPTION_REUSE) || !getOption(OPTION_REUSE).equals("true")) {
+                if (reuse()) {
+                    needRun = false;
+                } else {
                     HadoopUtil.delete(getConf(), outputPath);
-                    Job job= prepareJob(inputPath, outputPath, TextInputFormat.class,
-                            ItemIDIndexMapper.class, VarIntWritable.class, VarLongWritable.class,
-                            ItemIDIndexReducer.class, VarIntWritable.class, VarLongWritable.class,
-                            SequenceFileOutputFormat.class);
-                    job.setCombinerClass(ItemIDIndexReducer.class);
-                    if (!job.waitForCompletion(true)) {
-                        return -1;
-                    }
                 }
             }
+            if (needRun) {
+                ToolRunner.run(getConf(), new PreparePreferenceMatrixJob(), new String[]{
+                    "--input", inputPath.toString(),
+                    "--output", outputPath.toString(),
+                    "--booleanData", String.valueOf(false),
+                    "--tempDir", getTempPath().toString()});
+            }
         }
+
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            boolean needRun = true;
+            Path in = getRatingMatrix(getUserItemMatrixPath());
+            Path out = getPopularItemPath();
+            if (HadoopHelper.isFileExists(out, getConf())) {
+                if (reuse()) {
+                    needRun = false;
+                } else {
+                    HadoopUtil.delete(getConf(), out);
+                }
+            }
+            if (needRun) {
+                ToolRunner.run(getConf(), new PopularItemJob(), new String[]{
+                    "--input", in.toString(),
+                    "--output", out.toString(),
+                });
+            }
+        }
+        
+//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+//            boolean needRun = true;
+//            if (HadoopHelper.isFileExists(getPopularItemPath(), getConf())) {
+//                if (reuse()) {
+//                    needRun = false;
+//                } else {
+//                    HadoopUtil.delete(getConf(), getPopularItemPath());
+//                }
+//            }
+//            if (needRun) {
+//                sortPopularItems();
+//            }
+//        }
         
         return 0;
     }
     
-    public static Path getItemIndexPath() {
-        return new Path(DeliciousDataConfig.HDFS_DELICIOUS_DIR + "/itemIdIndex");
+//    private void sortPopularItems() throws IOException {
+//        Path path = getRatingMatrix(getUserItemMatrixPath());
+//        SequenceFile.Reader reader = new Reader(FileSystem.get(getConf()), path, getConf());
+//        IntWritable index = new IntWritable();
+//        VectorWritable prefVector = new VectorWritable(new RandomAccessSparseVector());
+//        List<Pair<Integer, Double>> list = new ArrayList<Pair<Integer, Double>>();
+//        while (reader.next(index, prefVector)) {
+//            list.add(new Pair<Integer, Double>(index.get(), prefVector.get().zSum()));
+//        }
+//        Collections.sort(list, new Comparator<Pair<Integer, Double>>() {
+//            @Override
+//            public int compare(Pair<Integer, Double> o1,
+//                    Pair<Integer, Double> o2) {
+//                if (o1.getSecond() > o2.getSecond()) {
+//                    return -1;
+//                } else if (o1.getSecond() < o2.getSecond()) {
+//                    return 1;
+//                }
+//                return 1;
+//            }
+//        });
+//        reader.close();
+//        
+//        SequenceFile.Writer writer = new Writer(FileSystem.get(getConf()), getConf(),
+//                getPopularItemPath(), IntWritable.class, DoubleWritable.class);
+//        for (Pair<Integer, Double> pair:list) {
+//            writer.append(new IntWritable(pair.getFirst()), new DoubleWritable(pair.getSecond()));
+//        }
+//        writer.close();
+//    }
+    
+    private boolean reuse() {
+        return hasOption(OPTION_REUSE) && getOption(OPTION_REUSE).equals("true");
+    }
+    
+    public Path getPopularItemPath() {
+        return new Path(new Path(DeliciousDataConfig.HDFS_DELICIOUS_DIR), "popularItem");
+    }
+    
+//    public static Path getItemIndexPath() {
+//        return new Path(DeliciousDataConfig.HDFS_DELICIOUS_DIR + "/itemIdIndex");
+//    }
+    
+    public static Path getUserItemMatrixPath() {
+        return new Path(DeliciousDataConfig.HDFS_DELICIOUS_DIR + "/userItemMatrix");
+    }
+    
+    public static Path getRatingMatrix(Path parent) {
+        return new Path(parent, "ratingMatrix");
     }
 }
