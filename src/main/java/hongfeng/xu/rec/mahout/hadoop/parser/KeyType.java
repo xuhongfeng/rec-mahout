@@ -17,8 +17,9 @@ import org.apache.hadoop.io.WritableComparable;
  */
 public final class KeyType implements WritableComparable<KeyType>, Cloneable {
     public static final int TYPE_USER_TAG = 1;
-    public static final int TYPE_USER_ITEM = 2;
-    public static final int TYPE_ITEM_TAG = 3;
+    public static final int TYPE_USER_ITEM = TYPE_USER_TAG + 1;
+    public static final int TYPE_ITEM_TAG = TYPE_USER_ITEM + 1;
+    public static final int TYPE_TEST_DATA = TYPE_ITEM_TAG + 1;
     
     private int type;
     private long id1;

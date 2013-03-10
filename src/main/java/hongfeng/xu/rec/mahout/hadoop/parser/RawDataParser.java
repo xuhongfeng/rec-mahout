@@ -5,14 +5,11 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.parser;
 
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.util.L;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -27,6 +24,7 @@ public class RawDataParser extends AbstractJob {
     public static final String FILE_USER_ITEM = "userItem.data";
     public static final String FILE_USER_TAG = "userTag.data";
     public static final String FILE_ITEM_TAG = "itemTag.data";
+    public static final String FILE_TEST = "test.data";
     
     @Override
     public int run(String[] args) throws Exception {
@@ -38,10 +36,6 @@ public class RawDataParser extends AbstractJob {
           return -1;
         }
         
-        if (alreadyDone()) {
-            return 0;
-        }
-        
         Job job = prepareJob(getInputPath(), getOutputPath(), TextInputFormat.class, 
                 ParserMapper.class, KeyType.class, DoubleWritable.class, ParserReducer.class,
                 KeyType.class, DoubleWritable.class, ParserOutputFormat.class);
@@ -51,12 +45,6 @@ public class RawDataParser extends AbstractJob {
         }
         
         return 0;
-    }
-    
-    private boolean alreadyDone() throws IOException {
-        return HadoopHelper.isFileExists(new Path(getOutputPath(), FILE_USER_ITEM), getConf())
-            && HadoopHelper.isFileExists(new Path(getOutputPath(), FILE_USER_TAG), getConf())
-            && HadoopHelper.isFileExists(new Path(getOutputPath(), FILE_ITEM_TAG), getConf());
     }
     
     public static void main(String args[]) {

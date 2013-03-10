@@ -21,13 +21,16 @@ public class ParserRecordWriter extends RecordWriter<KeyType, DoubleWritable> {
     private final FSDataOutputStream userItemOutput;
     private final FSDataOutputStream userTagOutput;
     private final FSDataOutputStream itemTagOutput;
+    private final FSDataOutputStream testOutput;
 
     public ParserRecordWriter(FSDataOutputStream userItemOutput,
-            FSDataOutputStream userTagOutput, FSDataOutputStream itemTagOutput) {
+            FSDataOutputStream userTagOutput, FSDataOutputStream itemTagOutput
+            , FSDataOutputStream testOutput) {
         super();
         this.userItemOutput = userItemOutput;
         this.userTagOutput = userTagOutput;
         this.itemTagOutput = itemTagOutput;
+        this.testOutput = testOutput;
     }
 
     @Override
@@ -42,8 +45,10 @@ public class ParserRecordWriter extends RecordWriter<KeyType, DoubleWritable> {
             return userItemOutput;
         } else if (key.getType() == KeyType.TYPE_USER_TAG) {
             return userTagOutput;
+        } else if (key.getType() == KeyType.TYPE_ITEM_TAG) {
+            return itemTagOutput;
         }
-        return itemTagOutput;
+        return testOutput;
     }
 
     @Override
@@ -52,6 +57,7 @@ public class ParserRecordWriter extends RecordWriter<KeyType, DoubleWritable> {
         IOUtils.closeStream(userItemOutput);
         IOUtils.closeStream(userTagOutput);
         IOUtils.closeStream(itemTagOutput);
+        IOUtils.closeStream(testOutput);
     }
 
 }

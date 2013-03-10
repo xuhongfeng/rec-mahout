@@ -28,7 +28,8 @@ public class ParserOutputFormat extends FileOutputFormat<KeyType, DoubleWritable
         return new ParserRecordWriter(
                 HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_USER_ITEM), context.getConfiguration()),
                 HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_USER_TAG), context.getConfiguration()),
-                HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_ITEM_TAG), context.getConfiguration())
+                HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_ITEM_TAG), context.getConfiguration()),
+                HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_TEST), context.getConfiguration())
                 );
     }
 
