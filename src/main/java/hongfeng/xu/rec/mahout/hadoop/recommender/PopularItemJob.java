@@ -3,7 +3,7 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop;
+package hongfeng.xu.rec.mahout.hadoop.recommender;
 
 import java.io.DataInput;
 import java.io.DataOutput;

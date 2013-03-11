@@ -26,10 +26,10 @@ public class ParserOutputFormat extends FileOutputFormat<KeyType, DoubleWritable
             InterruptedException {
         Path dir = getOutputPath(context);
         return new ParserRecordWriter(
-                HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_USER_ITEM), context.getConfiguration()),
-                HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_USER_TAG), context.getConfiguration()),
-                HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_ITEM_TAG), context.getConfiguration()),
-                HadoopHelper.createFile(new Path(dir, RawDataParser.FILE_TEST), context.getConfiguration())
+                HadoopHelper.createFile(new Path(dir, "user-item"), context.getConfiguration()),
+                HadoopHelper.createFile(new Path(dir, "user-tag"), context.getConfiguration()),
+                HadoopHelper.createFile(new Path(dir, "item-tag"), context.getConfiguration()),
+                HadoopHelper.createFile(new Path(dir, "test-data"), context.getConfiguration())
                 );
     }
 

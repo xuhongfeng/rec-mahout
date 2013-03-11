@@ -8,6 +8,7 @@ package hongfeng.xu.rec.mahout.hadoop;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -31,5 +32,10 @@ public class HadoopHelper {
     public static FSDataOutputStream createFile(Path file, Configuration conf) throws IOException {
         FileSystem fs = FileSystem.get(conf);
         return fs.create(file);
+    }
+    
+    public static FSDataInputStream open(Path path, Configuration conf) throws IOException {
+        FileSystem fs = FileSystem.get(conf);
+        return fs.open(path);
     }
 }
