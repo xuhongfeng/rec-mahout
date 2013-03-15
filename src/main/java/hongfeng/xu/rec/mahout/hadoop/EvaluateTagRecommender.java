@@ -10,6 +10,7 @@ import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.eval.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
+import hongfeng.xu.rec.mahout.hadoop.recommender.PopularityItemJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
 import hongfeng.xu.rec.mahout.runner.AbsTopNRunner.Result;
 import hongfeng.xu.rec.mahout.util.L;
@@ -120,6 +121,8 @@ public class EvaluateTagRecommender extends AbstractJob {
         resultMap.put("random", resultPopularity);
         chartDrawer = new ChartDrawer("Popularity", "popularity", "img/popularity.png", resultMap, false);
         chartDrawer.draw();
+        
+        runJob(new PopularityItemJob(), new String[] {}, DeliciousDataConfig.getItemUserVectors(), DeliciousDataConfig.getPopularItemSortPath());
         return 0;
     }
     

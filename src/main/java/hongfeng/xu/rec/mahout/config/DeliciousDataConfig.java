@@ -81,8 +81,12 @@ public class DeliciousDataConfig {
     
     /***************** popular recommender *********************/
     
-    public static Path getPopularItemPath() {
-        return new Path(getRootPath(), "popularItem");
+    public static Path getPopularRecommenderDir() {
+        return new Path(getRootPath(), "popularRecommender");
+    }
+    
+    public static Path getPopularItemSortPath() {
+        return new Path(getPopularRecommenderDir(), "popularItem");
     }
     
     /***************** evaluate result **************************/
