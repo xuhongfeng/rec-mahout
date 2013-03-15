@@ -7,7 +7,8 @@ package hongfeng.xu.rec.mahout.hadoop;
 
 import hongfeng.xu.rec.mahout.chart.ChartDrawer;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
-import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateCoverageJob;
+import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
+import hongfeng.xu.rec.mahout.hadoop.eval.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
 import hongfeng.xu.rec.mahout.runner.AbsTopNRunner.Result;
@@ -21,12 +22,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.cf.taste.hadoop.preparation.PreparePreferenceMatrixJob;
 import org.apache.mahout.common.AbstractJob;
-import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.iterator.sequencefile.PathFilters;
 import org.apache.mahout.common.iterator.sequencefile.PathType;
@@ -38,8 +37,6 @@ import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
  */
 public class EvaluateTagRecommender extends AbstractJob {
     
-    public static final String OPTION_REUSE = "reuse";
-
     public static void main(String[] args) {
         EvaluateTagRecommender job = new EvaluateTagRecommender();
         try {
@@ -55,8 +52,6 @@ public class EvaluateTagRecommender extends AbstractJob {
         addInputOption();
         addOutputOption();
         
-        addOption(buildOption(OPTION_REUSE, "r", "reuse the old parsed data or not", true, false, ""));
-
         Map<String,List<String>> parsedArgs = parseArguments(args);
         if (parsedArgs == null) {
           return -1;
@@ -64,11 +59,13 @@ public class EvaluateTagRecommender extends AbstractJob {
         
         AtomicInteger currentPhase = new AtomicInteger();
         
+        /** parse raw data **/
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             RawDataParser rawDataParser = new RawDataParser();
             runJob(rawDataParser, null, getInputPath(), DeliciousDataConfig.getRawDataPath());
         }
         
+        /** prepare martix **/
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             runJob(new PreparePreferenceMatrixJob(), new String[] {
                     "--booleanData", String.valueOf(false),
@@ -77,44 +74,57 @@ public class EvaluateTagRecommender extends AbstractJob {
         }
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            runJob(new RandomRecommender(), new String[] {},
+            runJob(new EvaluateRecommenderJob<RandomRecommender>(new RandomRecommender(),
+                    DeliciousDataConfig.getRandomRecommenderResultPath()), new String[] {},
                 DeliciousDataConfig.getUserItemVectors(),
-                DeliciousDataConfig.getRandomRecommenderResultPath());
+                DeliciousDataConfig.getEvaluatePath());
         }
         
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            runJob(new EvaluateCoverageJob(), new String[] {},
-                DeliciousDataConfig.getRandomRecommenderResultPath(),
-                DeliciousDataConfig.getCoverageResultPath());
-        }
-        
-        SequenceFileDirIterator<IntWritable, DoubleWritable> iterator =
-                new SequenceFileDirIterator<IntWritable, DoubleWritable>(
-                        DeliciousDataConfig.getCoverageResultPath(), PathType.LIST,
+        SequenceFileDirIterator<TypeAndNWritable, DoubleWritable> iterator =
+                new SequenceFileDirIterator<TypeAndNWritable, DoubleWritable>(
+                        DeliciousDataConfig.getEvaluatePath(), PathType.LIST,
                         PathFilters.partFilter(), null, false, getConf());
-        Result result = new Result();
+        Result resultCoverage = new Result();
+        Result resultPrecision = new Result();
+        Result resultRecall = new Result();
+        Result resultPopularity = new Result();
         while (iterator.hasNext()) {
-            Pair<IntWritable, DoubleWritable> pair = iterator.next();
-            result.put(pair.getFirst().get(), pair.getSecond().get());
+            Pair<TypeAndNWritable, DoubleWritable> pair = iterator.next();
+            int type = pair.getFirst().getType();
+            int n = pair.getFirst().getN();
+            double value = pair.getSecond().get();
+            if (type == TypeAndNWritable.TYPE_COVERAGE) {
+                resultCoverage.put(n, value);
+            } else if (type == TypeAndNWritable.TYPE_PRECISION) {
+                resultPrecision.put(n, value);
+            } else if (type == TypeAndNWritable.TYPE_RECALL) {
+                resultRecall.put(n, value);
+            } else if (type == TypeAndNWritable.TYPE_POPULARITY) {
+                resultPopularity.put(n, value);
+            }
         }
         iterator.close();
         Map<String, Result> resultMap = new HashMap<String, Result>();
-        resultMap.put("random", result);
-        ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "coverage.png", resultMap, true);
+        resultMap.put("random", resultCoverage);
+        ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", resultMap, true);
+        chartDrawer.draw();
+        resultMap.clear();
+        resultMap.put("random", resultPrecision);
+        chartDrawer = new ChartDrawer("Precision Rate", "precision", "img/precision.png", resultMap, true);
+        chartDrawer.draw();
+        resultMap.clear();
+        resultMap.put("random", resultRecall);
+        chartDrawer = new ChartDrawer("Recall Rate", "recall", "img/recall.png", resultMap, true);
+        chartDrawer.draw();
+        resultMap.clear();
+        resultMap.put("random", resultPopularity);
+        chartDrawer = new ChartDrawer("Popularity", "popularity", "img/popularity.png", resultMap, false);
         chartDrawer.draw();
         return 0;
     }
     
     private void runJob (Tool job, String[] args, Path input, Path output) throws Exception {
-        boolean needRun = true;
-        if (HadoopHelper.isFileExists(output, getConf())) {
-            if (reuse()) {
-                needRun = false;
-            } else {
-                HadoopUtil.delete(getConf(), output);
-            }
-        }
-        if (needRun) {
+        if (!HadoopHelper.isFileExists(output, getConf())) {
             args = (String[]) ArrayUtils.addAll(new String[] {
                 "--input", input.toString(),
                 "--output", output.toString(),
@@ -123,7 +133,4 @@ public class EvaluateTagRecommender extends AbstractJob {
         }
     }
     
-    private boolean reuse() {
-        return hasOption(OPTION_REUSE) && getOption(OPTION_REUSE).equals("true");
-    }
 }

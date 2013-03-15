@@ -85,13 +85,12 @@ public class DeliciousDataConfig {
         return new Path(getRootPath(), "popularItem");
     }
     
-    
     /***************** evaluate result **************************/
     public static Path getEvaluatePath() {
         return new Path(getRootPath(), "evaluate");
     }
     
-    public static Path getCoverageResultPath() {
-        return new Path(getEvaluatePath(), "coverage");
+    public static Path getLogPath() {
+        return new Path(getRootPath(), "log");
     }
 }

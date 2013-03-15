@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.mahout.cf.taste.hadoop.RecommendedItemsWritable;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
@@ -22,7 +21,7 @@ import org.apache.mahout.math.VarLongWritable;
  *
  */
 public class TopNMapper extends Mapper<VarLongWritable, RecommendedItemsWritable,
-    IntWritable, RecommendedItemsAndUserIdWritable> {
+    TypeAndNWritable, RecommendedItemsAndUserIdWritable> {
 
     public TopNMapper() {
         super();
@@ -38,7 +37,15 @@ public class TopNMapper extends Mapper<VarLongWritable, RecommendedItemsWritable
             for (int i=0; i<n; i++) {
                 list.add(totalList.get(i));
             }
-            context.write(new IntWritable(n), new RecommendedItemsAndUserIdWritable(key.get(), list));
+            RecommendedItemsAndUserIdWritable outValue = new RecommendedItemsAndUserIdWritable(key.get(), list);
+            TypeAndNWritable mapKey = new TypeAndNWritable(TypeAndNWritable.TYPE_COVERAGE, n);
+            context.write(mapKey, outValue);
+            mapKey.set(TypeAndNWritable.TYPE_POPULARITY);
+            context.write(mapKey, outValue);
+            mapKey.set(TypeAndNWritable.TYPE_RECALL);
+            context.write(mapKey, outValue);
+            mapKey.set(TypeAndNWritable.TYPE_PRECISION);
+            context.write(mapKey, outValue);
         }
     }
 

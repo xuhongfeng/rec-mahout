@@ -6,6 +6,8 @@
 package hongfeng.xu.rec.mahout.hadoop;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -37,5 +39,11 @@ public class HadoopHelper {
     public static FSDataInputStream open(Path path, Configuration conf) throws IOException {
         FileSystem fs = FileSystem.get(conf);
         return fs.open(path);
+    }
+    
+    private static SimpleDateFormat FORMAT = new SimpleDateFormat("MM-dd HH:mm");
+    public static void log(Object context, String msg) {
+        msg = String.format("[%s %s] : %s", context.getClass().getSimpleName(), FORMAT.format(new Date()), msg);
+        System.out.println(msg);
     }
 }
