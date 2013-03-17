@@ -47,10 +47,6 @@ public class DeliciousDataConfig {
         return new Path(getRawDataPath(), "item-tag");
     }
     
-    public static Path getItemCountPath() {
-        return new Path(getRawDataPath(), "item-count");
-    }
-    
     /*************** user item matrix *******************/
     
     public static Path getUserItemMatrixPath() {
@@ -131,5 +127,23 @@ public class DeliciousDataConfig {
     }
     public static Path getItemIndexPath() {
         return new Path(getIdIndexPath(), "itemIDIndex");
+    }
+    
+    /***************** value path ****************************/
+    
+    public static Path getValueDirPath() {
+        return new Path(getRootPath(), "value");
+    }
+    
+    public static Path getUserCountPath() {
+        return new Path(getValueDirPath(), "user-count");
+    }
+    
+    public static Path getItemCountPath() {
+        return new Path(getValueDirPath(), "item-count");
+    }
+    
+    public static Path getTagCountPath() {
+        return new Path(getValueDirPath(), "tag-count");
     }
 }

@@ -6,7 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop.parser;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
-import hongfeng.xu.rec.mahout.hadoop.DataUtils;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.util.List;
@@ -16,10 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.common.AbstractJob;
-import org.apache.mahout.common.HadoopUtil;
 
 /**
  * @author xuhongfeng
@@ -40,6 +39,16 @@ public class RawDataParser extends AbstractJob {
         AtomicInteger currentPhase = new AtomicInteger();
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getIdIndexPath(), getConf())) {
+                Tool job = new IdIndexJob();
+                ToolRunner.run(job, new String[] {
+                    "--input", getInputPath().toString(),
+                    "--output", DeliciousDataConfig.getIdIndexPath().toString(),
+                });
+            }
+        }
+        
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             Job job = prepareJob(getInputPath(), getOutputPath(), TextInputFormat.class, 
                     ParserMapper.class, KeyType.class, DoubleWritable.class, ParserReducer.class,
                     KeyType.class, DoubleWritable.class, ParserOutputFormat.class);
@@ -47,10 +56,6 @@ public class RawDataParser extends AbstractJob {
                 return -1;
             }
         }
-        
-        FastIDSet itemIdSet = DataUtils.parseItemIdSetFromHDFS(getConf());
-        HadoopUtil.writeInt(itemIdSet.size(), DeliciousDataConfig.getItemCountPath(),
-                getConf());
         
         return 0;
     }

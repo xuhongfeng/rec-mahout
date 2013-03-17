@@ -19,6 +19,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.mahout.common.HadoopUtil;
 
 /**
  * @author xuhongfeng
@@ -52,6 +53,15 @@ public class IdIndexReducer extends Reducer<IntWritable, LongWritable, NullWrita
         } finally {
             writer.close();
         }
+        if (key.get() == IdIndexMapper.TYPE_USER_ID) {
+            HadoopUtil.writeInt(incrId, DeliciousDataConfig.getUserCountPath(), context.getConfiguration());
+        } else if (key.get() == IdIndexMapper.TYPE_ITEM_ID) {
+            HadoopUtil.writeInt(incrId, DeliciousDataConfig.getItemCountPath(), context.getConfiguration());
+        } else if (key.get() == IdIndexMapper.TYPE_TAG_ID) {
+            HadoopUtil.writeInt(incrId, DeliciousDataConfig.getTagCountPath(), context.getConfiguration());
+        } else {
+            throw new RuntimeException();
+        }
     }
     
     private SequenceFile.Writer createWriter(int type, Configuration conf) throws IOException {
@@ -63,6 +73,8 @@ public class IdIndexReducer extends Reducer<IntWritable, LongWritable, NullWrita
             path = DeliciousDataConfig.getItemIndexPath();
         } else if (type == IdIndexMapper.TYPE_TAG_ID) {
             path = DeliciousDataConfig.getTagIndexPath();
+        } else {
+            throw new RuntimeException();
         }
         return SequenceFile.createWriter(fs, conf, path, IntWritable.class, LongWritable.class);
     }

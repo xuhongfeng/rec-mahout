@@ -6,7 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
-import hongfeng.xu.rec.mahout.hadoop.parser.IdIndexJob;
+import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.util.List;
@@ -38,9 +38,9 @@ public class Main extends AbstractJob {
         
         AtomicInteger currentPhase = new AtomicInteger();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            IdIndexJob job = new IdIndexJob();
+            RawDataParser job = new RawDataParser();
             runJob(job, new String[] {}, getInputPath(),
-                    DeliciousDataConfig.getIdIndexPath());
+                    DeliciousDataConfig.getRawDataPath());
         }
         
         return 0;
