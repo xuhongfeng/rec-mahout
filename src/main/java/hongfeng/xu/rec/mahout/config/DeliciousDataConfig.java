@@ -121,6 +121,14 @@ public class DeliciousDataConfig {
     public static Path getIdIndexPath() {
         return new Path(getRootPath(), "idIndex");
     }
+    
+    public static Path getUserIndexPath() {
+        return new Path(getIdIndexPath(), "userIDIndex");
+    }
+    
+    public static Path getTagIndexPath() {
+        return new Path(getIdIndexPath(), "tagIDIndex");
+    }
     public static Path getItemIndexPath() {
         return new Path(getIdIndexPath(), "itemIDIndex");
     }
