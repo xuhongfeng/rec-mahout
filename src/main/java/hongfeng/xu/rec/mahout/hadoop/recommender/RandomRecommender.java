@@ -6,7 +6,6 @@
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
-import hongfeng.xu.rec.mahout.hadoop.DataUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,15 +14,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.mahout.cf.taste.hadoop.RecommendedItemsWritable;
-import org.apache.mahout.cf.taste.hadoop.TasteHadoopUtils;
-import org.apache.mahout.cf.taste.impl.recommender.GenericRecommendedItem;
-import org.apache.mahout.cf.taste.recommender.RecommendedItem;
-import org.apache.mahout.math.VarLongWritable;
+import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
@@ -47,7 +43,7 @@ public class RandomRecommender extends BaseRecommender {
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             Job job = prepareJob(getInputPath(), getOutputPath(), SequenceFileInputFormat.class,
-                    MyMapper.class, VarLongWritable.class, RecommendedItemsWritable.class,
+                    MyMapper.class, IntWritable.class, RecommendedItemList.class,
                     SequenceFileOutputFormat.class);
             if (!job.waitForCompletion(true)) {
                 return -1;
@@ -56,17 +52,18 @@ public class RandomRecommender extends BaseRecommender {
         return 0;
     }
 
-    public static class MyMapper extends Mapper<VarLongWritable, VectorWritable,
-        VarLongWritable, RecommendedItemsWritable> {
+    public static class MyMapper extends Mapper<IntWritable, VectorWritable,
+        IntWritable, RecommendedItemList> {
         
-        private long[] itemIds;
         private Random random = new Random();
+        private int numItems;
         
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
-            itemIds = DataUtils.parseItemIdSetFromHDFS(context.getConfiguration()).toArray();
+            numItems = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(),
+                    context.getConfiguration());
         }
 
         public MyMapper() {
@@ -74,17 +71,17 @@ public class RandomRecommender extends BaseRecommender {
         }
         
         @Override
-        protected void map(VarLongWritable key, VectorWritable value,
+        protected void map(IntWritable key, VectorWritable value,
                 Context context)
                 throws IOException, InterruptedException {
             int n = DeliciousDataConfig.TOP_N;
             List<RecommendedItem> items = new ArrayList<RecommendedItem>();
             Vector vector = value.get();
             while (items.size() < n) {
-                long itemId = itemIds[random.nextInt(itemIds.length)];
+                int itemId = random.nextInt(numItems);
                 boolean exists = false;
                 for (RecommendedItem item:items) {
-                    if (item.getItemID() == itemId) {
+                    if (item.getId() == itemId) {
                         exists = true;
                         break;
                     }
@@ -92,14 +89,13 @@ public class RandomRecommender extends BaseRecommender {
                 if (exists) {
                     continue;
                 }
-                int index = TasteHadoopUtils.idToIndex(itemId);
-                double pref = vector.getQuick(index);
+                double pref = vector.getQuick(itemId);
                 if (pref != 0) {
                     continue;
                 }
-                items.add(new GenericRecommendedItem(itemId, 0));
+                items.add(new RecommendedItem(itemId, 1.0));
             }
-            context.write(key, new RecommendedItemsWritable(items));
+            context.write(key, new RecommendedItemList(items));
         }
     }
 }

@@ -6,21 +6,21 @@
 package hongfeng.xu.rec.mahout.hadoop.eval;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItem;
+import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItemList;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.mahout.cf.taste.hadoop.RecommendedItemsWritable;
-import org.apache.mahout.cf.taste.recommender.RecommendedItem;
-import org.apache.mahout.math.VarLongWritable;
 
 /**
  * @author xuhongfeng
  *
  */
-public class TopNMapper extends Mapper<VarLongWritable, RecommendedItemsWritable,
+public class TopNMapper extends Mapper<IntWritable, RecommendedItemList,
     TypeAndNWritable, RecommendedItemsAndUserIdWritable> {
 
     public TopNMapper() {
@@ -28,10 +28,10 @@ public class TopNMapper extends Mapper<VarLongWritable, RecommendedItemsWritable
     }
     
     @Override
-    protected void map(VarLongWritable key, RecommendedItemsWritable value,
+    protected void map(IntWritable key, RecommendedItemList value,
             Context context)
             throws IOException, InterruptedException {
-        List<RecommendedItem> totalList = value.getRecommendedItems();
+        List<RecommendedItem> totalList = value.getItems();
         for (int n=10; n<=DeliciousDataConfig.TOP_N; n+=10) {
             List<RecommendedItem> list = new ArrayList<RecommendedItem>();
             for (int i=0; i<n; i++) {

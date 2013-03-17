@@ -5,53 +5,55 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.eval;
 
+import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItem;
+import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItemList;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.mahout.cf.taste.hadoop.RecommendedItemsWritable;
-import org.apache.mahout.cf.taste.recommender.RecommendedItem;
-import org.apache.mahout.math.VarLongWritable;
+import org.apache.hadoop.io.Writable;
 
 /**
  * @author xuhongfeng
  *
  */
-public class RecommendedItemsAndUserIdWritable extends VarLongWritable {
-    private RecommendedItemsWritable items;
+public class RecommendedItemsAndUserIdWritable implements Writable {
+    private RecommendedItemList items = new RecommendedItemList();
+    private int userId;
 
     public RecommendedItemsAndUserIdWritable() {
         super();
     }
     
-    public RecommendedItemsAndUserIdWritable(long itemId, List<RecommendedItem> list) {
-        super(itemId);
-        items = new RecommendedItemsWritable(list);
+    public RecommendedItemsAndUserIdWritable(int userId, List<RecommendedItem> list) {
+        this.userId = userId;
+        items.setItems(list);
     }
     
     public List<RecommendedItem> getItems() {
-        return items.getRecommendedItems();
+        return items.getItems();
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        super.write(out);
+        out.writeInt(userId);
         items.write(out);
     }
     
     @Override
     public void readFields(DataInput in) throws IOException {
-        super.readFields(in);
-        items = new RecommendedItemsWritable();
+        userId = in.readInt();
         items.readFields(in);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = super.hashCode();
+        int result = 1;
         result = prime * result + ((items == null) ? 0 : items.hashCode());
+        result = prime * result + userId;
         return result;
     }
 
@@ -59,7 +61,7 @@ public class RecommendedItemsAndUserIdWritable extends VarLongWritable {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!super.equals(obj))
+        if (obj == null)
             return false;
         if (getClass() != obj.getClass())
             return false;
@@ -69,11 +71,21 @@ public class RecommendedItemsAndUserIdWritable extends VarLongWritable {
                 return false;
         } else if (!items.equals(other.items))
             return false;
+        if (userId != other.userId)
+            return false;
         return true;
     }
-    
-    @Override
-    public RecommendedItemsAndUserIdWritable clone() {
-        return new RecommendedItemsAndUserIdWritable(get(), items.getRecommendedItems());
+
+    public int getUserId() {
+        return userId;
     }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setItems(RecommendedItemList items) {
+        this.items = items;
+    }
+    
 }

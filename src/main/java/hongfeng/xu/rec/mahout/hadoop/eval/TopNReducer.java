@@ -6,6 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop.eval;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItem;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -13,7 +14,6 @@ import java.util.Iterator;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
-import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.common.HadoopUtil;
 
 /**
@@ -57,9 +57,9 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
             while (iterator.hasNext()) {
                 RecommendedItemsAndUserIdWritable v = iterator.next();
                 total += v.getItems().size();
-                long userId = v.get();
+                int userId = v.getUserId();
                 for (RecommendedItem item:v.getItems()) {
-                    long itemId = item.getItemID();
+                    int itemId = item.getId();
                     if (hitSet.isHit(userId, itemId)) {
                         hitCount++;
                     }
@@ -75,10 +75,10 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
             Iterator<RecommendedItemsAndUserIdWritable> iterator = values.iterator();
             while (iterator.hasNext()) {
                 RecommendedItemsAndUserIdWritable v = iterator.next();
-                long userId = v.get();
+                int userId = v.getUserId();
                 total += userValueMap.getValue(userId);
                 for (RecommendedItem item:v.getItems()) {
-                    long itemId = item.getItemID();
+                    int itemId = item.getId();
                     if (hitSet.isHit(userId, itemId)) {
                         hitCount++;
                     }
@@ -94,7 +94,7 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
                 RecommendedItemsAndUserIdWritable v = iterator.next();
                 total += v.getItems().size();
                 for (RecommendedItem item:v.getItems()) {
-                    long itemId = item.getItemID();
+                    long itemId = item.getId();
                     p += Math.log(popularityMap.getPopularity(itemId) + 1);
                 }
             }
@@ -107,7 +107,7 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
         FastIDSet idSet = new FastIDSet();
         for (RecommendedItemsAndUserIdWritable v:values) {
             for (RecommendedItem item:v.getItems()) {
-                idSet.add(item.getItemID());
+                idSet.add(item.getId());
             }
         }
         return idSet;
