@@ -11,6 +11,7 @@ import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.eval.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
+import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
 import hongfeng.xu.rec.mahout.runner.AbsTopNRunner.Result;
 import hongfeng.xu.rec.mahout.util.L;
@@ -74,7 +75,16 @@ public class Main extends AbstractJob {
                 DeliciousDataConfig.getRandomRecommenderEvaluate());
         }
         
+        /* popular recommender */
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            runJob(new EvaluateRecommenderJob<PopularRecommender>(new PopularRecommender(),
+                    DeliciousDataConfig.getPopularRecommenderResultPath()), new String[] {},
+                DeliciousDataConfig.getUserItemVectorPath(),
+                DeliciousDataConfig.getPopularRecommederEvaluate());
+        }
+        
         calculateResult(DeliciousDataConfig.getRandomRecommenderEvaluate(), "random");
+        calculateResult(DeliciousDataConfig.getPopularRecommederEvaluate(), "popular");
         
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);
         chartDrawer.draw();

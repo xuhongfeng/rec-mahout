@@ -5,9 +5,8 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
-import hongfeng.xu.rec.mahout.hadoop.misc.LongDoubleWritable;
+import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,12 +23,9 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.mahout.cf.taste.hadoop.TasteHadoopUtils;
 import org.apache.mahout.common.AbstractJob;
-import org.apache.mahout.math.VarLongWritable;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
-import org.apache.mahout.math.map.OpenIntLongHashMap;
 
 /**
  * @author xuhongfeng
@@ -57,8 +53,8 @@ public class PopularityItemJob extends AbstractJob {
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(getOutputPath(), getConf())) {
                 Job job = prepareJob(getInputPath(), getOutputPath(), SequenceFileInputFormat.class,
-                        ParseMapper.class, IntWritable.class, LongDoubleWritable.class,
-                        SortItemReducer.class, VarLongWritable.class, DoubleWritable.class,
+                        ParseMapper.class, IntWritable.class, IntDoubleWritable.class,
+                        SortItemReducer.class, IntWritable.class, DoubleWritable.class,
                         SequenceFileOutputFormat.class);
                 if (!job.waitForCompletion(true)) {
                     return -1;
@@ -84,10 +80,10 @@ public class PopularityItemJob extends AbstractJob {
     };
     
     private static class Item {
-        public final long itemId;
+        public final int itemId;
         public final double value;
         
-        public Item(long itemId, double value) {
+        public Item(int itemId, double value) {
             super();
             this.itemId = itemId;
             this.value = value;
@@ -95,22 +91,13 @@ public class PopularityItemJob extends AbstractJob {
     }
 
     public static class ParseMapper extends Mapper<IntWritable, VectorWritable,
-        IntWritable, LongDoubleWritable> {
+        IntWritable, IntDoubleWritable> {
         private static final IntWritable ONE = new IntWritable(1);
         
-        private LongDoubleWritable writable = new LongDoubleWritable();
+        private IntDoubleWritable writable = new IntDoubleWritable();
         
-        private OpenIntLongHashMap map;
-
         public ParseMapper() {
             super();
-        }
-        
-        @Override
-        protected void setup(Context context)
-                throws IOException, InterruptedException {
-            super.setup(context);
-            map = TasteHadoopUtils.readItemIDIndexMap(DeliciousDataConfig.getItemIndexPath().toString(), context.getConfiguration());
         }
         
         @Override
@@ -118,16 +105,16 @@ public class PopularityItemJob extends AbstractJob {
                 Context context)
                 throws IOException, InterruptedException {
             Vector vector = value.get();
-            writable.setId(map.get(key.get()));
+            writable.setId(key.get());
             writable.setValue(vector.zSum());
             context.write(ONE, writable);
         }
     }
     
     public static class SortItemReducer extends Reducer<IntWritable,
-        LongDoubleWritable, VarLongWritable, DoubleWritable> {
+        IntDoubleWritable, IntWritable, DoubleWritable> {
         private DoubleWritable doubleWritable = new DoubleWritable();
-        private VarLongWritable longWritable = new VarLongWritable();
+        private IntWritable intWritable = new IntWritable();
 
         public SortItemReducer() {
             super();
@@ -135,17 +122,17 @@ public class PopularityItemJob extends AbstractJob {
         
         @Override
         protected void reduce(IntWritable key,
-                Iterable<LongDoubleWritable> values, Context context)
+                Iterable<IntDoubleWritable> values, Context context)
                 throws IOException, InterruptedException {
             List<Item> list = new ArrayList<Item>();
-            for (LongDoubleWritable value:values) {
+            for (IntDoubleWritable value:values) {
                 list.add(new Item(value.getId(), value.getValue()));
             }
             Collections.sort(list, COMPARATOR);
             for (Item item:list) {
-                longWritable.set(item.itemId);
+                intWritable.set(item.itemId);
                 doubleWritable.set(item.value);
-                context.write(longWritable, doubleWritable);
+                context.write(intWritable, doubleWritable);
             }
         }
     }

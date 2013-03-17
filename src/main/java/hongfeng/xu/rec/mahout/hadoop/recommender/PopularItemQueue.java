@@ -14,11 +14,11 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.iterator.sequencefile.PathFilters;
 import org.apache.mahout.common.iterator.sequencefile.PathType;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
-import org.apache.mahout.math.VarLongWritable;
 
 /**
  * @author xuhongfeng
@@ -33,7 +33,7 @@ public class PopularItemQueue {
         this.conf = conf;
     }
     
-    public long getItemId(int index) throws IOException {
+    public int getItemId(int index) throws IOException {
         if (index >= list.size()) {
             loadMore(STEP);
         }
@@ -48,15 +48,15 @@ public class PopularItemQueue {
     
     private void loadMore(int size) throws IOException {
         Path path = DeliciousDataConfig.getPopularItemSortPath();
-        SequenceFileDirIterator<VarLongWritable, DoubleWritable> iterator
-            = new SequenceFileDirIterator<VarLongWritable, DoubleWritable> (
+        SequenceFileDirIterator<IntWritable, DoubleWritable> iterator
+            = new SequenceFileDirIterator<IntWritable, DoubleWritable> (
             path, PathType.LIST, PathFilters.partFilter(), null, false, conf);
         try {
             for (int i=0; i<list.size() && iterator.hasNext(); i++) {
                 iterator.next();
             }
             for (int i=0; i<size && iterator.hasNext(); i++) {
-                Pair<VarLongWritable, DoubleWritable> pair = iterator.next();
+                Pair<IntWritable, DoubleWritable> pair = iterator.next();
                 Item item = new Item(pair.getFirst().get(), pair.getSecond().get());
                 list.add(item);
             }
@@ -66,10 +66,10 @@ public class PopularItemQueue {
     }
     
     private static class Item {
-        public final long itemId;
+        public final int itemId;
         public final double value;
         
-        public Item(long itemId, double value) {
+        public Item(int itemId, double value) {
             super();
             this.itemId = itemId;
             this.value = value;
