@@ -7,7 +7,7 @@ package hongfeng.xu.rec.mahout.hadoop.recommender;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
-import hongfeng.xu.rec.mahout.hadoop.LongDoubleWritable;
+import hongfeng.xu.rec.mahout.hadoop.misc.LongDoubleWritable;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -83,14 +83,14 @@ public class EvaluateTagRecommender extends AbstractJob {
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             runJob(new EvaluateRecommenderJob<RandomRecommender>(new RandomRecommender(),
                     DeliciousDataConfig.getRandomRecommenderResultPath()), new String[] {},
-                DeliciousDataConfig.getUserItemVectors(),
+                DeliciousDataConfig.getUserItemVectorPath(),
                 DeliciousDataConfig.getRandomRecommenderEvaluate());
         }
         /* popular recommender */
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             runJob(new EvaluateRecommenderJob<PopularRecommender>(new PopularRecommender(),
                     DeliciousDataConfig.getPopularRecommenderResultPath()), new String[] {},
-                DeliciousDataConfig.getUserItemVectors(),
+                DeliciousDataConfig.getUserItemVectorPath(),
                 DeliciousDataConfig.getPopularRecommederEvaluate());
         }
         

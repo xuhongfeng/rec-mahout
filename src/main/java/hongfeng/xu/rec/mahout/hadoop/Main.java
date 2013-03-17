@@ -6,6 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -41,6 +42,12 @@ public class Main extends AbstractJob {
             RawDataParser job = new RawDataParser();
             runJob(job, new String[] {}, getInputPath(),
                     DeliciousDataConfig.getRawDataPath());
+        }
+        
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            ToVectorJob job = new ToVectorJob();
+            runJob(job, new String[] {}, DeliciousDataConfig.getRawDataPath(),
+                    DeliciousDataConfig.getMatrixPath());
         }
         
         return 0;

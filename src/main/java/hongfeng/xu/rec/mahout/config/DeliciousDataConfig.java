@@ -47,38 +47,51 @@ public class DeliciousDataConfig {
         return new Path(getRawDataPath(), "item-tag");
     }
     
+    /*************** matrix *******************/
+    public static Path getMatrixPath() {
+        return new Path(getRootPath(), "matrix");
+    }
+    
     /*************** user item matrix *******************/
     
     public static Path getUserItemMatrixPath() {
-        return new Path(getRootPath(), "userItemMatrix");
+        return new Path(getMatrixPath(), "userItemMatrix");
     }
     
-    public static Path getItemUserVectors() {
-        return new Path(getUserItemMatrixPath(), "ratingMatrix");
+    public static Path getItemUserVectorPath() {
+        return new Path(getUserItemMatrixPath(), "itemUserVector");
     }
     
-    public static Path getUserItemVectors() {
-        return new Path(getUserItemMatrixPath(), "userVectors");
+    public static Path getUserItemVectorPath() {
+        return new Path(getUserItemMatrixPath(), "userItemVector");
     }
     
     /*************** user tag matrix *******************/
     
     public static Path getUserTagMatrixPath() {
-        return new Path(getRootPath(), "userTagMatrix");
+        return new Path(getMatrixPath(), "userTagMatrix");
     }
     
     public static Path getUserTagVectorPath() {
-        return new Path(getItemTagMatrixPath(), "userTag");
+        return new Path(getUserTagMatrixPath(), "userTagVector");
+    }
+    
+    public static Path getTagUserVectorPath() {
+        return new Path(getUserTagMatrixPath(), "tagUserVector");
     }
     
     /*************** item tag matrix *******************/
     
     public static Path getItemTagMatrixPath() {
-        return new Path(getRootPath(), "itemTagMatrix");
+        return new Path(getMatrixPath(), "itemTagMatrix");
     }
     
     public static Path getItemTagVectorPath() {
-        return new Path(getItemTagMatrixPath(), "itemTag");
+        return new Path(getItemTagMatrixPath(), "itemTagVector");
+    }
+    
+    public static Path getTagItemVectorPath() {
+        return new Path(getItemTagMatrixPath(), "tagItemVector");
     }
     
     /***************** random recommender ********************/

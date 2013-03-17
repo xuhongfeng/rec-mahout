@@ -3,7 +3,7 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop;
+package hongfeng.xu.rec.mahout.hadoop.misc;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -15,15 +15,15 @@ import org.apache.hadoop.io.WritableComparable;
  * @author xuhongfeng
  *
  */
-public class LongDoubleWritable implements WritableComparable<LongDoubleWritable>, Cloneable {
-    private long id;
+public class IntDoubleWritable implements WritableComparable<IntDoubleWritable>, Cloneable {
+    private int id;
     private double value;
 
-    public LongDoubleWritable() {
+    public IntDoubleWritable() {
         super();
     }
 
-    public LongDoubleWritable(long id, double value) {
+    public IntDoubleWritable(int id, double value) {
         super();
         this.id = id;
         this.value = value;
@@ -31,18 +31,18 @@ public class LongDoubleWritable implements WritableComparable<LongDoubleWritable
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        id = in.readLong();
+        id = in.readInt();
         value = in.readDouble();
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeLong(id);
+        out.writeInt(id);
         out.writeDouble(value);
     }
     
     @Override
-    public int compareTo(LongDoubleWritable o) {
+    public int compareTo(IntDoubleWritable o) {
         if (id < o.id) {
             return -1;
         }
@@ -59,8 +59,8 @@ public class LongDoubleWritable implements WritableComparable<LongDoubleWritable
     }
 
     @Override
-    protected LongDoubleWritable clone() throws CloneNotSupportedException {
-        return new LongDoubleWritable(id, value);
+    protected IntDoubleWritable clone() throws CloneNotSupportedException {
+        return new IntDoubleWritable(id, value);
     }
 
     @Override
@@ -68,11 +68,27 @@ public class LongDoubleWritable implements WritableComparable<LongDoubleWritable
         return "LongDoubleWritable [id=" + id + ", value=" + value + "]";
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (id ^ (id >>> 32));
+        result = prime * result + id;
         long temp;
         temp = Double.doubleToLongBits(value);
         result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -87,7 +103,7 @@ public class LongDoubleWritable implements WritableComparable<LongDoubleWritable
             return false;
         if (getClass() != obj.getClass())
             return false;
-        LongDoubleWritable other = (LongDoubleWritable) obj;
+        IntDoubleWritable other = (IntDoubleWritable) obj;
         if (id != other.id)
             return false;
         if (Double.doubleToLongBits(value) != Double
@@ -95,21 +111,4 @@ public class LongDoubleWritable implements WritableComparable<LongDoubleWritable
             return false;
         return true;
     }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    public void setValue(double value) {
-        this.value = value;
-    }
-    
 }
