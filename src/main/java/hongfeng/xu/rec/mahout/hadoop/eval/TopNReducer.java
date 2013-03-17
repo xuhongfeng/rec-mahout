@@ -6,9 +6,6 @@
 package hongfeng.xu.rec.mahout.hadoop.eval;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
-import hongfeng.xu.rec.mahout.hadoop.HitSet;
-import hongfeng.xu.rec.mahout.hadoop.PopularityMap;
-import hongfeng.xu.rec.mahout.hadoop.UserValueMap;
 
 import java.io.IOException;
 import java.util.Iterator;

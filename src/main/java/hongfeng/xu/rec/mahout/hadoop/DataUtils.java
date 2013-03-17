@@ -40,8 +40,7 @@ public class DataUtils {
     
     public static OpenIntLongHashMap readItemIDIndexMap(Configuration conf) {
         return TasteHadoopUtils.readItemIDIndexMap(DeliciousDataConfig
-                .getUserItemMatrixIndexPath().toString(),
-            conf);
+                .getItemIndexPath().toString(), conf);
     }
     
 }

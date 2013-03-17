@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -27,6 +26,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.mahout.cf.taste.hadoop.TasteHadoopUtils;
 import org.apache.mahout.common.AbstractJob;
+import org.apache.mahout.math.VarLongWritable;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.map.OpenIntLongHashMap;
@@ -58,7 +58,7 @@ public class PopularityItemJob extends AbstractJob {
             if (!HadoopHelper.isFileExists(getOutputPath(), getConf())) {
                 Job job = prepareJob(getInputPath(), getOutputPath(), SequenceFileInputFormat.class,
                         ParseMapper.class, IntWritable.class, LongDoubleWritable.class,
-                        SortItemReducer.class, LongWritable.class, DoubleWritable.class,
+                        SortItemReducer.class, VarLongWritable.class, DoubleWritable.class,
                         SequenceFileOutputFormat.class);
                 if (!job.waitForCompletion(true)) {
                     return -1;
@@ -110,7 +110,7 @@ public class PopularityItemJob extends AbstractJob {
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
-            map = TasteHadoopUtils.readItemIDIndexMap(DeliciousDataConfig.getUserItemMatrixIndexPath().toString(), context.getConfiguration());
+            map = TasteHadoopUtils.readItemIDIndexMap(DeliciousDataConfig.getItemIndexPath().toString(), context.getConfiguration());
         }
         
         @Override
@@ -125,9 +125,9 @@ public class PopularityItemJob extends AbstractJob {
     }
     
     public static class SortItemReducer extends Reducer<IntWritable,
-        LongDoubleWritable, LongWritable, DoubleWritable> {
+        LongDoubleWritable, VarLongWritable, DoubleWritable> {
         private DoubleWritable doubleWritable = new DoubleWritable();
-        private LongWritable longWritable = new LongWritable();
+        private VarLongWritable longWritable = new VarLongWritable();
 
         public SortItemReducer() {
             super();

@@ -1,18 +1,16 @@
 /**
- * 2013-3-11
+ * 2013-3-16
  * 
  * xuhongfeng
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
-import hongfeng.xu.rec.mahout.hadoop.DataUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.mapreduce.Job;
@@ -31,21 +29,17 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class RandomRecommender extends BaseRecommender {
+public class PopularRecommender extends BaseRecommender {
     
     @Override
     public int run(String[] args) throws Exception {
-        addInputOption();
-        addOutputOption();
-        
-        
         Map<String,List<String>> parsedArgs = parseArguments(args);
         if (parsedArgs == null) {
           return -1;
         }
         AtomicInteger currentPhase = new AtomicInteger();
         
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+        if(shouldRunNextPhase(parsedArgs, currentPhase)) {
             Job job = prepareJob(getInputPath(), getOutputPath(), SequenceFileInputFormat.class,
                     MyMapper.class, VarLongWritable.class, RecommendedItemsWritable.class,
                     SequenceFileOutputFormat.class);
@@ -53,24 +47,23 @@ public class RandomRecommender extends BaseRecommender {
                 return -1;
             }
         }
+        
         return 0;
     }
 
     public static class MyMapper extends Mapper<VarLongWritable, VectorWritable,
         VarLongWritable, RecommendedItemsWritable> {
-        
-        private long[] itemIds;
-        private Random random = new Random();
+        private PopularItemQueue queue;
+
+        public MyMapper() {
+            super();
+        }
         
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
-            itemIds = DataUtils.parseItemIdSetFromHDFS(context.getConfiguration()).toArray();
-        }
-
-        public MyMapper() {
-            super();
+            queue = PopularItemQueue.create(context.getConfiguration());
         }
         
         @Override
@@ -80,8 +73,9 @@ public class RandomRecommender extends BaseRecommender {
             int n = DeliciousDataConfig.TOP_N;
             List<RecommendedItem> items = new ArrayList<RecommendedItem>();
             Vector vector = value.get();
+            int i = 0;
             while (items.size() < n) {
-                long itemId = itemIds[random.nextInt(itemIds.length)];
+                long itemId = queue.getItemId(i);
                 boolean exists = false;
                 for (RecommendedItem item:items) {
                     if (item.getItemID() == itemId) {
@@ -99,7 +93,6 @@ public class RandomRecommender extends BaseRecommender {
                 }
                 items.add(new GenericRecommendedItem(itemId, 0));
             }
-            context.write(key, new RecommendedItemsWritable(items));
         }
     }
 }

@@ -3,9 +3,10 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop;
+package hongfeng.xu.rec.mahout.hadoop.eval;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
