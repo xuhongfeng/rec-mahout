@@ -25,6 +25,10 @@ public class IndexIdMap extends BaseIndexMap {
         map.put(index, id);
     }
     
+    public long get(int index) {
+        return map.get(index);
+    }
+    
     public static IndexIdMap create(IndexType type, Configuration conf) throws IOException {
         IndexIdMap map = new IndexIdMap(type);
         map.init(conf);

@@ -159,4 +159,17 @@ public class DeliciousDataConfig {
     public static Path getTagCountPath() {
         return new Path(getValueDirPath(), "tag-count");
     }
+    
+    /***************** userTag-tagUser matrix path ****************************/
+    public static Path getUTTIPath() {
+        return new Path(getRootPath(), "utti");
+    }
+    
+    public static Path getUTTIRawMatrixPath() {
+        return new Path(getUTTIPath(), "rawMatrix");
+    }
+    
+    public static Path getUTTIRowVectorPath() {
+        return new Path(getUTTIPath(), "rowVector");
+    }
 }
