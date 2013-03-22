@@ -5,6 +5,9 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
+import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntIntWritable;
 
@@ -16,9 +19,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.mahout.common.AbstractJob;
+import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.math.VectorWritable;
 
 /**
@@ -27,13 +29,11 @@ import org.apache.mahout.math.VectorWritable;
  */
 public class MultiplyVectorJob extends AbstractJob {
     
-    public static final String OPTION_RAW_MATRIX_PATH = "rawMatrixPath";
-    
-    private final Class<? extends MultiplyVectorMapper> mapperClass;
+    private final Class<? extends MultiplyVectorReducer> reducerClass;
 
-    public MultiplyVectorJob(Class<? extends MultiplyVectorMapper> mapperClass) {
+    public MultiplyVectorJob(Class<? extends MultiplyVectorReducer> reducerClass) {
         super();
-        this.mapperClass = mapperClass;
+        this.reducerClass = reducerClass;
     }
 
 
@@ -41,7 +41,6 @@ public class MultiplyVectorJob extends AbstractJob {
     public int run(String[] args) throws Exception {
         addInputOption();
         addOutputOption();
-        addOption(buildOption(OPTION_RAW_MATRIX_PATH, "r", "path of IntIntWritable DoubleWritable", true, true, ""));
         
         Map<String,List<String>> parsedArgs = parseArguments(args);
         if (parsedArgs == null) {
@@ -49,25 +48,48 @@ public class MultiplyVectorJob extends AbstractJob {
         }
         AtomicInteger currentPhase = new AtomicInteger();
         
-        String pathStr = getOption(OPTION_RAW_MATRIX_PATH);
-        Path rawMatrixPath = new Path(pathStr);
+        Path rawMatrixPath = new Path(getOutputPath(), "rawMatrix");
+        Path rowVectorPath = new Path(getOutputPath(), "rowVector");
+        Path columnVectorPath = new Path(getOutputPath(), "columnVector");
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Job job = prepareJob(inputPath, rawMatrixPath, SequenceFileInputFormat.class,
-                    mapperClass, IntIntWritable.class, VectorPair.class,
-                    MultiplyVectorReducer.class, IntIntWritable.class,
-                    DoubleWritable.class, SequenceFileOutputFormat.class);
-            if (!job.waitForCompletion(true)) {
-                return -1;
+            if (!HadoopHelper.isFileExists(rawMatrixPath, getConf())) {
+                Job job = prepareJob(getInputPath(), rawMatrixPath, MultipleInputFormat.class,
+                        MultiplyVectorMapper.class, IntWritable.class, VectorWritable.class,
+                        reducerClass, IntIntWritable.class,
+                        DoubleWritable.class, RawMatrixOutputFormat.class);
+                job.setNumReduceTasks(10);
+                if (!job.waitForCompletion(true)) {
+                    return -1;
+                }
             }
         }
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Job job = prepareJob(rawMatrixPath, getOutputPath(), SequenceFileInputFormat.class,
-                    CombineMultiplyMapper.class, IntWritable.class, IntDoubleWritable.class,
-                    CombineMultiplyReducer.class, IntWritable.class,
-                    VectorWritable.class, SequenceFileOutputFormat.class);
-            if (!job.waitForCompletion(true)) {
-                return -1;
+            if (!HadoopHelper.isFileExists(rowVectorPath, getConf())) {
+                Job job = prepareJob(rawMatrixPath, rowVectorPath, MultipleInputFormat.class,
+                        CombineMultiplyMapper.class, IntWritable.class, IntDoubleWritable.class,
+                        CombineMultiplyReducer.class, IntWritable.class,
+                        VectorWritable.class, VectorOutputFormat.class);
+                job.getConfiguration().setInt("type", CombineMultiplyMapper.TYPE_ROW);
+                job.getConfiguration().setInt("vectorSize", HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf()));
+                job.setNumReduceTasks(10);
+                if (!job.waitForCompletion(true)) {
+                    return -1;
+                }
+            }
+        }
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            if (!HadoopHelper.isFileExists(columnVectorPath, getConf())) {
+                Job job = prepareJob(rawMatrixPath, columnVectorPath, MultipleInputFormat.class,
+                        CombineMultiplyMapper.class, IntWritable.class, IntDoubleWritable.class,
+                        CombineMultiplyReducer.class, IntWritable.class,
+                        VectorWritable.class, VectorOutputFormat.class);
+                job.getConfiguration().setInt("type", CombineMultiplyMapper.TYPE_COLUMN);
+                job.getConfiguration().setInt("vectorSize", HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf()));
+                job.setNumReduceTasks(10);
+                if (!job.waitForCompletion(true)) {
+                    return -1;
+                }
             }
         }
         

@@ -20,6 +20,9 @@ import org.apache.hadoop.mapreduce.Mapper;
  */
 public class CombineMultiplyMapper extends Mapper<IntIntWritable, DoubleWritable,
     IntWritable, IntDoubleWritable> {
+    public static final int TYPE_ROW = 1;
+    public static final int TYPE_COLUMN = TYPE_ROW + 1;
+    
     private IntWritable intWritable = new IntWritable();
     private IntDoubleWritable intDoubleWritable = new IntDoubleWritable();
 
@@ -32,6 +35,12 @@ public class CombineMultiplyMapper extends Mapper<IntIntWritable, DoubleWritable
             throws IOException, InterruptedException {
         int row = key.getId1();
         int column = key.getId2();
+        
+        if (context.getConfiguration().getInt("type", TYPE_ROW) == TYPE_COLUMN) {
+            int t = row;
+            row = column;
+            column = t;
+        }
         
         intWritable.set(row);
         intDoubleWritable.setId(column);

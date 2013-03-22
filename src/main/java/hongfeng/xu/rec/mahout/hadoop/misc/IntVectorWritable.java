@@ -9,8 +9,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Writable;
+import org.apache.mahout.math.VarIntWritable;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
@@ -18,67 +17,41 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class IntVectorWritable implements Writable {
-    private IntWritable intWritable = new IntWritable();
-    private VectorWritable vectorWritable = new VectorWritable();
+public class IntVectorWritable extends VarIntWritable {
+    private Vector vector;
     
     public IntVectorWritable() {
         super();
     }
     
-    public void setInt(int type) {
-        intWritable.set(type);
-    }
-    
     public void setVector(Vector vector) {
-        vectorWritable.set(vector);
+        this.vector = vector;
     }
     
-    public IntWritable getIntWritable() {
-        return intWritable;
-    }
-
-    public void setIntWritable(IntWritable intWritable) {
-        this.intWritable = intWritable;
-    }
-
-    public VectorWritable getVectorWritable() {
-        return vectorWritable;
-    }
-
-    public void setVectorWritable(VectorWritable vectorWritable) {
-        this.vectorWritable = vectorWritable;
-    }
-
-
-
-    public IntVectorWritable(IntWritable intWritable,
-            VectorWritable vectorWritable) {
-        super();
-        this.intWritable = intWritable;
-        this.vectorWritable = vectorWritable;
+    public Vector getVector() {
+        return this.vector;
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        intWritable.readFields(in);
+        super.readFields(in);
+        VectorWritable vectorWritable = new VectorWritable();
         vectorWritable.readFields(in);
+        vector = vectorWritable.get();
     }
     
     @Override
     public void write(DataOutput out) throws IOException {
-        intWritable.write(out);
+        super.write(out);
+        VectorWritable vectorWritable = new VectorWritable(vector);
         vectorWritable.write(out);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((intWritable == null) ? 0 : intWritable.hashCode());
-        result = prime * result
-                + ((vectorWritable == null) ? 0 : vectorWritable.hashCode());
+        int result = super.hashCode();
+        result = prime * result + ((vector == null) ? 0 : vector.hashCode());
         return result;
     }
 
@@ -86,28 +59,32 @@ public class IntVectorWritable implements Writable {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (obj == null)
+        if (!super.equals(obj))
             return false;
         if (getClass() != obj.getClass())
             return false;
         IntVectorWritable other = (IntVectorWritable) obj;
-        if (intWritable == null) {
-            if (other.intWritable != null)
+        if (vector == null) {
+            if (other.vector != null)
                 return false;
-        } else if (!intWritable.equals(other.intWritable))
-            return false;
-        if (vectorWritable == null) {
-            if (other.vectorWritable != null)
-                return false;
-        } else if (!vectorWritable.equals(other.vectorWritable))
+        } else if (!vector.equals(other.vector))
             return false;
         return true;
     }
-
-    @Override
-    public String toString() {
-        return "IntVectorWritable [intWritable=" + intWritable
-                + ", vectorWritable=" + vectorWritable + "]";
+    
+    public int getInt() {
+        return get();
     }
     
+    public void setInt(int value) {
+        set(value);
+    }
+
+    @Override
+    public IntVectorWritable clone() {
+        IntVectorWritable me = new IntVectorWritable();
+        me.setInt(this.getInt());
+        me.setVector(this.getVector());
+        return me;
+    }
 }

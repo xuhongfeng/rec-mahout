@@ -172,4 +172,8 @@ public class DeliciousDataConfig {
     public static Path getUTTIRowVectorPath() {
         return new Path(getUTTIPath(), "rowVector");
     }
+    
+    public static Path getUTTIColumnVectorPath() {
+        return new Path(getUTTIPath(), "columnVector");
+    }
 }

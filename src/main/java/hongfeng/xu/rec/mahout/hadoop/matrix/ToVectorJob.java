@@ -8,11 +8,14 @@ package hongfeng.xu.rec.mahout.hadoop.matrix;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.mahout.common.AbstractJob;
@@ -39,80 +42,58 @@ public class ToVectorJob extends AbstractJob {
         int userCount = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
         int itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
         int tagCount = HadoopUtil.readInt(DeliciousDataConfig.getTagCountPath(), getConf());
+        
         AtomicInteger currentPhase = new AtomicInteger();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Job job = prepareJob(DeliciousDataConfig.getUserItemPath(), DeliciousDataConfig.getUserItemMatrixPath(),
-                    TextInputFormat.class, ToVectorMapper.class, KeyType.class,
-                    IntDoubleWritable.class, ToVectorReducer.class, KeyType.class,
-                    VectorWritable.class, UserItemVectorOutputFormat.class);
-            job.getConfiguration().setInt("rowSize", userCount);
-            job.getConfiguration().setInt("columnSize", itemCount);
-            if (!job.waitForCompletion(true)) {
-                return 1;
+            List<Job> jobs = new ArrayList<Job>();
+            runJob(jobs, DeliciousDataConfig.getUserItemPath(),
+                    DeliciousDataConfig.getUserItemVectorPath(), itemCount,
+                    ToVectorMapper.TYPE_FIRST);
+            runJob(jobs, DeliciousDataConfig.getUserItemPath(),
+                    DeliciousDataConfig.getItemUserVectorPath(), userCount,
+                    ToVectorMapper.TYPE_SECOND);
+            
+            runJob(jobs, DeliciousDataConfig.getUserTagPath(),
+                    DeliciousDataConfig.getUserTagVectorPath(), tagCount,
+                    ToVectorMapper.TYPE_FIRST);
+            runJob(jobs, DeliciousDataConfig.getUserTagPath(),
+                    DeliciousDataConfig.getTagUserVectorPath(), userCount,
+                    ToVectorMapper.TYPE_SECOND);
+            
+            runJob(jobs, DeliciousDataConfig.getItemTagPath(),
+                    DeliciousDataConfig.getItemTagVectorPath(), tagCount,
+                    ToVectorMapper.TYPE_FIRST);
+            runJob(jobs, DeliciousDataConfig.getItemTagPath(),
+                    DeliciousDataConfig.getTagItemVectorPath(), itemCount,
+                    ToVectorMapper.TYPE_SECOND);
+            
+            while (jobs.size() > 0) {
+                Iterator<Job> iterator = jobs.iterator();
+                while (iterator.hasNext()) {
+                    Job job = iterator.next();
+                    if (job.isComplete()) {
+                        if (!job.isSuccessful()) {
+                            return -1;
+                        }
+                        iterator.remove();
+                    }
+                }
+                Thread.sleep(1000L);
             }
         }
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Job job = prepareJob(DeliciousDataConfig.getUserTagPath(), DeliciousDataConfig.getUserTagMatrixPath(),
-                    TextInputFormat.class, ToVectorMapper.class, KeyType.class,
-                    IntDoubleWritable.class, ToVectorReducer.class, KeyType.class,
-                    VectorWritable.class, UserTagVectorOutputFormat.class);
-            job.getConfiguration().setInt("rowSize", userCount);
-            job.getConfiguration().setInt("columnSize", tagCount);
-            if (!job.waitForCompletion(true)) {
-                return 1;
-            }
-        }
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Job job = prepareJob(DeliciousDataConfig.getItemTagPath(), DeliciousDataConfig.getItemTagMatrixPath(),
-                    TextInputFormat.class, ToVectorMapper.class, KeyType.class,
-                    IntDoubleWritable.class, ToVectorReducer.class, KeyType.class,
-                    VectorWritable.class, ItemTagVectorOutputFormat.class);
-            job.getConfiguration().setInt("rowSize", itemCount);
-            job.getConfiguration().setInt("columnSize", tagCount);
-            if (!job.waitForCompletion(true)) {
-                return 1;
-            }
-        }
-        
         return 0;
     }
-
-    public static class UserItemVectorOutputFormat extends VectorOutputFormat {
-
-        @Override
-        protected Path getRowVectorPath() {
-            return DeliciousDataConfig.getUserItemVectorPath();
-        }
-
-        @Override
-        protected Path getColumnVectorPath() {
-            return DeliciousDataConfig.getItemUserVectorPath();
-        }
-    }
     
-    public static class UserTagVectorOutputFormat extends VectorOutputFormat {
-
-        @Override
-        protected Path getRowVectorPath() {
-            return DeliciousDataConfig.getUserTagVectorPath();
-        }
-
-        @Override
-        protected Path getColumnVectorPath() {
-            return DeliciousDataConfig.getTagUserVectorPath();
-        }
-    }
-    
-    public static class ItemTagVectorOutputFormat extends VectorOutputFormat {
-
-        @Override
-        protected Path getRowVectorPath() {
-            return DeliciousDataConfig.getItemTagVectorPath();
-        }
-
-        @Override
-        protected Path getColumnVectorPath() {
-            return DeliciousDataConfig.getTagItemVectorPath();
-        }
+    private void runJob(List<Job> list, Path inputPath, Path outputPath
+            ,int vectorSize, int type) throws Exception {
+        Job job = prepareJob(inputPath, outputPath,
+                TextInputFormat.class, ToVectorMapper.class, IntWritable.class,
+                IntDoubleWritable.class, ToVectorReducer.class, IntWritable.class,
+                VectorWritable.class, VectorOutputFormat.class);
+        job.getConfiguration().setInt("columnSize", vectorSize);
+        job.getConfiguration().setInt("type", type);
+        job.submit();
+        list.add(job);
+//        job.waitForCompletion(true);
     }
 }

@@ -23,15 +23,22 @@ public class CombineMultiplyReducer extends Reducer<IntWritable, IntDoubleWritab
     IntWritable, VectorWritable> {
     
     private VectorWritable vectorWritable = new VectorWritable();
-
+    private int vectorSize;
+    
     public CombineMultiplyReducer() {
         super();
     }
     
     @Override
+    protected void setup(Context context) throws IOException, InterruptedException {
+        super.setup(context);
+        vectorSize = context.getConfiguration().getInt("vectorSize", 0);
+    }
+    
+    @Override
     protected void reduce(IntWritable key, Iterable<IntDoubleWritable> value,
             Context context) throws IOException, InterruptedException {
-        Vector vector = new DenseVector(); 
+        Vector vector = new DenseVector(vectorSize); 
         for (IntDoubleWritable v:value) {
             vector.setQuick(v.getId(), v.getValue());
         }

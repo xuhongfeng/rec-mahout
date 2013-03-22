@@ -9,6 +9,7 @@ import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 
 import java.io.IOException;
 
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -17,8 +18,12 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @author xuhongfeng
  *
  */
-public class ToVectorMapper extends Mapper<LongWritable, Text, KeyType, IntDoubleWritable> {
-    private final KeyType keyType = new KeyType();
+public class ToVectorMapper extends Mapper<LongWritable, Text, IntWritable, IntDoubleWritable> {
+    
+    public static final int TYPE_FIRST = 0;
+    public static final int TYPE_SECOND = TYPE_FIRST + 1;
+    
+    private final IntWritable intWritable = new IntWritable();
     private final IntDoubleWritable intDoubleWritable = new IntDoubleWritable();
 
     public ToVectorMapper() {
@@ -33,16 +38,16 @@ public class ToVectorMapper extends Mapper<LongWritable, Text, KeyType, IntDoubl
         int id2 = Integer.valueOf(ss[1]);
         double v = Double.valueOf(ss[2]);
         
-        keyType.setType(KeyType.TYPE_ROW);
-        keyType.setIndex(id1);
-        intDoubleWritable.setId(id2);
+        int type = Integer.valueOf(context.getConfiguration().get("type"));
+        if (type == TYPE_FIRST) {
+            intWritable.set(id1);
+            intDoubleWritable.setId(id2);
+        } else {
+            intWritable.set(id2);
+            intDoubleWritable.setId(id1);
+        }
         intDoubleWritable.setValue(v);
-        context.write(keyType, intDoubleWritable);
         
-        keyType.setType(KeyType.TYPE_COLUMN);
-        keyType.setIndex(id2);
-        intDoubleWritable.setId(id1);
-        intDoubleWritable.setValue(v);
-        context.write(keyType, intDoubleWritable);
+        context.write(intWritable, intDoubleWritable);
     }
 }

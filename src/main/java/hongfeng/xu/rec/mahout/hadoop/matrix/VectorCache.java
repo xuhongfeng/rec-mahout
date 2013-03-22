@@ -9,9 +9,11 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.mahout.common.Pair;
-import org.apache.mahout.common.iterator.sequencefile.SequenceFileIterator;
+import org.apache.mahout.common.iterator.sequencefile.PathType;
+import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 import org.apache.mahout.math.ConstantVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
@@ -27,9 +29,9 @@ public class VectorCache {
     
     private VectorCache () {}
     
-    private void init (int size) {
-        vectors = new Vector[size];
-        EMPTY_VECTOR = new ConstantVector(0.0, size);
+    private void init (int vectorCount, int vectorSize) {
+        vectors = new Vector[vectorCount];
+        EMPTY_VECTOR = new ConstantVector(0.0, vectorSize);
     }
     
     private void add(int index, Vector vector) {
@@ -40,11 +42,17 @@ public class VectorCache {
         return vectors[index];
     }
     
-    public static VectorCache create(int size, Path path, Configuration conf) throws IOException {
+    public static VectorCache create(int vectorCount, int vectorSize, Path path, Configuration conf) throws IOException {
         VectorCache cache = new VectorCache();
-        cache.init(size);
-        SequenceFileIterator<IntWritable, VectorWritable> iterator = new 
-                SequenceFileIterator<IntWritable, VectorWritable>(path, true, conf);
+        cache.init(vectorCount, vectorSize);
+        SequenceFileDirIterator<IntWritable, VectorWritable> iterator = new
+                SequenceFileDirIterator<IntWritable, VectorWritable>(path,
+                PathType.LIST, new PathFilter() {
+                    @Override
+                    public boolean accept(Path path) {
+                        return !path.getName().startsWith("_");
+                    }
+                }, null, true, conf);
         try {
             while (iterator.hasNext()) {
                 Pair<IntWritable, VectorWritable> pair = iterator.next();

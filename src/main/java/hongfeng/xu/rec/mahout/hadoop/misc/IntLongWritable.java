@@ -3,7 +3,7 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.matrix;
+package hongfeng.xu.rec.mahout.hadoop.misc;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -15,33 +15,20 @@ import org.apache.hadoop.io.WritableComparable;
  * @author xuhongfeng
  *
  */
-public class KeyType implements WritableComparable<KeyType>, Cloneable {
-    public static final int TYPE_ROW = 0;
-    public static final int TYPE_COLUMN = TYPE_ROW + 1;
-    
-    private int type;
+public class IntLongWritable implements WritableComparable<IntLongWritable>, Cloneable {
     private int index;
+    private long id;
 
-    public KeyType() {
+    public IntLongWritable(int index, long id) {
         super();
-    }
-
-    public KeyType(int type, int index) {
-        super();
-        this.type = type;
         this.index = index;
+        this.id = id;
+    }
+
+    public IntLongWritable() {
+        super();
     }
     
-    
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
     public int getIndex() {
         return index;
     }
@@ -50,46 +37,55 @@ public class KeyType implements WritableComparable<KeyType>, Cloneable {
         this.index = index;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     @Override
     public void readFields(DataInput in) throws IOException {
-        type  = in.readInt();
         index = in.readInt();
+        id = in.readLong();
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeInt(type);
         out.writeInt(index);
+        out.writeLong(id);
     }
 
     @Override
-    public int compareTo(KeyType o) {
-        if (type < o.type) {
-            return -1;
-        }
-        if (type > o.type) {
-            return 1;
-        }
+    public int compareTo(IntLongWritable o) {
         if (index < o.index) {
             return -1;
         }
         if (index > o.index) {
             return 1;
         }
+        if (id < o.id) {
+            return -1;
+        }
+        if (id > o.id) {
+            return 1;
+        }
         return 0;
     }
+    
 
     @Override
     public String toString() {
-        return "KeyType [type=" + type + ", index=" + index + "]";
+        return "IntLongWritable [index=" + index + ", id=" + id + "]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + (int) (id ^ (id >>> 32));
         result = prime * result + index;
-        result = prime * result + type;
         return result;
     }
 
@@ -101,15 +97,16 @@ public class KeyType implements WritableComparable<KeyType>, Cloneable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        KeyType other = (KeyType) obj;
-        if (index != other.index)
+        IntLongWritable other = (IntLongWritable) obj;
+        if (id != other.id)
             return false;
-        if (type != other.type)
+        if (index != other.index)
             return false;
         return true;
     }
 
-    protected KeyType clone() throws CloneNotSupportedException {
-        return new KeyType(type, index);
-    };
+    @Override
+    protected IntLongWritable clone() throws CloneNotSupportedException {
+        return new IntLongWritable(index, id);
+    }
 }

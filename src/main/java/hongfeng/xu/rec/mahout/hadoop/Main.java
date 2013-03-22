@@ -10,7 +10,7 @@ import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.eval.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyVectorJob;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyVectorMapper;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyVectorReducer;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
 import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
@@ -85,11 +85,10 @@ public class Main extends AbstractJob {
                 DeliciousDataConfig.getPopularRecommederEvaluate());
         }
         
-        MultiplyVectorJob job = new MultiplyVectorJob(MultiplyVectorMapper.UTTI.class);
+        MultiplyVectorJob job = new MultiplyVectorJob(MultiplyVectorReducer.UTTI.class);
         ToolRunner.run(job, new String[] {
                 "--input", DeliciousDataConfig.getUserTagVectorPath().toString(),
-                "--output", DeliciousDataConfig.getUTTIRowVectorPath().toString(),
-                 "--" + MultiplyVectorJob.OPTION_RAW_MATRIX_PATH, DeliciousDataConfig.getUTTIRawMatrixPath().toString()
+                "--output", DeliciousDataConfig.getUTTIPath().toString()
         });
         
         calculateResult(DeliciousDataConfig.getRandomRecommenderEvaluate(), "random");
