@@ -9,12 +9,11 @@ import hongfeng.xu.rec.mahout.chart.ChartDrawer;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.eval.TypeAndNWritable;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyVectorJob;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyVectorReducer;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
 import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
+import hongfeng.xu.rec.mahout.hadoop.recommender.SimpleTagBasedRecommender;
 import hongfeng.xu.rec.mahout.runner.AbsTopNRunner.Result;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -85,14 +84,18 @@ public class Main extends AbstractJob {
                 DeliciousDataConfig.getPopularRecommederEvaluate());
         }
         
-        MultiplyVectorJob job = new MultiplyVectorJob(MultiplyVectorReducer.UTTI.class);
-        ToolRunner.run(job, new String[] {
-                "--input", DeliciousDataConfig.getUserTagVectorPath().toString(),
-                "--output", DeliciousDataConfig.getUTTIPath().toString()
-        });
+        /* simple tag based recommender */
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            runJob(new EvaluateRecommenderJob<SimpleTagBasedRecommender>(new SimpleTagBasedRecommender(),
+                    DeliciousDataConfig.getSimpleTagBasedResult()), new String[] {},
+                DeliciousDataConfig.getUserItemVectorPath(),
+                DeliciousDataConfig.getSimpleTagBasedEvaluate());
+        }
+        
         
         calculateResult(DeliciousDataConfig.getRandomRecommenderEvaluate(), "random");
         calculateResult(DeliciousDataConfig.getPopularRecommederEvaluate(), "popular");
+        calculateResult(DeliciousDataConfig.getSimpleTagBasedEvaluate(), "simpleTagBased");
         
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);
         chartDrawer.draw();

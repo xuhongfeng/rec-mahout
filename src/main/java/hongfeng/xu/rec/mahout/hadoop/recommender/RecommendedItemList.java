@@ -81,5 +81,21 @@ public class RecommendedItemList implements Writable {
         return true;
     }
     
+    public void clear() {
+        this.items.clear();
+    }
     
+    public void add(RecommendedItem item) {
+        items.add(item);
+    }
+    
+    public void addAll(RecommendedItem[] items) {
+        for (RecommendedItem item:items) {
+            this.items.add(item);
+        }
+    }
+    
+    public int size() {
+        return items.size();
+    }
 }

@@ -176,4 +176,17 @@ public class DeliciousDataConfig {
     public static Path getUTTIColumnVectorPath() {
         return new Path(getUTTIPath(), "columnVector");
     }
+    
+    /*************** simple tag based ***************************/
+    public static Path getSimpleTagBasedDir() {
+        return new Path(getRootPath(), "simpleTagBased");
+    }
+    
+    public static Path getSimpleTagBasedResult() {
+        return new Path(getSimpleTagBasedDir(), "result");
+    }
+    
+    public static Path getSimpleTagBasedEvaluate() {
+        return new Path(getSimpleTagBasedDir(), "evaluate");
+    }
 }
