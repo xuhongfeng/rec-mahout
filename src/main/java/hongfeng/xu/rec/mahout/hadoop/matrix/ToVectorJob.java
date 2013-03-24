@@ -47,24 +47,24 @@ public class ToVectorJob extends AbstractJob {
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             List<Job> jobs = new ArrayList<Job>();
             runJob(jobs, DeliciousDataConfig.getUserItemPath(),
-                    DeliciousDataConfig.getUserItemVectorPath(), itemCount,
+                    DeliciousDataConfig.getUserItemVectorPath(), userCount, itemCount,
                     ToVectorMapper.TYPE_FIRST);
             runJob(jobs, DeliciousDataConfig.getUserItemPath(),
-                    DeliciousDataConfig.getItemUserVectorPath(), userCount,
+                    DeliciousDataConfig.getItemUserVectorPath(), itemCount, userCount,
                     ToVectorMapper.TYPE_SECOND);
             
             runJob(jobs, DeliciousDataConfig.getUserTagPath(),
-                    DeliciousDataConfig.getUserTagVectorPath(), tagCount,
+                    DeliciousDataConfig.getUserTagVectorPath(), userCount, tagCount,
                     ToVectorMapper.TYPE_FIRST);
             runJob(jobs, DeliciousDataConfig.getUserTagPath(),
-                    DeliciousDataConfig.getTagUserVectorPath(), userCount,
+                    DeliciousDataConfig.getTagUserVectorPath(), tagCount, userCount,
                     ToVectorMapper.TYPE_SECOND);
             
             runJob(jobs, DeliciousDataConfig.getItemTagPath(),
-                    DeliciousDataConfig.getItemTagVectorPath(), tagCount,
+                    DeliciousDataConfig.getItemTagVectorPath(), itemCount, tagCount,
                     ToVectorMapper.TYPE_FIRST);
             runJob(jobs, DeliciousDataConfig.getItemTagPath(),
-                    DeliciousDataConfig.getTagItemVectorPath(), itemCount,
+                    DeliciousDataConfig.getTagItemVectorPath(), tagCount, itemCount,
                     ToVectorMapper.TYPE_SECOND);
             
             while (jobs.size() > 0) {
@@ -85,12 +85,12 @@ public class ToVectorJob extends AbstractJob {
     }
     
     private void runJob(List<Job> list, Path inputPath, Path outputPath
-            ,int vectorSize, int type) throws Exception {
+            ,int vectorCount, int vectorSize, int type) throws Exception {
         Job job = prepareJob(inputPath, outputPath,
                 TextInputFormat.class, ToVectorMapper.class, IntWritable.class,
                 IntDoubleWritable.class, ToVectorReducer.class, IntWritable.class,
                 VectorWritable.class, VectorOutputFormat.class);
-        job.getConfiguration().setInt("columnSize", vectorSize);
+        job.getConfiguration().setInt("vectorSize", vectorSize);
         job.getConfiguration().setInt("type", type);
         job.submit();
         list.add(job);

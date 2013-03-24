@@ -29,8 +29,8 @@ public class ToVectorReducer extends Reducer<IntWritable, IntDoubleWritable, Int
     @Override
     protected void reduce(IntWritable key, Iterable<IntDoubleWritable> values, Context context)
             throws IOException, InterruptedException {
-        int size = context.getConfiguration().getInt("columnSize", 0);
-        Vector vector = new RandomAccessSparseVector(size);
+        int vectorSize = context.getConfiguration().getInt("vectorSize", 0);
+        Vector vector = new RandomAccessSparseVector(vectorSize);
         for (IntDoubleWritable value:values) {
             vector.setQuick(value.getId(), value.getValue());
         }

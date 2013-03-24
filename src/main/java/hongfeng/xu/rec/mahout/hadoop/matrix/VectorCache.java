@@ -42,6 +42,10 @@ public class VectorCache {
         return vectors[index];
     }
     
+    public int size() {
+        return vectors.length;
+    }
+    
     public static VectorCache create(int vectorCount, int vectorSize, Path path, Configuration conf) throws IOException {
         VectorCache cache = new VectorCache();
         cache.init(vectorCount, vectorSize);
@@ -62,6 +66,7 @@ public class VectorCache {
                 if (cache.vectors[i] == null) {
                     cache.vectors[i] = cache.EMPTY_VECTOR;
                 }
+//                HadoopHelper.log("VectorCache", "vectorCount = " + cache.vectors.length);
             }
             return cache;
         } finally {

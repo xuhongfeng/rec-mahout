@@ -8,6 +8,7 @@ package hongfeng.xu.rec.mahout.hadoop;
 import java.io.IOException;
 import java.util.TreeMap;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -29,7 +30,7 @@ public abstract class MultipleOutputFormat<K, V> extends FileOutputFormat<K, V>{
             public void write(K key, V value) throws IOException,
                     InterruptedException {
                 Path outputPath = new Path(context.getConfiguration().get("mapred.output.dir"));
-                Path path = getPath(outputPath, key);
+                Path path = getPath(outputPath, key, context.getConfiguration());
                 RecordWriter<K, V> writer = map.get(path.toString());
                 if (writer == null) {
                     writer = getBaseWriter(context, path, key.getClass(), value.getClass());
@@ -53,11 +54,11 @@ public abstract class MultipleOutputFormat<K, V> extends FileOutputFormat<K, V>{
     protected abstract RecordWriter<K, V> getBaseWriter(TaskAttemptContext context, Path path,
             Class keyClass, Class valClass) throws IOException, InterruptedException;
     
-    protected Path getPath(Path outputPath, K key) {
-        return new Path(outputPath, getFile(key));
+    protected Path getPath(Path outputPath, K key, Configuration conf) {
+        return new Path(outputPath, getFile(key, conf));
     }
     
-    protected String getFile(K key) {
+    protected String getFile(K key, Configuration conf) {
         return key.toString();
     }
 }

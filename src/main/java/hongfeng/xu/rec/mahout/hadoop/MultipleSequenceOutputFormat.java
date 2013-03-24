@@ -11,7 +11,6 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.mapreduce.RecordWriter;
@@ -32,7 +31,7 @@ public class MultipleSequenceOutputFormat<K, V> extends MultipleOutputFormat<K, 
         while (w == null) {
             try {
                 w = SequenceFile.createWriter(fs, conf, path, keyClass, valClass);
-            } catch (AlreadyBeingCreatedException e) {
+            } catch (Throwable e) {
                 path = new Path(path.getParent(), String.valueOf(new Random().nextInt(Integer.MAX_VALUE)));
             }
         }

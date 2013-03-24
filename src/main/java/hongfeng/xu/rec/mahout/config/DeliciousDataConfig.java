@@ -160,7 +160,42 @@ public class DeliciousDataConfig {
         return new Path(getValueDirPath(), "tag-count");
     }
     
-    /***************** userTag-tagUser matrix path ****************************/
+    /***************** itemUser-userItem matrix path ****************************/
+    public static Path getIUUIPath() {
+        return new Path(getRootPath(), "iuui");
+    }
+    
+    public static Path getIUUIRawMatrixPath() {
+        return new Path(getIUUIPath(), "rawMatrix");
+    }
+    
+    public static Path getIUUIRowVectorPath() {
+        return new Path(getIUUIPath(), "rowVector");
+    }
+    
+    public static Path getIUUIColumnVectorPath() {
+        return new Path(getIUUIPath(), "columnVector");
+    }
+    
+    /***************** userItem-itemUser matrix path ****************************/
+    public static Path getUIIUPath() {
+        return new Path(getRootPath(), "uiiu");
+    }
+    
+    public static Path getUIIURawMatrixPath() {
+        return new Path(getUIIUPath(), "rawMatrix");
+    }
+    
+    public static Path getUIIURowVectorPath() {
+        return new Path(getUIIUPath(), "rowVector");
+    }
+    
+    public static Path getUIIUColumnVectorPath() {
+        return new Path(getUIIUPath(), "columnVector");
+    }
+    
+    
+    /***************** userTag-tagItem matrix path ****************************/
     public static Path getUTTIPath() {
         return new Path(getRootPath(), "utti");
     }
@@ -188,5 +223,18 @@ public class DeliciousDataConfig {
     
     public static Path getSimpleTagBasedEvaluate() {
         return new Path(getSimpleTagBasedDir(), "evaluate");
+    }
+    
+    /*************** simple tag based ***************************/
+    public static Path getXiefengDir() {
+        return new Path(getRootPath(), "xiefeng");
+    }
+    
+    public static Path getXiefengResult() {
+        return new Path(getXiefengDir(), "result");
+    }
+    
+    public static Path getXiefengEvaluate() {
+        return new Path(getXiefengDir(), "evaluate");
     }
 }
