@@ -8,25 +8,27 @@ package hongfeng.xu.rec.mahout.hadoop.eval;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.mahout.common.Pair;
+import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
+import org.apache.mahout.math.VectorWritable;
 
 /**
  * @author xuhongfeng
  *
  */
 public class PopularityMap {
-    private final FastByIDMap<Double> map = new FastByIDMap<Double>();
+    private Map<Integer, Double> map = new HashMap<Integer, Double>();
 
     private PopularityMap() {
     }
     
-    private void add(long userId, long itemId, double value) {
+    private void add(int itemId, double value) {
         if (map.containsKey(itemId)) {
             map.put(itemId, map.get(itemId) + value);
         } else {
@@ -34,7 +36,7 @@ public class PopularityMap {
         }
     }
     
-    public double getPopularity(long itemId) {
+    public double getPopularity(int itemId) {
         if (map.containsKey(itemId)) {
             return map.get(itemId);
         }
@@ -43,16 +45,13 @@ public class PopularityMap {
     
     public static PopularityMap create(Configuration conf) throws IOException {
         PopularityMap map = new PopularityMap();
-        FSDataInputStream in = HadoopHelper.open(DeliciousDataConfig.getTestDataPath(), conf);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line = null;
-        while ( (line=reader.readLine()) != null) {
-            String[] ss = line.split("\t");
-            long userId = Long.valueOf(ss[0]);
-            long itemId = Long.valueOf(ss[0]);
-            double value = Double.valueOf(ss[2]);
-            map.add(userId, itemId, value);
+        SequenceFileDirIterator<IntWritable, VectorWritable> iterator =
+                HadoopHelper.openVectorIterator(DeliciousDataConfig.getItemUserVectorPath(), conf);
+        while (iterator.hasNext()) {
+            Pair<IntWritable, VectorWritable> pair = iterator.next();
+            map.add(pair.getFirst().get(), pair.getSecond().get().zSum());
         }
+        iterator.close();
         return map;
     }
 }

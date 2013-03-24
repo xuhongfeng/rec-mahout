@@ -22,28 +22,21 @@ import org.apache.mahout.cf.taste.impl.common.FastIDSet;
  */
 public class HitSet {
     private final FastIDSet set = new FastIDSet();
-    private int itemCount = 0;
     
     private HitSet() {
     }
     
-    public void add(long userId, long itemId) {
+    public void add(int userId, int itemId) {
         set.add(hash(userId, itemId));
-        itemCount ++;
     }
     
-    private long hash(long userId, long itemId) {
-        long result = 1;
-        result += result*31 + userId;
-        result += result*31 + itemId;
+    private long hash(int userId, int itemId) {
+        long result = userId;
+        result += Integer.MAX_VALUE*result + itemId;
         return result;
     }
     
-    public int itemCount() {
-        return itemCount;
-    }
-    
-    public boolean isHit(long userId, long itemId) {
+    public boolean isHit(int userId, int itemId) {
         return set.contains(hash(userId, itemId));
     }
     
@@ -54,8 +47,8 @@ public class HitSet {
         String line = null;
         while ( (line=reader.readLine()) != null) {
             String[] ss = line.split("\t");
-            long userId = Long.valueOf(ss[0]);
-            long itemId = Long.valueOf(ss[0]);
+            int userId = Integer.valueOf(ss[0]);
+            int itemId = Integer.valueOf(ss[1]);
             set.add(userId, itemId);
         }
         return set;

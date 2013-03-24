@@ -84,7 +84,7 @@ public class MultiplyVectorJob extends AbstractJob {
                 job.getConfiguration().setInt("type", CombineMultiplyMapper.TYPE_ROW);
                 job.getConfiguration().setInt("vectorSize", n3);
                 job.getConfiguration().setInt("vectorCount", n1);
-                job.setNumReduceTasks(50);
+                job.setNumReduceTasks(10);
                 if (!job.waitForCompletion(true)) {
                     return -1;
                 }
@@ -99,7 +99,7 @@ public class MultiplyVectorJob extends AbstractJob {
                 job.getConfiguration().setInt("type", CombineMultiplyMapper.TYPE_COLUMN);
                 job.getConfiguration().setInt("vectorSize", n1);
                 job.getConfiguration().setInt("vectorCount", n3);
-                job.setNumReduceTasks(50);
+                job.setNumReduceTasks(10);
                 if (!job.waitForCompletion(true)) {
                     return -1;
                 }

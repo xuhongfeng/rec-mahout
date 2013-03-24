@@ -11,21 +11,22 @@ import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
 
 /**
  * @author xuhongfeng
  *
  */
 public class UserValueMap {
-    private final FastByIDMap<Double> map = new FastByIDMap<Double>();
+    private final Map<Integer, Double> map = new HashMap<Integer, Double>();
     
     private UserValueMap() {}
 
-    private void add(long userId, long itemId, double value) {
+    private void add(int userId, int itemId, double value) {
         if (map.containsKey(userId)) {
             map.put(userId, map.get(userId) + value);
         } else {
@@ -33,7 +34,7 @@ public class UserValueMap {
         }
     }
     
-    public double getValue(long userId) {
+    public double getValue(int userId) {
         if (map.containsKey(userId)) {
             return map.get(userId);
         }
@@ -47,8 +48,8 @@ public class UserValueMap {
         String line = null;
         while ( (line=reader.readLine()) != null) {
             String[] ss = line.split("\t");
-            long userId = Long.valueOf(ss[0]);
-            long itemId = Long.valueOf(ss[0]);
+            int userId = Integer.valueOf(ss[0]);
+            int itemId = Integer.valueOf(ss[1]);
             double value = Double.valueOf(ss[2]);
             map.add(userId, itemId, value);
         }

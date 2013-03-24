@@ -14,6 +14,11 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.mahout.common.iterator.sequencefile.PathType;
+import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
+import org.apache.mahout.math.VectorWritable;
 
 /**
  * @author xuhongfeng
@@ -45,5 +50,17 @@ public class HadoopHelper {
     public static void log(Object context, String msg) {
         msg = String.format("[%s %s] : %s", context.getClass().getSimpleName(), FORMAT.format(new Date()), msg);
         System.out.println(msg);
+    }
+    
+    public static SequenceFileDirIterator<IntWritable, VectorWritable> openVectorIterator
+        (Path path, Configuration conf) throws IOException {
+        return  new SequenceFileDirIterator<IntWritable, VectorWritable>(path,
+                PathType.LIST, new PathFilter() {
+                    
+                    @Override
+                    public boolean accept(Path path) {
+                        return !path.getName().startsWith("_");
+                    }
+                }, null, true, conf);
     }
 }

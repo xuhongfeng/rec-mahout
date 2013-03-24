@@ -101,21 +101,6 @@ public class Main extends AbstractJob {
                 DeliciousDataConfig.getXiefengEvaluate());
         }
         
-//        SequenceFileDirIterator<IntWritable, VectorWritable> iterator =
-//                new SequenceFileDirIterator<IntWritable, VectorWritable>(DeliciousDataConfig.getUIIURowVectorPath(),
-//                        PathType.LIST, new PathFilter() {
-//                            
-//                            @Override
-//                            public boolean accept(Path path) {
-//                                return !path.getName().startsWith("_");
-//                            }
-//                        }, null, true, getConf());
-//        while (iterator.hasNext()) {
-//            Vector vector = iterator.next().getSecond().get();
-//            HadoopHelper.log(this, "vector.size = " + vector.size());
-//        }
-//        iterator.close();
-        
         calculateResult(DeliciousDataConfig.getRandomRecommenderEvaluate(), "random");
         calculateResult(DeliciousDataConfig.getPopularRecommederEvaluate(), "popular");
         calculateResult(DeliciousDataConfig.getSimpleTagBasedEvaluate(), "simpleTagBased");

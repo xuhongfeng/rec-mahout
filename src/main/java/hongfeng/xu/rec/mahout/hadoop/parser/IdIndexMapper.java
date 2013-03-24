@@ -33,8 +33,10 @@ public class IdIndexMapper extends Mapper<LongWritable, Text, IntWritable, LongW
             throws IOException, InterruptedException {
         String[] ss = value.toString().split("\\s");
         long userId = Long.valueOf(ss[0]);
-        long itemId = Long.valueOf(ss[1]);
-        long tagId = Long.valueOf(ss[2]);
+        long itemId = Long.valueOf(ss[2]);
+        long tagId = Long.valueOf(ss[1]);
+//        long itemId = Long.valueOf(ss[1]);
+//        long tagId = Long.valueOf(ss[2]);
         write(context, TYPE_USER_ID, userId);
         write(context, TYPE_ITEM_ID, itemId);
         write(context, TYPE_TAG_ID, tagId);

@@ -9,11 +9,12 @@ import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItem;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.common.HadoopUtil;
 
 /**
@@ -26,6 +27,7 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
     private HitSet hitSet;
     private PopularityMap popularityMap;
     private UserValueMap userValueMap;
+    private int itemCount;
     
     @Override
     protected void setup(Context context)
@@ -34,6 +36,7 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
         hitSet = HitSet.create(context.getConfiguration());
         popularityMap = PopularityMap.create(context.getConfiguration());
         userValueMap = UserValueMap.create(context.getConfiguration());
+        itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), context.getConfiguration());
     }
 
     public TopNReducer() {
@@ -45,10 +48,8 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
             Iterable<RecommendedItemsAndUserIdWritable> values, Context context)
             throws IOException, InterruptedException {
         if (key.getType() == TypeAndNWritable.TYPE_COVERAGE) {
-            FastIDSet idSet = getRecommendedItemIds(values);
-            int totalCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(),
-                    context.getConfiguration());
-            double coverage = (double)idSet.size()/totalCount;
+            Set<Integer> idSet = getRecommendedItemIds(values);
+            double coverage = (double)idSet.size()/itemCount;
             context.write(key, new DoubleWritable(coverage));
         } else if (key.getType() == TypeAndNWritable.TYPE_PRECISION) {
             int hitCount = 0;
@@ -65,8 +66,6 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
                     }
                 }
             }
-//            HadoopHelper.log(this, "hitCount = " + hitCount);
-//            HadoopHelper.log(this, "total = " + total);
             double precision = (double)hitCount/total;
             context.write(key, new DoubleWritable(precision));
         } else if (key.getType() == TypeAndNWritable.TYPE_RECALL) {
@@ -94,7 +93,7 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
                 RecommendedItemsAndUserIdWritable v = iterator.next();
                 total += v.getItems().size();
                 for (RecommendedItem item:v.getItems()) {
-                    long itemId = item.getId();
+                    int itemId = item.getId();
                     p += Math.log(popularityMap.getPopularity(itemId) + 1);
                 }
             }
@@ -103,13 +102,13 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
         }
     }
         
-    private FastIDSet getRecommendedItemIds(Iterable<RecommendedItemsAndUserIdWritable> values) {
-        FastIDSet idSet = new FastIDSet();
+    private Set<Integer> getRecommendedItemIds(Iterable<RecommendedItemsAndUserIdWritable> values) {
+        Set<Integer> set = new HashSet<Integer>();
         for (RecommendedItemsAndUserIdWritable v:values) {
             for (RecommendedItem item:v.getItems()) {
-                idSet.add(item.getId());
+                set.add(item.getId());
             }
         }
-        return idSet;
+        return set;
     }
 }
