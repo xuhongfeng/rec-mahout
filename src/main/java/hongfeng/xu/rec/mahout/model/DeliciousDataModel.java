@@ -350,10 +350,10 @@ public class DeliciousDataModel extends AbstractDataModel {
         public static RawDataLine parse(String line) {
             String[] ss = line.split("\\s");
             long userId = Long.valueOf(ss[0]);
-            long bookmarkId = Long.valueOf(ss[2]);
-            long tagId = Long.valueOf(ss[1]);
-//            long bookmarkId = Long.valueOf(ss[1]);
-//            long tagId = Long.valueOf(ss[2]);
+//            long bookmarkId = Long.valueOf(ss[2]);
+//            long tagId = Long.valueOf(ss[1]);
+            long bookmarkId = Long.valueOf(ss[1]);
+            long tagId = Long.valueOf(ss[2]);
             return new RawDataLine(userId, bookmarkId, tagId);
         }
 

@@ -17,10 +17,10 @@ import org.apache.hadoop.fs.Path;
 public class DeliciousDataConfig {
     public static File RAW_DATA_FILE = new File("data/hetrec2011-delicious-2k/user_taggedbookmarks-timestamps.dat");
     
-    public static String HDFS_RAW_DATA_PATH = "data/delicious/user-tag-bookmark-timestamp.data";
-    public static String HDFS_DELICIOUS_DIR = "delicious";
-//    public static String HDFS_RAW_DATA_PATH = "data/movielens-2k/user_taggedmovies-timestamps.dat";
-//    public static String HDFS_DELICIOUS_DIR = "movielens-2k";
+//    public static String HDFS_RAW_DATA_PATH = "data/delicious/user-tag-bookmark-timestamp.data";
+//    public static String HDFS_DELICIOUS_DIR = "delicious";
+    public static String HDFS_RAW_DATA_PATH = "data/movielens-2k/user_taggedmovies-timestamps.dat";
+    public static String HDFS_DELICIOUS_DIR = "movielens-2k";
     
     public static final int TOP_N = 100;
     
@@ -238,5 +238,56 @@ public class DeliciousDataConfig {
     
     public static Path getXiefengEvaluate() {
         return new Path(getXiefengDir(), "evaluate");
+    }
+    
+    /*************** similarity ***************************/
+    public static Path getSimilarityDir() {
+        return new Path(getRootPath(), "similarity");
+    }
+    
+    public static Path getCosineSimilarityPath() {
+        return new Path(getSimilarityDir(), "cosine");
+    }
+    
+    public static Path getUserCosineSimilarityPath() {
+        return new Path(getCosineSimilarityPath(), "user");
+    }
+    
+    public static Path getItemCosineSimilarityPath() {
+        return new Path(getCosineSimilarityPath(), "item");
+    }
+    
+    /*************** UserBased ***************************/
+    public static Path getUserBasedDir() {
+        return new Path(getRootPath(), "userBased");
+    }
+    
+    public static Path getUserBasedResult() {
+        return new Path(getUserBasedDir(), "result");
+    }
+    
+    public static Path getUserBasedEvaluate() {
+        return new Path(getUserBasedDir(), "evaluate");
+    }
+    
+    public static Path getUserBasedMatrix() {
+        return new Path(getUserBasedDir(), "matrix");
+    }
+    
+    /*************** ItemBased ***************************/
+    public static Path getItemBasedDir() {
+        return new Path(getRootPath(), "itemBased");
+    }
+    
+    public static Path getItemBasedResult() {
+        return new Path(getItemBasedDir(), "result");
+    }
+    
+    public static Path getItemBasedEvaluate() {
+        return new Path(getItemBasedDir(), "evaluate");
+    }
+    
+    public static Path getItemBasedMatrix() {
+        return new Path(getItemBasedDir(), "matrix");
     }
 }

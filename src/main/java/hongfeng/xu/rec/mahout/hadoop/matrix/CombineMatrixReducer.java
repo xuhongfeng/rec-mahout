@@ -19,13 +19,13 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class CombineMultiplyReducer extends Reducer<IntWritable, IntDoubleWritable,
+public class CombineMatrixReducer extends Reducer<IntWritable, IntDoubleWritable,
     IntWritable, VectorWritable> {
     
     private VectorWritable vectorWritable = new VectorWritable();
     private int vectorSize;
     
-    public CombineMultiplyReducer() {
+    public CombineMatrixReducer() {
         super();
     }
     

@@ -11,9 +11,11 @@ import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.eval.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
+import hongfeng.xu.rec.mahout.hadoop.recommender.ItemBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.SimpleTagBasedRecommender;
+import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.XieFengRecommender;
 import hongfeng.xu.rec.mahout.runner.AbsTopNRunner.Result;
 import hongfeng.xu.rec.mahout.util.L;
@@ -101,10 +103,28 @@ public class Main extends AbstractJob {
                 DeliciousDataConfig.getXiefengEvaluate());
         }
         
+        /* item based recommender */
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            runJob(new EvaluateRecommenderJob<ItemBasedRecommender>(new ItemBasedRecommender(),
+                    DeliciousDataConfig.getItemBasedResult()), new String[] {},
+                DeliciousDataConfig.getUserItemVectorPath(),
+                DeliciousDataConfig.getItemBasedEvaluate());
+        }
+        
+        /* user based recommender */
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            runJob(new EvaluateRecommenderJob<UserBasedRecommender>(new UserBasedRecommender(),
+                    DeliciousDataConfig.getUserBasedResult()), new String[] {},
+                DeliciousDataConfig.getUserItemVectorPath(),
+                DeliciousDataConfig.getUserBasedEvaluate());
+        }
+        
         calculateResult(DeliciousDataConfig.getRandomRecommenderEvaluate(), "random");
         calculateResult(DeliciousDataConfig.getPopularRecommederEvaluate(), "popular");
         calculateResult(DeliciousDataConfig.getSimpleTagBasedEvaluate(), "simpleTagBased");
         calculateResult(DeliciousDataConfig.getXiefengEvaluate(), "xiefeng");
+        calculateResult(DeliciousDataConfig.getItemBasedEvaluate(), "ItemBased");
+        calculateResult(DeliciousDataConfig.getItemBasedEvaluate(), "UserBased");
         
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);
         chartDrawer.draw();

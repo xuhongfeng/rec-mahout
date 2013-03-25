@@ -18,7 +18,7 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @author xuhongfeng
  *
  */
-public class CombineMultiplyMapper extends Mapper<IntIntWritable, DoubleWritable,
+public class CombineMatrixMapper extends Mapper<IntIntWritable, DoubleWritable,
     IntWritable, IntDoubleWritable> {
     public static final int TYPE_ROW = 1;
     public static final int TYPE_COLUMN = TYPE_ROW + 1;
@@ -26,7 +26,7 @@ public class CombineMultiplyMapper extends Mapper<IntIntWritable, DoubleWritable
     private IntWritable intWritable = new IntWritable();
     private IntDoubleWritable intDoubleWritable = new IntDoubleWritable();
 
-    public CombineMultiplyMapper() {
+    public CombineMatrixMapper() {
         super();
     }
 

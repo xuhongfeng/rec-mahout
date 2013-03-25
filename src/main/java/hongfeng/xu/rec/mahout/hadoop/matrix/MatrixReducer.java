@@ -21,7 +21,7 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class MultiplyVectorReducer extends Reducer<IntWritable, VectorWritable,
+public abstract class MatrixReducer extends Reducer<IntWritable, VectorWritable,
     IntIntWritable, DoubleWritable> {
     private VectorCache vectorCache;
     private Configuration conf;
@@ -45,7 +45,7 @@ public class MultiplyVectorReducer extends Reducer<IntWritable, VectorWritable,
         vectorCache = VectorCache.create(n3, n2, multiplyerPath, context.getConfiguration());
     }
     
-    public MultiplyVectorReducer() {
+    public MatrixReducer() {
         super();
     }
     
@@ -55,7 +55,7 @@ public class MultiplyVectorReducer extends Reducer<IntWritable, VectorWritable,
         keyWritable.setId1(key.get());
         Vector vector = value.iterator().next().get();
         for (int i=0; i<vectorCache.size(); i++) {
-            double v = vector.dot(vectorCache.get(i));
+            double v = calculate(vector, vectorCache.get(i));
             if (v != 0) {
                 keyWritable.setId2(i);
                 valueWritable.set(v);
@@ -64,4 +64,5 @@ public class MultiplyVectorReducer extends Reducer<IntWritable, VectorWritable,
         }
     }
     
+    protected abstract double calculate(Vector vector1, Vector vector2);
 }

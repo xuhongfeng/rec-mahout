@@ -7,7 +7,7 @@ package hongfeng.xu.rec.mahout.hadoop.recommender;
 
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyVectorJob;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class SimpleTagBasedRecommender extends BaseRecommender {
                 int n2 = HadoopUtil.readInt(DeliciousDataConfig.getTagCountPath(), getConf());
                 int n3 = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
                 Path multipyerPath = DeliciousDataConfig.getItemTagVectorPath();
-                MultiplyVectorJob job = new MultiplyVectorJob(n1, n2, n3, multipyerPath);
+                MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
                 ToolRunner.run(job, new String[] {
                         "--input", DeliciousDataConfig.getUserTagVectorPath().toString(),
                         "--output", DeliciousDataConfig.getUTTIPath().toString()

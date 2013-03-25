@@ -15,10 +15,10 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class MultiplyVectorMapper extends Mapper<IntWritable, VectorWritable,
+public class MatrixMapper extends Mapper<IntWritable, VectorWritable,
         IntWritable, VectorWritable> {
     
-    public MultiplyVectorMapper() {
+    public MatrixMapper() {
         super();
     }
     

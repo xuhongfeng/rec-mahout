@@ -25,13 +25,13 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class MultiplyVectorJob extends AbstractJob {
+public abstract class BaseMatrixJob extends AbstractJob {
     private final int n1;
     private final int n2;
     private final int n3;
     private final Path multiplyerPath;
     
-    public MultiplyVectorJob(int n1, int n2, int n3, Path multiplyerPath) {
+    public BaseMatrixJob(int n1, int n2, int n3, Path multiplyerPath) {
         super();
         this.n1 = n1;
         this.n2 = n2;
@@ -66,8 +66,8 @@ public class MultiplyVectorJob extends AbstractJob {
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(rawMatrixPath, getConf())) {
                 Job job = prepareJob(getInputPath(), rawMatrixPath, MultipleInputFormat.class,
-                        MultiplyVectorMapper.class, IntWritable.class, VectorWritable.class,
-                        MultiplyVectorReducer.class, IntIntWritable.class,
+                        MatrixMapper.class, IntWritable.class, VectorWritable.class,
+                        getMatrixReducer(), IntIntWritable.class,
                         DoubleWritable.class, RawMatrixOutputFormat.class);
                 job.setNumReduceTasks(10);
                 if (!job.waitForCompletion(true)) {
@@ -78,10 +78,10 @@ public class MultiplyVectorJob extends AbstractJob {
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(rowVectorPath, getConf())) {
                 Job job = prepareJob(rawMatrixPath, rowVectorPath, MultipleInputFormat.class,
-                        CombineMultiplyMapper.class, IntWritable.class, IntDoubleWritable.class,
-                        CombineMultiplyReducer.class, IntWritable.class,
+                        CombineMatrixMapper.class, IntWritable.class, IntDoubleWritable.class,
+                        CombineMatrixReducer.class, IntWritable.class,
                         VectorWritable.class, VectorOutputFormat.class);
-                job.getConfiguration().setInt("type", CombineMultiplyMapper.TYPE_ROW);
+                job.getConfiguration().setInt("type", CombineMatrixMapper.TYPE_ROW);
                 job.getConfiguration().setInt("vectorSize", n3);
                 job.getConfiguration().setInt("vectorCount", n1);
                 job.setNumReduceTasks(10);
@@ -93,10 +93,10 @@ public class MultiplyVectorJob extends AbstractJob {
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(columnVectorPath, getConf())) {
                 Job job = prepareJob(rawMatrixPath, columnVectorPath, MultipleInputFormat.class,
-                        CombineMultiplyMapper.class, IntWritable.class, IntDoubleWritable.class,
-                        CombineMultiplyReducer.class, IntWritable.class,
+                        CombineMatrixMapper.class, IntWritable.class, IntDoubleWritable.class,
+                        CombineMatrixReducer.class, IntWritable.class,
                         VectorWritable.class, VectorOutputFormat.class);
-                job.getConfiguration().setInt("type", CombineMultiplyMapper.TYPE_COLUMN);
+                job.getConfiguration().setInt("type", CombineMatrixMapper.TYPE_COLUMN);
                 job.getConfiguration().setInt("vectorSize", n1);
                 job.getConfiguration().setInt("vectorCount", n3);
                 job.setNumReduceTasks(10);
@@ -109,4 +109,5 @@ public class MultiplyVectorJob extends AbstractJob {
         return 0;
     }
 
+    protected abstract Class<? extends MatrixReducer> getMatrixReducer();
 }

@@ -66,7 +66,6 @@ public class VectorCache {
                 if (cache.vectors[i] == null) {
                     cache.vectors[i] = cache.EMPTY_VECTOR;
                 }
-//                HadoopHelper.log("VectorCache", "vectorCount = " + cache.vectors.length);
             }
             return cache;
         } finally {

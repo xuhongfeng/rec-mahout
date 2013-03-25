@@ -1,5 +1,5 @@
 /**
- * 2013-3-23
+ * 2013-3-24
  * 
  * xuhongfeng
  */
@@ -8,6 +8,7 @@ package hongfeng.xu.rec.mahout.hadoop.recommender;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ import org.apache.mahout.common.HadoopUtil;
  * @author xuhongfeng
  *
  */
-public class XieFengRecommender extends BaseRecommender {
+public class UserBasedRecommender extends BaseRecommender {
 
     @Override
     public int run(String[] args) throws Exception {
@@ -35,29 +36,28 @@ public class XieFengRecommender extends BaseRecommender {
         AtomicInteger currentPhase = new AtomicInteger();
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getUIIUPath(), getConf())) {
-                int n1 = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
-                int n2 = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
-                int n3 = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
-                Path multipyerPath = DeliciousDataConfig.getUserItemVectorPath();
-                MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
+            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getUserCosineSimilarityPath(), getConf())) {
+                int itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
+                int userCount = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
+                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
+                        itemCount, userCount, DeliciousDataConfig.getUserItemVectorPath());
                 ToolRunner.run(job, new String[] {
                         "--input", DeliciousDataConfig.getUserItemVectorPath().toString(),
-                        "--output", DeliciousDataConfig.getUIIUPath().toString()
+                        "--output", DeliciousDataConfig.getUserCosineSimilarityPath().toString()
                 });
             }
         }
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(getUUUIPath(), getConf())) {
+            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getUserBasedMatrix(), getConf())) {
                 int n1 = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
-                int n2 = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
+                int n2 = n1;
                 int n3 = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
                 Path multipyerPath = DeliciousDataConfig.getItemUserVectorPath();
                 MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
                 ToolRunner.run(job, new String[] {
-                        "--input", DeliciousDataConfig.getUIIURowVectorPath().toString(),
-                        "--output", getUUUIPath().toString()
+                        "--input", new Path(DeliciousDataConfig.getUserCosineSimilarityPath(), "rowVector").toString(),
+                        "--output", DeliciousDataConfig.getUserBasedMatrix().toString()
                 });
             }
         }
@@ -67,17 +67,12 @@ public class XieFengRecommender extends BaseRecommender {
                     getConf())) {
                 RecommendJob job = new RecommendJob();
                 ToolRunner.run(job, new String[] {
-                        "--input", new Path(getUUUIPath(), "rowVector").toString(),
+                        "--input", new Path(DeliciousDataConfig.getUserBasedMatrix(), "rowVector").toString(),
                         "--output", getOutputPath().toString() 
                 });
             }
         }
-        
-        
         return 0;
     }
-    
-    private Path getUUUIPath() {
-        return new Path(DeliciousDataConfig.getXiefengDir(), "uuui");
-    }
+
 }
