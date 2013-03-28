@@ -5,7 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.neighbor;
 
-import hongfeng.xu.rec.mahout.hadoop.misc.IntIntWritable;
+import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 import hongfeng.xu.rec.mahout.hadoop.neighbor.BaseIndexMap.IndexType;
 
 import java.io.IOException;
@@ -19,12 +19,12 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @author xuhongfeng
  *
  */
-public final class ParserMapper extends Mapper<LongWritable, Text, IntWritable, IntIntWritable> {
+public final class ParserMapper extends Mapper<LongWritable, Text, IntWritable, IntDoubleWritable> {
     private IdIndexMap itemMap;
     private IdIndexMap userMap;
     
     private IntWritable keyWritable = new IntWritable();
-    private IntIntWritable valueWritable = new IntIntWritable();
+    private IntDoubleWritable valueWritable = new IntDoubleWritable();
     
     public ParserMapper() {
         super();
@@ -43,14 +43,14 @@ public final class ParserMapper extends Mapper<LongWritable, Text, IntWritable, 
         String[] ss = value.toString().split("\\s");
         long userId = Long.valueOf(ss[0]);
         long itemId = Long.valueOf(ss[1]);
-        int rate = Integer.valueOf(ss[2]);
+        double rate = Double.valueOf(ss[2]);
         
         int userIndex = userMap.getIndex(userId);
         int itemIndex = itemMap.getIndex(itemId);
         
         keyWritable.set(userIndex);
-        valueWritable.setId1(itemIndex);
-        valueWritable.setId2(rate);
+        valueWritable.setId(itemIndex);
+        valueWritable.setValue(rate);
         
         context.write(keyWritable, valueWritable);
     }

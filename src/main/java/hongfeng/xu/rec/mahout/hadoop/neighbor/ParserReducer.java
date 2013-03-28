@@ -5,11 +5,13 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.neighbor;
 
+import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntIntWritable;
 
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -17,23 +19,23 @@ import org.apache.hadoop.mapreduce.Reducer;
  * @author xuhongfeng
  *
  */
-public final class ParserReducer extends Reducer<IntWritable, IntIntWritable, IntIntWritable, IntWritable> {
+public final class ParserReducer extends Reducer<IntWritable, IntDoubleWritable, IntIntWritable, DoubleWritable> {
     private IntIntWritable keyWritable = new IntIntWritable();
-    private IntWritable valueWritable = new IntWritable();
+    private DoubleWritable valueWritable = new DoubleWritable();
 
     public ParserReducer() {
         super();
     }
     
     @Override
-    protected void reduce(IntWritable key, Iterable<IntIntWritable> values, Context context)
+    protected void reduce(IntWritable key, Iterable<IntDoubleWritable> values, Context context)
             throws IOException, InterruptedException {
-        Iterator<IntIntWritable> iterator = values.iterator();
+        Iterator<IntDoubleWritable> iterator = values.iterator();
         while (iterator.hasNext()) {
-            IntIntWritable v = iterator.next();
+            IntDoubleWritable v = iterator.next();
             keyWritable.setId1(key.get());
-            keyWritable.setId2(v.getId1());
-            valueWritable.set(v.getId2());
+            keyWritable.setId2(v.getId());
+            valueWritable.set(v.getValue());
             context.write(keyWritable, valueWritable);
         }
     }

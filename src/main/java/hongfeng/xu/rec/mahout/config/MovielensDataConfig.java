@@ -68,4 +68,24 @@ public class MovielensDataConfig {
     public static Path getItemIndexPath() {
         return new Path(getIdIndexPath(), "itemIDIndex");
     }
+    
+    /*************** matrix *******************/
+    public static Path getMatrixPath() {
+        return new Path(getRootPath(), "matrix");
+    }
+    
+    /*************** user item matrix *******************/
+    
+    public static Path getUserItemMatrixPath() {
+        return new Path(getMatrixPath(), "userItemMatrix");
+    }
+    
+    public static Path getItemUserVectorPath() {
+        return new Path(getUserItemMatrixPath(), "itemUserVector");
+    }
+    
+    public static Path getUserItemVectorPath() {
+        return new Path(getUserItemMatrixPath(), "userItemVector");
+    }
 }
+    

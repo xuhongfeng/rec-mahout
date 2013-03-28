@@ -43,6 +43,12 @@ public class Main extends AbstractJob {
                 MovielensDataConfig.getRawDataPath());
         }
         
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            ToVectorJob job = new ToVectorJob();
+            runJob(job, new String[] {}, MovielensDataConfig.getRawDataPath(),
+                    MovielensDataConfig.getMatrixPath());
+        }
+        
         return 0;
     }
     

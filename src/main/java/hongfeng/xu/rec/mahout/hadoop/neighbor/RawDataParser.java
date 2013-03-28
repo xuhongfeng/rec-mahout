@@ -8,6 +8,7 @@ package hongfeng.xu.rec.mahout.hadoop.neighbor;
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
+import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntIntWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -55,9 +57,9 @@ public class RawDataParser extends AbstractJob {
             if (!HadoopHelper.isFileExists(MovielensDataConfig.getRawTrainingDataPath(), getConf())) {
                 Job job = prepareJob(MovielensDataConfig.getTrainingDataPath(),
                         MovielensDataConfig.getRawTrainingDataPath(), TextInputFormat.class, 
-                        ParserMapper.class, IntWritable.class, IntIntWritable.class,
+                        ParserMapper.class, IntWritable.class, IntDoubleWritable.class,
                         ParserReducer.class,
-                        IntIntWritable.class, IntWritable.class, UserItemRate.class);
+                        IntIntWritable.class, DoubleWritable.class, UserItemRate.class);
                 if (!job.waitForCompletion(true)) {
                     return -1;
                 }
@@ -67,8 +69,8 @@ public class RawDataParser extends AbstractJob {
             if (!HadoopHelper.isFileExists(MovielensDataConfig.getRawTestDataPath(), getConf())) {
                 Job job = prepareJob(MovielensDataConfig.getTestDataPath(),
                         MovielensDataConfig.getRawTestDataPath(), TextInputFormat.class, 
-                        ParserMapper.class, IntWritable.class, IntIntWritable.class,
-                        ParserReducer.class, IntIntWritable.class, IntWritable.class,
+                        ParserMapper.class, IntWritable.class, IntDoubleWritable.class,
+                        ParserReducer.class, IntIntWritable.class, DoubleWritable.class,
                         UserItemRate.class);
                 if (!job.waitForCompletion(true)) {
                     return -1;
@@ -89,7 +91,7 @@ public class RawDataParser extends AbstractJob {
         }
     }
     
-    public static class UserItemRate extends MultipleSequenceOutputFormat<IntIntWritable, IntWritable> {
+    public static class UserItemRate extends MultipleSequenceOutputFormat<IntIntWritable, DoubleWritable> {
         @Override
         protected String getFile(IntIntWritable key, Configuration conf) {
             int totalCount = conf.getInt("totalCount", -1);
