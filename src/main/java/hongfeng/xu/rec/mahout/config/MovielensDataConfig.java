@@ -100,5 +100,18 @@ public class MovielensDataConfig {
     public static Path getItemUserOneZeroVectorPath() {
         return new Path(getOneZeroMatrixPath(), "itemUserVector");
     }
-}
     
+    /********** multiply matrix **********/
+    public static Path getUIIUOneZero() {
+        return new Path(getRootPath(), "uiiu-one-zero");
+    }
+    
+    /********** misc **********/
+    public static Path getMiscPath() {
+        return new Path(getRootPath(), "misc");
+    }
+    
+    public static Path getCountUIIUOneZeroPath() {
+        return  new Path(getMiscPath(), "countUIIUOneZero");
+    }
+}

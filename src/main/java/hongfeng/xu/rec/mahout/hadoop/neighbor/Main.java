@@ -7,6 +7,7 @@ package hongfeng.xu.rec.mahout.hadoop.neighbor;
 
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.common.AbstractJob;
+import org.apache.mahout.common.HadoopUtil;
 
 /**
  * @author xuhongfeng
@@ -47,6 +49,22 @@ public class Main extends AbstractJob {
             ToVectorJob job = new ToVectorJob();
             runJob(job, new String[] {}, MovielensDataConfig.getRawDataPath(),
                     MovielensDataConfig.getMatrixPath());
+        }
+        
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            int n1 = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
+            int n2 = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
+            int n3 = n1;
+            Path multipyerPath = MovielensDataConfig.getUserItemOneZeroVectorPath();
+            MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
+            runJob(job, new String[] {}, MovielensDataConfig.getUserItemOneZeroVectorPath(),
+                    MovielensDataConfig.getUIIUOneZero());
+        }
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            CountUIIUOneZeroJob job = new CountUIIUOneZeroJob();
+            Path input = new Path(MovielensDataConfig.getUIIUOneZero(), "rowVector");
+            Path output = MovielensDataConfig.getCountUIIUOneZeroPath();
+            runJob(job, new String[] {}, input, output);
         }
         
         return 0;
