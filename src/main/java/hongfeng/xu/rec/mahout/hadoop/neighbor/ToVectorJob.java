@@ -6,10 +6,12 @@
 package hongfeng.xu.rec.mahout.hadoop.neighbor;
 
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 import hongfeng.xu.rec.mahout.hadoop.matrix.VectorOutputFormat;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,8 +21,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.common.HadoopUtil;
+import org.apache.mahout.math.RandomAccessSparseVector;
+import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 /**
@@ -66,6 +71,25 @@ public class ToVectorJob extends AbstractJob {
                 Thread.sleep(1000L);
             }
         }
+        
+        if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserItemOneZeroVectorPath(), getConf())) {
+            Job job = prepareJob(MovielensDataConfig.getUserItemVectorPath(),
+                    MovielensDataConfig.getUserItemOneZeroVectorPath(), MultipleInputFormat.class,
+                    ToOneZeroMapper.class, IntWritable.class, VectorWritable.class,
+                    VectorOutputFormat.class);
+            if (!job.waitForCompletion(true)) {
+                return -1;
+            }
+        }
+        if (!HadoopHelper.isFileExists(MovielensDataConfig.getItemUserOneZeroVectorPath(), getConf())) {
+            Job job = prepareJob(MovielensDataConfig.getItemUserVectorPath(),
+                    MovielensDataConfig.getItemUserOneZeroVectorPath(), MultipleInputFormat.class,
+                    ToOneZeroMapper.class, IntWritable.class, VectorWritable.class,
+                    VectorOutputFormat.class);
+            if (!job.waitForCompletion(true)) {
+                return -1;
+            }
+        }
         return 0;
     }
     
@@ -80,6 +104,28 @@ public class ToVectorJob extends AbstractJob {
         job.getConfiguration().setInt("type", type);
         job.submit();
         list.add(job);
-//        job.waitForCompletion(true);
+    }
+    
+    public static class ToOneZeroMapper extends Mapper<IntWritable, VectorWritable,
+        IntWritable, VectorWritable> {
+
+        public ToOneZeroMapper() {
+            super();
+        }
+        
+        @Override
+        protected void map(IntWritable key, VectorWritable value, Context context)
+                throws IOException, InterruptedException {
+            Vector vector = value.get();
+            Vector newVector = new RandomAccessSparseVector(vector.size(),
+                    vector.getNumNondefaultElements());
+            Iterator<Vector.Element> iterator = vector.iterateNonZero();
+            while (iterator.hasNext()) {
+                Vector.Element e = iterator.next();
+                newVector.setQuick(e.index(), 1);
+            }
+            value.set(newVector);
+            context.write(key, value);
+        }
     }
 }

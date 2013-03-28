@@ -87,5 +87,18 @@ public class MovielensDataConfig {
     public static Path getUserItemVectorPath() {
         return new Path(getUserItemMatrixPath(), "userItemVector");
     }
+    
+    /*************** one-zero matrix *******************/
+    public static Path getOneZeroMatrixPath() {
+        return new Path(getMatrixPath(), "one-zero");
+    }
+    
+    public static Path getUserItemOneZeroVectorPath() {
+        return new Path(getOneZeroMatrixPath(), "userItemVector");
+    }
+    
+    public static Path getItemUserOneZeroVectorPath() {
+        return new Path(getOneZeroMatrixPath(), "itemUserVector");
+    }
 }
     
