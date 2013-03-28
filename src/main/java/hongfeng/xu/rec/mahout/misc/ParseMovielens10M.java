@@ -37,7 +37,7 @@ public class ParseMovielens10M {
                 
                 tagSet.put(tagId, tag);
                 
-                uti.add(String.format("%d\t%d\t%d\t%d", userId, tagId, itemId, timestamp));
+                uti.add(String.format("%d\t%d\t%d\t%d", userId, itemId, tagId, timestamp));
             }
             
             List<String> tagLines = new ArrayList<String>();
