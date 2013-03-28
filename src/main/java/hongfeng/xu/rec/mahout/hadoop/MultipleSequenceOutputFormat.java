@@ -11,6 +11,7 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.mapreduce.RecordWriter;
@@ -21,6 +22,12 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
  *
  */
 public class MultipleSequenceOutputFormat<K, V> extends MultipleOutputFormat<K, V> {
+    public static final PathFilter FILTER = new PathFilter() {
+        @Override
+        public boolean accept(Path path) {
+            return !path.getName().startsWith("_");
+        }
+    };
     @SuppressWarnings("rawtypes")
     @Override
     protected RecordWriter<K, V> getBaseWriter(TaskAttemptContext context, Path path,

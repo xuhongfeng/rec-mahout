@@ -67,6 +67,8 @@ public class Main extends AbstractJob {
             runJob(job, new String[] {}, input, output);
         }
         
+        new DrawCountUUOneZero().draw(getConf());
+        
         return 0;
     }
     
