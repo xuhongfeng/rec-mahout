@@ -18,6 +18,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.math.VectorWritable;
@@ -89,7 +90,7 @@ public class ToVectorJob extends AbstractJob {
         Job job = prepareJob(inputPath, outputPath,
                 TextInputFormat.class, ToVectorMapper.class, IntWritable.class,
                 IntDoubleWritable.class, ToVectorReducer.class, IntWritable.class,
-                VectorWritable.class, VectorOutputFormat.class);
+                VectorWritable.class, SequenceFileOutputFormat.class);
         job.getConfiguration().setInt("vectorSize", vectorSize);
         job.getConfiguration().setInt("type", type);
         job.submit();

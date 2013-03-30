@@ -3,7 +3,7 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.neighbor;
+package hongfeng.xu.rec.mahout.hadoop.threshold;
 
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 

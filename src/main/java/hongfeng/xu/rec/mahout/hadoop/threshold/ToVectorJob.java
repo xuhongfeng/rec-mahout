@@ -3,12 +3,11 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.neighbor;
+package hongfeng.xu.rec.mahout.hadoop.threshold;
 
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
-import hongfeng.xu.rec.mahout.hadoop.matrix.VectorOutputFormat;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 
 import java.io.IOException;
@@ -22,6 +21,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.math.RandomAccessSparseVector;
@@ -76,7 +76,7 @@ public class ToVectorJob extends AbstractJob {
             Job job = prepareJob(MovielensDataConfig.getUserItemVectorPath(),
                     MovielensDataConfig.getUserItemOneZeroVectorPath(), MultipleInputFormat.class,
                     ToOneZeroMapper.class, IntWritable.class, VectorWritable.class,
-                    VectorOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             if (!job.waitForCompletion(true)) {
                 return -1;
             }
@@ -85,7 +85,7 @@ public class ToVectorJob extends AbstractJob {
             Job job = prepareJob(MovielensDataConfig.getItemUserVectorPath(),
                     MovielensDataConfig.getItemUserOneZeroVectorPath(), MultipleInputFormat.class,
                     ToOneZeroMapper.class, IntWritable.class, VectorWritable.class,
-                    VectorOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             if (!job.waitForCompletion(true)) {
                 return -1;
             }
@@ -98,7 +98,7 @@ public class ToVectorJob extends AbstractJob {
         Job job = prepareJob(inputPath, outputPath,
                 MultipleInputFormat.class, ToVectorMapper.class, IntWritable.class,
                 IntDoubleWritable.class, ToVectorReducer.class, IntWritable.class,
-                VectorWritable.class, VectorOutputFormat.class);
+                VectorWritable.class, SequenceFileOutputFormat.class);
         job.setNumReduceTasks(10);
         job.getConfiguration().setInt("vectorSize", vectorSize);
         job.getConfiguration().setInt("type", type);

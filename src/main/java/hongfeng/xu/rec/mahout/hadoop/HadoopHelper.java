@@ -18,7 +18,9 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.mahout.common.iterator.sequencefile.PathType;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
+import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
+import org.apache.mahout.math.function.DoubleDoubleFunction;
 
 /**
  * @author xuhongfeng
@@ -62,5 +64,30 @@ public class HadoopHelper {
                         return !path.getName().startsWith("_");
                     }
                 }, null, true, conf);
+    }
+    
+    public static double intersect(Vector vector1, Vector vector2) {
+        return vector1.aggregate(vector2, aggregator, combiner);
+    }
+    
+    private static DoubleDoubleFunction aggregator = new DoubleDoubleFunction() {
+        @Override
+        public double apply(double arg1, double arg2) {
+            return arg1 + arg2;
+        }
+    };
+    
+    private static DoubleDoubleFunction combiner = new DoubleDoubleFunction() {
+        @Override
+        public double apply(double arg1, double arg2) {
+            if (arg1>0 && arg2>0) {
+                return 1;
+            }
+            return 0;
+        }
+    };
+    
+    public static double cosinSimilarity(Vector vector1, Vector vector2) {
+        return vector1.dot(vector2)/(Math.sqrt(vector1.getLengthSquared()) * Math.sqrt(vector2.getLengthSquared()));
     }
 }

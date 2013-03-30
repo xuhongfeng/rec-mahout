@@ -40,7 +40,9 @@ public class CombineMatrixReducer extends Reducer<IntWritable, IntDoubleWritable
             Context context) throws IOException, InterruptedException {
         Vector vector = new DenseVector(vectorSize); 
         for (IntDoubleWritable v:value) {
-            vector.setQuick(v.getId(), v.getValue());
+            if (!v.isNone()) {
+                vector.setQuick(v.getId(), v.getValue());
+            }
         }
         vectorWritable.set(vector);
         context.write(key, vectorWritable);

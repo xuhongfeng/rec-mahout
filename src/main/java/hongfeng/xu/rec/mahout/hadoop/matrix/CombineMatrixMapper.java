@@ -29,6 +29,16 @@ public class CombineMatrixMapper extends Mapper<IntIntWritable, DoubleWritable,
     public CombineMatrixMapper() {
         super();
     }
+    
+    @Override
+    protected void setup(Context context) throws IOException, InterruptedException {
+        super.setup(context);
+        int vectorCount = context.getConfiguration().getInt("vectorCount", 0);
+        for (int i=0; i<vectorCount; i++) {
+            intWritable.set(i);
+            context.write(intWritable, IntDoubleWritable.NONE);
+        }
+    }
 
     @Override
     protected void map(IntIntWritable key, DoubleWritable value, Context context)

@@ -5,6 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.similarity;
 
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.BaseMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MatrixReducer;
 
@@ -33,8 +34,8 @@ public class CosineSimilarityJob extends BaseMatrixJob {
         }
 
         @Override
-        protected double calculate(Vector vector1, Vector vector2) {
-            return vector1.dot(vector2)/Math.sqrt(vector1.zSum()*vector2.zSum());
+        protected double calculate(int i, int j, Vector vector1, Vector vector2) {
+            return HadoopHelper.cosinSimilarity(vector1, vector2);
         }
     }
 }

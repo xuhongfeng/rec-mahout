@@ -123,7 +123,7 @@ public class Main extends AbstractJob {
         calculateResult(DeliciousDataConfig.getPopularRecommederEvaluate(), "popular");
         calculateResult(DeliciousDataConfig.getSimpleTagBasedEvaluate(), "simpleTagBased");
         calculateResult(DeliciousDataConfig.getXiefengEvaluate(), "xiefeng");
-        calculateResult(DeliciousDataConfig.getItemBasedEvaluate(), "ItemBased");
+        calculateResult(DeliciousDataConfig.getUserBasedEvaluate(), "ItemBased");
         calculateResult(DeliciousDataConfig.getItemBasedEvaluate(), "UserBased");
         
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);

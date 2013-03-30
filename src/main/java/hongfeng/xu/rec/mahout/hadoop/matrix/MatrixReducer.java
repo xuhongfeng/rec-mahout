@@ -24,7 +24,7 @@ import org.apache.mahout.math.VectorWritable;
 public abstract class MatrixReducer extends Reducer<IntWritable, VectorWritable,
     IntIntWritable, DoubleWritable> {
     private VectorCache vectorCache;
-    private Configuration conf;
+    protected Configuration conf;
     
     private DoubleWritable valueWritable = new DoubleWritable();
     private IntIntWritable keyWritable = new IntIntWritable();
@@ -52,17 +52,18 @@ public abstract class MatrixReducer extends Reducer<IntWritable, VectorWritable,
     @Override
     protected void reduce(IntWritable key, Iterable<VectorWritable> value,
             Context context) throws IOException, InterruptedException {
-        keyWritable.setId1(key.get());
+        int i = key.get();
+        keyWritable.setId1(i);
         Vector vector = value.iterator().next().get();
-        for (int i=0; i<vectorCache.size(); i++) {
-            double v = calculate(vector, vectorCache.get(i));
+        for (int j=0; j<vectorCache.size(); j++) {
+            double v = calculate(i, j, vector, vectorCache.get(j));
             if (v != 0) {
-                keyWritable.setId2(i);
+                keyWritable.setId2(j);
                 valueWritable.set(v);
                 context.write(keyWritable, valueWritable);
             }
         }
     }
     
-    protected abstract double calculate(Vector vector1, Vector vector2);
+    protected abstract double calculate(int i, int j, Vector vector1, Vector vector2);
 }

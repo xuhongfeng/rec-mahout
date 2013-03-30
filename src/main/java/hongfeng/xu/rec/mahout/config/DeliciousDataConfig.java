@@ -19,8 +19,10 @@ public class DeliciousDataConfig {
     
 //    public static String HDFS_RAW_DATA_PATH = "data/delicious/user-tag-bookmark-timestamp.data";
 //    public static String HDFS_DELICIOUS_DIR = "delicious";
-    public static String HDFS_RAW_DATA_PATH = "data/movielens-2k/user_taggedmovies-timestamps.dat";
-    public static String HDFS_DELICIOUS_DIR = "movielens-2k";
+//    public static String HDFS_RAW_DATA_PATH = "data/movielens-2k/user_taggedmovies-timestamps.dat";
+//    public static String HDFS_DELICIOUS_DIR = "movielens-2k";
+    public static String HDFS_RAW_DATA_PATH = "data/movielens-100k/user_taggedmovies-timestamps.dat";
+    public static String HDFS_DELICIOUS_DIR = "movielens-100k";
     
     public static final int TOP_N = 100;
     

@@ -14,10 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.math.VectorWritable;
 
@@ -40,15 +42,18 @@ public abstract class BaseMatrixJob extends AbstractJob {
     }
 
 
+    protected void initConf(Configuration conf) {
+        getConf().setInt("n1", n1);
+        getConf().setInt("n2", n2);
+        getConf().setInt("n3", n3);
+        getConf().set("multiplyerPath", multiplyerPath.toString());
+    }
 
     public int run(String[] args) throws Exception {
         addInputOption();
         addOutputOption();
         
-        getConf().setInt("n1", n1);
-        getConf().setInt("n2", n2);
-        getConf().setInt("n3", n3);
-        getConf().set("multiplyerPath", multiplyerPath.toString());
+        initConf(getConf());
         
         Map<String,List<String>> parsedArgs = parseArguments(args);
         if (parsedArgs == null) {
@@ -56,19 +61,16 @@ public abstract class BaseMatrixJob extends AbstractJob {
         }
         AtomicInteger currentPhase = new AtomicInteger();
         
-        Path rawMatrixPath = new Path(getOutputPath(), "rawMatrix");
-        Path rowVectorPath = new Path(getOutputPath(), "rowVector");
-        Path columnVectorPath = new Path(getOutputPath(), "columnVector");
-        
-        final int n1 = getConf().getInt("n1", 0);
-        final int n3 = getConf().getInt("n3", 0);
+        Path rawMatrixPath = new Path(outputDir(), "rawMatrix");
+        Path rowVectorPath = new Path(outputDir(), "rowVector");
+        Path columnVectorPath = new Path(outputDir(), "columnVector");
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(rawMatrixPath, getConf())) {
                 Job job = prepareJob(getInputPath(), rawMatrixPath, MultipleInputFormat.class,
                         MatrixMapper.class, IntWritable.class, VectorWritable.class,
                         getMatrixReducer(), IntIntWritable.class,
-                        DoubleWritable.class, RawMatrixOutputFormat.class);
+                        DoubleWritable.class, SequenceFileOutputFormat.class);
                 job.setNumReduceTasks(10);
                 if (!job.waitForCompletion(true)) {
                     return -1;
@@ -80,7 +82,7 @@ public abstract class BaseMatrixJob extends AbstractJob {
                 Job job = prepareJob(rawMatrixPath, rowVectorPath, MultipleInputFormat.class,
                         CombineMatrixMapper.class, IntWritable.class, IntDoubleWritable.class,
                         CombineMatrixReducer.class, IntWritable.class,
-                        VectorWritable.class, VectorOutputFormat.class);
+                        VectorWritable.class, SequenceFileOutputFormat.class);
                 job.getConfiguration().setInt("type", CombineMatrixMapper.TYPE_ROW);
                 job.getConfiguration().setInt("vectorSize", n3);
                 job.getConfiguration().setInt("vectorCount", n1);
@@ -95,7 +97,7 @@ public abstract class BaseMatrixJob extends AbstractJob {
                 Job job = prepareJob(rawMatrixPath, columnVectorPath, MultipleInputFormat.class,
                         CombineMatrixMapper.class, IntWritable.class, IntDoubleWritable.class,
                         CombineMatrixReducer.class, IntWritable.class,
-                        VectorWritable.class, VectorOutputFormat.class);
+                        VectorWritable.class, SequenceFileOutputFormat.class);
                 job.getConfiguration().setInt("type", CombineMatrixMapper.TYPE_COLUMN);
                 job.getConfiguration().setInt("vectorSize", n1);
                 job.getConfiguration().setInt("vectorCount", n3);
@@ -109,5 +111,9 @@ public abstract class BaseMatrixJob extends AbstractJob {
         return 0;
     }
 
+    protected Path outputDir() {
+        return getOutputPath();
+    }
+    
     protected abstract Class<? extends MatrixReducer> getMatrixReducer();
 }

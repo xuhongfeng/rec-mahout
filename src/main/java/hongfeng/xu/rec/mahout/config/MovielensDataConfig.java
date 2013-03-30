@@ -12,6 +12,7 @@ import org.apache.hadoop.fs.Path;
  *
  */
 public class MovielensDataConfig {
+    public static final int TOP_N = 100;
     
     public static Path getAllDataPath() {
         return new Path("data/movielens-100k/u.data");
@@ -106,6 +107,19 @@ public class MovielensDataConfig {
         return new Path(getRootPath(), "uiiu-one-zero");
     }
     
+    public static Path getUIIU() {
+        return new Path(getRootPath(), "uiiu");
+    }
+    
+    public static Path getUUUU() {
+        return new Path(getRootPath(), "uuuu");
+    }
+    
+    public static Path getUUUUCosineAverage() {
+        return new Path(getRootPath(), "uuuu-cosine-average");
+    }
+    
+    
     /********** misc **********/
     public static Path getMiscPath() {
         return new Path(getRootPath(), "misc");
@@ -113,5 +127,56 @@ public class MovielensDataConfig {
     
     public static Path getCountUIIUOneZeroPath() {
         return  new Path(getMiscPath(), "countUIIUOneZero");
+    }
+    
+    /*************** similarity ***************************/
+    public static Path getSimilarityDir() {
+        return new Path(getRootPath(), "similarity");
+    }
+    
+    public static Path getCosineSimilarityPath() {
+        return new Path(getSimilarityDir(), "cosine");
+    }
+    
+    public static Path getUserCosineSimilarityPath() {
+        return new Path(getCosineSimilarityPath(), "user");
+    }
+    
+    /*************** UserBased ***************************/
+    public static Path getUserBasedDir() {
+        return new Path(getRootPath(), "userBased");
+    }
+    
+    public static Path getUserBasedResult() {
+        return new Path(getUserBasedDir(), "result");
+    }
+    
+    public static Path getUserBasedEvaluate() {
+        return new Path(getUserBasedDir(), "evaluate");
+    }
+    
+    public static Path getUserBasedMatrix() {
+        return new Path(getUserBasedDir(), "matrix");
+    }
+    
+    /*************** Threshold ***************************/
+    public static Path getThresholdDir() {
+        return new Path(getRootPath(), "threshold");
+    }
+    
+    public static Path getUUThresholdPath() {
+        return new Path(getThresholdDir(), "uu-threshold");
+    }
+    
+    public static Path getUUUIThresholdPath() {
+        return new Path(getThresholdDir(), "uuui-threshold");
+    }
+    
+    public static Path getThresholdEvaluate() {
+        return new Path(getThresholdDir(), "evaluate");
+    }
+    
+    public static Path getThresholdResult() {
+        return new Path(getThresholdDir(), "result");
     }
 }

@@ -14,7 +14,7 @@ import org.apache.mahout.math.Vector;
 public class MultiplyMatrixReducer extends MatrixReducer {
 
     @Override
-    protected double calculate(Vector vector1, Vector vector2) {
+    protected double calculate(int i, int j, Vector vector1, Vector vector2) {
         return vector1.dot(vector2);
     }
 }

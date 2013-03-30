@@ -3,10 +3,10 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.neighbor;
+package hongfeng.xu.rec.mahout.hadoop.threshold;
 
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
-import hongfeng.xu.rec.mahout.hadoop.neighbor.BaseIndexMap.IndexType;
+import hongfeng.xu.rec.mahout.hadoop.threshold.BaseIndexMap.IndexType;
 
 import java.io.IOException;
 

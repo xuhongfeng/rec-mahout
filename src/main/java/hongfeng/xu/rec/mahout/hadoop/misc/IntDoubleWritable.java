@@ -16,6 +16,8 @@ import org.apache.hadoop.io.WritableComparable;
  *
  */
 public class IntDoubleWritable implements WritableComparable<IntDoubleWritable>, Cloneable {
+    public static final IntDoubleWritable NONE = new IntDoubleWritable(Integer.MIN_VALUE, Double.MIN_VALUE);
+    
     private int id;
     private double value;
 
@@ -110,5 +112,9 @@ public class IntDoubleWritable implements WritableComparable<IntDoubleWritable>,
                 .doubleToLongBits(other.value))
             return false;
         return true;
+    }
+    
+    public boolean isNone() {
+        return id == NONE.id && value == NONE.value;
     }
 }
