@@ -7,7 +7,7 @@ package hongfeng.xu.rec.mahout.hadoop.threshold;
 
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyNearestNeighborJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendJob;
 import hongfeng.xu.rec.mahout.hadoop.similarity.PearsonSimilarityJob;
@@ -56,8 +56,11 @@ public class UserBasedRecommender extends BaseRecommender {
                 int n1 = userCount;
                 int n2 = n1;
                 int n3 = itemCount;
+                int type = MultiplyNearestNeighborJob.TYPE_FIRST;
+                int k = 10;
                 Path multipyerPath = MovielensDataConfig.getItemUserVectorPath();
-                MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
+                MultiplyNearestNeighborJob job = new MultiplyNearestNeighborJob(n1,
+                        n2, n3, multipyerPath, type, k);
                 ToolRunner.run(job, new String[] {
                         "--input", new Path(MovielensDataConfig.getUserSimilarityPath(), "rowVector").toString(),
                         "--output", MovielensDataConfig.getUserBasedMatrix().toString()

@@ -136,12 +136,12 @@ public class Main extends AbstractJob {
         
         /* draw user similarity distribution */
 //        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-//            if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserCosineSimilarityPath(), getConf())) {
-//                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
+//            if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserSimilarityPath(), getConf())) {
+//                PearsonSimilarityJob job = new PearsonSimilarityJob(userCount,
 //                        itemCount, userCount, MovielensDataConfig.getUserItemVectorPath());
 //                ToolRunner.run(job, new String[] {
 //                        "--input", MovielensDataConfig.getUserItemVectorPath().toString(),
-//                        "--output", MovielensDataConfig.getUserCosineSimilarityPath().toString()
+//                        "--output", MovielensDataConfig.getUserSimilarityPath().toString()
 //                });
 //            }
 //        }
@@ -156,7 +156,7 @@ public class Main extends AbstractJob {
 //                    , new String[] {
 //                    String.format("userCount = %d", userCount)
 //            });
-//            Path input = MovielensDataConfig.getUserCosineSimilarityPath();
+//            Path input = MovielensDataConfig.getUserSimilarityPath();
 //            Path output = input;
 //            ToolRunner.run(job, new String[] {
 //                    "--input", input.toString(),
