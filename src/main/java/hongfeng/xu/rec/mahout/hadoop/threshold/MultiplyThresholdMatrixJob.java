@@ -39,14 +39,16 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
     
     public static class MyReducer extends MatrixReducer {
         private VectorCache uuuuCache;
+        private int threshold;
         
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
             int vectorCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), conf);
             int vectorSize = vectorCount;
+            threshold = conf.getInt("threshold", 0);
             uuuuCache = VectorCache.create(vectorCount, vectorSize,
-                    new Path(MovielensDataConfig.getUUUUCosineAverage(), "rowVector"), conf);
+                    new Path(new Path(MovielensDataConfig.getSimilarityThresholdAveragePath(), String.valueOf(threshold)), "rowVector"), conf);
         }
 
         public MyReducer() {
@@ -55,11 +57,10 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
         
         @Override
         protected double calculate(int i, int j, Vector vector1, Vector vector2) {
-            double n = HadoopHelper.intersect(vector1, vector2);
-            int threshold = conf.getInt("threshold", 0);
             if (threshold == 0) {
                 throw new RuntimeException();
             }
+            int n = HadoopHelper.intersect(vector1, vector2);
             if (n >= threshold) {
                 return HadoopHelper.cosinSimilarity(vector1, vector2);
             } else {

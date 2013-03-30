@@ -37,10 +37,11 @@ public class UserBasedRecommender extends BaseRecommender {
         }
         AtomicInteger currentPhase = new AtomicInteger();
         
+        int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
+        int userCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
+        
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserCosineSimilarityPath(), getConf())) {
-                int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
-                int userCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
                 CosineSimilarityJob job = new CosineSimilarityJob(userCount,
                         itemCount, userCount, MovielensDataConfig.getUserItemVectorPath());
                 ToolRunner.run(job, new String[] {
@@ -52,9 +53,9 @@ public class UserBasedRecommender extends BaseRecommender {
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserBasedMatrix(), getConf())) {
-                int n1 = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
+                int n1 = userCount;
                 int n2 = n1;
-                int n3 = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
+                int n3 = itemCount;
                 Path multipyerPath = MovielensDataConfig.getItemUserVectorPath();
                 MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
                 ToolRunner.run(job, new String[] {

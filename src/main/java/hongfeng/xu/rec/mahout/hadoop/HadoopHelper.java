@@ -66,8 +66,8 @@ public class HadoopHelper {
                 }, null, true, conf);
     }
     
-    public static double intersect(Vector vector1, Vector vector2) {
-        return vector1.aggregate(vector2, aggregator, combiner);
+    public static int intersect(Vector vector1, Vector vector2) {
+        return (int) vector1.aggregate(vector2, aggregator, combiner);
     }
     
     private static DoubleDoubleFunction aggregator = new DoubleDoubleFunction() {

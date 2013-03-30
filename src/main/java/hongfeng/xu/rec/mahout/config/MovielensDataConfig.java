@@ -142,6 +142,38 @@ public class MovielensDataConfig {
         return new Path(getCosineSimilarityPath(), "user");
     }
     
+    /***************** random recommender ********************/
+    
+    public static Path getRandomRecommenderDir() {
+        return new Path(getRootPath(), "randomRecommender");
+    }
+    
+    public static Path getRandomRecommenderResultPath() {
+        return new Path(getRandomRecommenderDir(), "result");
+    }
+    
+    public static Path getRandomRecommenderEvaluate() {
+        return new Path(getRandomRecommenderDir(), "evaluate");
+    }
+    
+    /***************** popular recommender *********************/
+    
+    public static Path getPopularRecommenderDir() {
+        return new Path(getRootPath(), "popularRecommender");
+    }
+    
+    public static Path getPopularItemSortPath() {
+        return new Path(getPopularRecommenderDir(), "popularItem");
+    }
+    
+    public static Path getPopularRecommenderResultPath() {
+        return new Path(getPopularRecommenderDir(), "result");
+    }
+    
+    public static Path getPopularRecommederEvaluate() {
+        return new Path(getPopularRecommenderDir(), "evaluate");
+    }
+    
     /*************** UserBased ***************************/
     public static Path getUserBasedDir() {
         return new Path(getRootPath(), "userBased");
@@ -165,11 +197,19 @@ public class MovielensDataConfig {
     }
     
     public static Path getUUThresholdPath() {
-        return new Path(getThresholdDir(), "uu-threshold");
+        return new Path(getThresholdDir(), "uu");
     }
     
     public static Path getUUUIThresholdPath() {
-        return new Path(getThresholdDir(), "uuui-threshold");
+        return new Path(getThresholdDir(), "uuui");
+    }
+    
+    public static Path getSimilarityThresholdPath() {
+        return new Path(getThresholdDir(), "similarity");
+    }
+    
+    public static Path getSimilarityThresholdAveragePath() {
+        return new Path(getThresholdDir(), "similarity-average");
     }
     
     public static Path getThresholdEvaluate() {

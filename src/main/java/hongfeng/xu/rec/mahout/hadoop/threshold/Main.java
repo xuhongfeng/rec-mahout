@@ -5,11 +5,11 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
+import hongfeng.xu.rec.mahout.chart.ChartDrawer;
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
-import hongfeng.xu.rec.mahout.hadoop.matrix.DrawMatrixJob;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
+import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
 import hongfeng.xu.rec.mahout.runner.AbsTopNRunner.Result;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -87,63 +87,82 @@ public class Main extends AbstractJob {
 //        
 //        new DrawCountUUOneZero().draw(getConf());
         
-//        /* user based recommender */
-//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-//            runJob(new EvaluateRecommenderJob<UserBasedRecommender>(new UserBasedRecommender(),
-//                    MovielensDataConfig.getUserBasedResult()), new String[] {},
-//                MovielensDataConfig.getUserItemVectorPath(),
-//                MovielensDataConfig.getUserBasedEvaluate());
-//            
-//        }
-//        
-//        /* threshold recommender */
-//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-//            runJob(new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(),
-//                    MovielensDataConfig.getThresholdResult()), new String[] {},
-//                MovielensDataConfig.getUserItemVectorPath(),
-//                MovielensDataConfig.getThresholdEvaluate());
-//        }
-//        
-//        calculateResult(MovielensDataConfig.getUserBasedEvaluate(), "UserBased");
-//        calculateResult(MovielensDataConfig.getThresholdEvaluate(), "Threshold");
-//        
-//        ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);
-//        chartDrawer.draw();
-//        chartDrawer = new ChartDrawer("Precision Rate", "precision", "img/precision.png", precisionResult, true);
-//        chartDrawer.draw();
-//        chartDrawer = new ChartDrawer("Recall Rate", "recall", "img/recall.png", recallResult, true);
-//        chartDrawer.draw();
-//        chartDrawer = new ChartDrawer("Popularity", "popularity", "img/popularity.png", popularityResult, false);
-//        chartDrawer.draw();
         
+        /* random recommender */
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserCosineSimilarityPath(), getConf())) {
-                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
-                        itemCount, userCount, MovielensDataConfig.getUserItemVectorPath());
-                ToolRunner.run(job, new String[] {
-                        "--input", MovielensDataConfig.getUserItemVectorPath().toString(),
-                        "--output", MovielensDataConfig.getUserCosineSimilarityPath().toString()
-                });
-            }
+            runJob(new EvaluateRecommenderJob<RandomRecommender>(new RandomRecommender(),
+                    MovielensDataConfig.getRandomRecommenderResultPath()), new String[] {},
+                MovielensDataConfig.getUserItemVectorPath(),
+                MovielensDataConfig.getRandomRecommenderEvaluate());
         }
         
-        
+        /* popular recommender */
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            int mode = DrawMatrixJob.MODE_WITH_ZERO;
-            float precesion = 0.001f;
-            String imageFile = "img/distribution_UU_cosine_sim.png";
-            String title = "user similarity distribution";
-            DrawMatrixJob job = new DrawMatrixJob(mode, precesion, imageFile, title
-                    , new String[] {
-                    String.format("userCount = %d", userCount)
-            });
-            Path input = MovielensDataConfig.getUserCosineSimilarityPath();
-            Path output = input;
-            ToolRunner.run(job, new String[] {
-                    "--input", input.toString(),
-                "--output", output.toString(),
-            });
+            runJob(new EvaluateRecommenderJob<PopularRecommender>(new PopularRecommender(),
+                    MovielensDataConfig.getPopularRecommenderResultPath()), new String[] {},
+                MovielensDataConfig.getUserItemVectorPath(),
+                MovielensDataConfig.getPopularRecommederEvaluate());
         }
+        /* user based recommender */
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            runJob(new EvaluateRecommenderJob<UserBasedRecommender>(new UserBasedRecommender(),
+                    MovielensDataConfig.getUserBasedResult()), new String[] {},
+                MovielensDataConfig.getUserItemVectorPath(),
+                MovielensDataConfig.getUserBasedEvaluate());
+            
+        }
+        
+        /* threshold recommender */
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            runJob(new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(),
+                    MovielensDataConfig.getThresholdResult()), new String[] {},
+                MovielensDataConfig.getUserItemVectorPath(),
+                MovielensDataConfig.getThresholdEvaluate());
+        }
+        
+        calculateResult(MovielensDataConfig.getRandomRecommenderEvaluate(), "random");
+        calculateResult(MovielensDataConfig.getPopularRecommederEvaluate(), "popular");
+        calculateResult(MovielensDataConfig.getUserBasedEvaluate(), "UserBased");
+        calculateResult(MovielensDataConfig.getThresholdEvaluate(), "Threshold");
+        
+        ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);
+        chartDrawer.draw();
+        chartDrawer = new ChartDrawer("Precision Rate", "precision", "img/precision.png", precisionResult, true);
+        chartDrawer.draw();
+        chartDrawer = new ChartDrawer("Recall Rate", "recall", "img/recall.png", recallResult, true);
+        chartDrawer.draw();
+        chartDrawer = new ChartDrawer("Popularity", "popularity", "img/popularity.png", popularityResult, false);
+        chartDrawer.draw();
+        
+        /* draw user similarity distribution */
+//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+//            if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserCosineSimilarityPath(), getConf())) {
+//                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
+//                        itemCount, userCount, MovielensDataConfig.getUserItemVectorPath());
+//                ToolRunner.run(job, new String[] {
+//                        "--input", MovielensDataConfig.getUserItemVectorPath().toString(),
+//                        "--output", MovielensDataConfig.getUserCosineSimilarityPath().toString()
+//                });
+//            }
+//        }
+//        
+//        
+//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+//            int mode = DrawMatrixJob.MODE_WITH_ZERO;
+//            float precesion = 0.001f;
+//            String imageFile = "img/distribution_UU_cosine_sim.png";
+//            String title = "user similarity distribution";
+//            DrawMatrixJob job = new DrawMatrixJob(mode, precesion, imageFile, title
+//                    , new String[] {
+//                    String.format("userCount = %d", userCount)
+//            });
+//            Path input = MovielensDataConfig.getUserCosineSimilarityPath();
+//            Path output = input;
+//            ToolRunner.run(job, new String[] {
+//                    "--input", input.toString(),
+//                "--output", output.toString(),
+//            });
+//        }
         
         return 0;
     }

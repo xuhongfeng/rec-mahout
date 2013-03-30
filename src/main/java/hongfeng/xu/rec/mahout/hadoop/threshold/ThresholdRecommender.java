@@ -10,7 +10,7 @@ import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixAverageJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.ThresholdCosineSimilarityJob;
 
 import java.util.List;
 import java.util.Map;
@@ -39,47 +39,58 @@ public class ThresholdRecommender extends BaseRecommender {
         }
         AtomicInteger currentPhase = new AtomicInteger();
         
+        int threshold = 30;
+        int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
+        int userCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
+        
+        Path userItemVectorPath = MovielensDataConfig.getUserItemVectorPath();
+        Path similarityPath = new Path(MovielensDataConfig.getSimilarityThresholdPath(),
+                String.valueOf(threshold));
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserCosineSimilarityPath(), getConf())) {
-                int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
-                int userCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
-                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
-                        itemCount, userCount, MovielensDataConfig.getUserItemVectorPath());
+            if (!HadoopHelper.isFileExists(similarityPath, getConf())) {
+                ThresholdCosineSimilarityJob job = new ThresholdCosineSimilarityJob(userCount,
+                        itemCount, userCount, userItemVectorPath, threshold);
                 ToolRunner.run(job, new String[] {
-                        "--input", MovielensDataConfig.getUserItemVectorPath().toString(),
-                        "--output", MovielensDataConfig.getUserCosineSimilarityPath().toString()
+                        "--input", userItemVectorPath.toString(),
+                        "--output", similarityPath.toString()
                 });
             }
         }
         
+        Path similarityAveragePath = new Path(MovielensDataConfig.getSimilarityThresholdAveragePath()
+                ,String.valueOf(threshold));
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            int n1 = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
-            int n2 = n1;
-            int n3 = n1;
-            Path uuCosinePath = new Path(MovielensDataConfig.getUserCosineSimilarityPath(), "rowVector");
-            MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, uuCosinePath);
-            runJob(job, new String[] {}, uuCosinePath, MovielensDataConfig.getUUUUCosineAverage());
+            if (!HadoopHelper.isFileExists(similarityAveragePath, getConf())) {
+                int n1 = userCount;
+                int n2 = n1;
+                int n3 = n1;
+                Path uuCosinePath = new Path(similarityPath, "rowVector");
+                MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, uuCosinePath);
+                runJob(job, new String[] {}, uuCosinePath, similarityAveragePath);
+            }
         }
         
-        int threshold = 30;
         Path uuThresholdPath = new Path(MovielensDataConfig.getUUThresholdPath(), String.valueOf(threshold));
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            int n1 = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
-            int n2 = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
-            int n3 = n1;
-            Path userItemVectorPath = MovielensDataConfig.getUserItemVectorPath();
-            MultiplyThresholdMatrixJob job = new MultiplyThresholdMatrixJob(n1, n2, n3, userItemVectorPath
-                    ,30);
-            runJob(job, new String[] {}, userItemVectorPath, MovielensDataConfig.getUUThresholdPath());
+            if (!HadoopHelper.isFileExists(uuThresholdPath, getConf())) {
+                int n1 = userCount;
+                int n2 = itemCount;
+                int n3 = n1;
+                MultiplyThresholdMatrixJob job = new MultiplyThresholdMatrixJob(n1, n2, n3, userItemVectorPath
+                        ,30);
+                runJob(job, new String[] {}, userItemVectorPath, MovielensDataConfig.getUUThresholdPath());
+            }
         }
         
         Path uuuiThresholdPath = new Path(MovielensDataConfig.getUUUIThresholdPath(), String.valueOf(threshold));
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            int n1 = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
-            int n2 = n1;
-            int n3 = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
-            MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, MovielensDataConfig.getUserItemVectorPath());
-            runJob(job, new String[] {}, new Path(uuThresholdPath, "rowVector"), uuuiThresholdPath);
+            if (!HadoopHelper.isFileExists(uuuiThresholdPath, getConf())) {
+                int n1 = userCount;
+                int n2 = n1;
+                int n3 = itemCount;
+                MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, userItemVectorPath);
+                runJob(job, new String[] {}, new Path(uuThresholdPath, "rowVector"), uuuiThresholdPath);
+            }
         }
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
