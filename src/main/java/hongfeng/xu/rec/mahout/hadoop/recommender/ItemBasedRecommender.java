@@ -8,7 +8,7 @@ package hongfeng.xu.rec.mahout.hadoop.recommender;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.PearsonSimilarityJob;
 
 import java.util.List;
 import java.util.Map;
@@ -36,14 +36,14 @@ public class ItemBasedRecommender extends BaseRecommender {
         AtomicInteger currentPhase = new AtomicInteger();
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getItemCosineSimilarityPath(), getConf())) {
+            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getItemSimilarityPath(), getConf())) {
                 int itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
                 int userCount = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
-                CosineSimilarityJob job = new CosineSimilarityJob(itemCount,
+                PearsonSimilarityJob job = new PearsonSimilarityJob(itemCount,
                         userCount, itemCount, DeliciousDataConfig.getItemUserVectorPath());
                 ToolRunner.run(job, new String[] {
                         "--input", DeliciousDataConfig.getItemUserVectorPath().toString(),
-                        "--output", DeliciousDataConfig.getItemCosineSimilarityPath().toString()
+                        "--output", DeliciousDataConfig.getItemSimilarityPath().toString()
                 });
             }
         }
@@ -53,7 +53,7 @@ public class ItemBasedRecommender extends BaseRecommender {
                 int n1 = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
                 int n2 = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
                 int n3 = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
-                Path multipyerPath = new Path(DeliciousDataConfig.getItemCosineSimilarityPath(), "rowVector");
+                Path multipyerPath = new Path(DeliciousDataConfig.getItemSimilarityPath(), "rowVector");
                 MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
                 ToolRunner.run(job, new String[] {
                         "--input", DeliciousDataConfig.getUserItemVectorPath().toString(),

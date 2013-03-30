@@ -115,8 +115,8 @@ public class MovielensDataConfig {
         return new Path(getRootPath(), "uuuu");
     }
     
-    public static Path getUUUUCosineAverage() {
-        return new Path(getRootPath(), "uuuu-cosine-average");
+    public static Path getUUUUSimilarityAverage() {
+        return new Path(getRootPath(), "uuuu-similarity-average");
     }
     
     
@@ -130,16 +130,12 @@ public class MovielensDataConfig {
     }
     
     /*************** similarity ***************************/
-    public static Path getSimilarityDir() {
+    public static Path getSimilarityPath() {
         return new Path(getRootPath(), "similarity");
     }
     
-    public static Path getCosineSimilarityPath() {
-        return new Path(getSimilarityDir(), "cosine");
-    }
-    
-    public static Path getUserCosineSimilarityPath() {
-        return new Path(getCosineSimilarityPath(), "user");
+    public static Path getUserSimilarityPath() {
+        return new Path(getSimilarityPath(), "user");
     }
     
     /***************** random recommender ********************/

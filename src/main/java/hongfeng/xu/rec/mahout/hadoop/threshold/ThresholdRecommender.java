@@ -10,7 +10,7 @@ import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixAverageJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.ThresholdCosineSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.PearsonSimilarityJob;
 
 import java.util.List;
 import java.util.Map;
@@ -44,12 +44,11 @@ public class ThresholdRecommender extends BaseRecommender {
         int userCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
         
         Path userItemVectorPath = MovielensDataConfig.getUserItemVectorPath();
-        Path similarityPath = new Path(MovielensDataConfig.getSimilarityThresholdPath(),
-                String.valueOf(threshold));
+        Path similarityPath = MovielensDataConfig.getUserSimilarityPath();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(similarityPath, getConf())) {
-                ThresholdCosineSimilarityJob job = new ThresholdCosineSimilarityJob(userCount,
-                        itemCount, userCount, userItemVectorPath, threshold);
+                PearsonSimilarityJob job = new PearsonSimilarityJob(userCount,
+                        itemCount, userCount, userItemVectorPath);
                 ToolRunner.run(job, new String[] {
                         "--input", userItemVectorPath.toString(),
                         "--output", similarityPath.toString()
@@ -57,16 +56,15 @@ public class ThresholdRecommender extends BaseRecommender {
             }
         }
         
-        Path similarityAveragePath = new Path(MovielensDataConfig.getSimilarityThresholdAveragePath()
-                ,String.valueOf(threshold));
+        Path similarityAveragePath = MovielensDataConfig.getUUUUSimilarityAverage();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(similarityAveragePath, getConf())) {
                 int n1 = userCount;
                 int n2 = n1;
                 int n3 = n1;
-                Path uuCosinePath = new Path(similarityPath, "rowVector");
-                MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, uuCosinePath);
-                runJob(job, new String[] {}, uuCosinePath, similarityAveragePath);
+                Path uuPearsonPath = new Path(similarityPath, "rowVector");
+                MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, uuPearsonPath);
+                runJob(job, new String[] {}, uuPearsonPath, similarityAveragePath);
             }
         }
         

@@ -243,20 +243,17 @@ public class DeliciousDataConfig {
     }
     
     /*************** similarity ***************************/
-    public static Path getSimilarityDir() {
+    
+    public static Path getSimilarityPath() {
         return new Path(getRootPath(), "similarity");
     }
     
-    public static Path getCosineSimilarityPath() {
-        return new Path(getSimilarityDir(), "cosine");
+    public static Path getUserSimilarityPath() {
+        return new Path(getSimilarityPath(), "user");
     }
     
-    public static Path getUserCosineSimilarityPath() {
-        return new Path(getCosineSimilarityPath(), "user");
-    }
-    
-    public static Path getItemCosineSimilarityPath() {
-        return new Path(getCosineSimilarityPath(), "item");
+    public static Path getItemSimilarityPath() {
+        return new Path(getSimilarityPath(), "item");
     }
     
     /*************** UserBased ***************************/

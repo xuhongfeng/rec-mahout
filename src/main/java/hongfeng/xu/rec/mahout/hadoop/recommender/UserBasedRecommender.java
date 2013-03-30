@@ -8,7 +8,7 @@ package hongfeng.xu.rec.mahout.hadoop.recommender;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.PearsonSimilarityJob;
 
 import java.util.List;
 import java.util.Map;
@@ -36,14 +36,14 @@ public class UserBasedRecommender extends BaseRecommender {
         AtomicInteger currentPhase = new AtomicInteger();
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getUserCosineSimilarityPath(), getConf())) {
+            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getUserSimilarityPath(), getConf())) {
                 int itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
                 int userCount = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
-                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
+                PearsonSimilarityJob job = new PearsonSimilarityJob(userCount,
                         itemCount, userCount, DeliciousDataConfig.getUserItemVectorPath());
                 ToolRunner.run(job, new String[] {
                         "--input", DeliciousDataConfig.getUserItemVectorPath().toString(),
-                        "--output", DeliciousDataConfig.getUserCosineSimilarityPath().toString()
+                        "--output", DeliciousDataConfig.getUserSimilarityPath().toString()
                 });
             }
         }
@@ -56,7 +56,7 @@ public class UserBasedRecommender extends BaseRecommender {
                 Path multipyerPath = DeliciousDataConfig.getItemUserVectorPath();
                 MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
                 ToolRunner.run(job, new String[] {
-                        "--input", new Path(DeliciousDataConfig.getUserCosineSimilarityPath(), "rowVector").toString(),
+                        "--input", new Path(DeliciousDataConfig.getUserSimilarityPath(), "rowVector").toString(),
                         "--output", DeliciousDataConfig.getUserBasedMatrix().toString()
                 });
             }

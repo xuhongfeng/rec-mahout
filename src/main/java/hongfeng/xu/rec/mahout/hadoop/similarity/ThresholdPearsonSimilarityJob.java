@@ -18,10 +18,10 @@ import org.apache.mahout.math.Vector;
  * @author xuhongfeng
  *
  */
-public class ThresholdCosineSimilarityJob extends CosineSimilarityJob {
+public class ThresholdPearsonSimilarityJob extends PearsonSimilarityJob {
     private final int threshold;
 
-    public ThresholdCosineSimilarityJob(int n1, int n2, int n3,
+    public ThresholdPearsonSimilarityJob(int n1, int n2, int n3,
             Path multiplyerPath, int threshold) {
         super(n1, n2, n3, multiplyerPath);
         this.threshold = threshold;
@@ -35,13 +35,13 @@ public class ThresholdCosineSimilarityJob extends CosineSimilarityJob {
     
     @Override
     protected Class<? extends MatrixReducer> getMatrixReducer() {
-        return ThresholdCosineReducer.class;
+        return ThresholdPearsonReducer.class;
     }
     
-    public static class ThresholdCosineReducer extends CosineSimilarityJob.CosineReducer {
+    public static class ThresholdPearsonReducer extends PearsonSimilarityJob.PearsonReducer {
         private int threshold;
         
-        public ThresholdCosineReducer() {
+        public ThresholdPearsonReducer() {
             super();
         }
         

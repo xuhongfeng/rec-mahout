@@ -62,7 +62,7 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
             }
             int n = HadoopHelper.intersect(vector1, vector2);
             if (n >= threshold) {
-                return HadoopHelper.cosinSimilarity(vector1, vector2);
+                return HadoopHelper.pearsonSimilarity(vector1, vector2);
             } else {
                 Vector v = uuuuCache.get(i);
                 return v.getQuick(j);

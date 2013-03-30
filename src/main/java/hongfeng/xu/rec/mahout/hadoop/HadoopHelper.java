@@ -90,4 +90,13 @@ public class HadoopHelper {
     public static double cosinSimilarity(Vector vector1, Vector vector2) {
         return vector1.dot(vector2)/(Math.sqrt(vector1.getLengthSquared()) * Math.sqrt(vector2.getLengthSquared()));
     }
+    
+    public static double pearsonSimilarity(Vector vector1, Vector vector2) {
+        double size = vector1.size();
+        double mean1 = vector1.zSum()/size;
+        double mean2 = vector2.zSum()/size;
+        Vector v1 = vector1.plus(0-mean1);
+        Vector v2 = vector2.plus(0-mean2);
+        return cosinSimilarity(v1, v2);
+    }
 }

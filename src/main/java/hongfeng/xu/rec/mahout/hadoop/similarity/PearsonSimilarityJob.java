@@ -16,26 +16,26 @@ import org.apache.mahout.math.Vector;
  * @author xuhongfeng
  *
  */
-public class CosineSimilarityJob extends BaseMatrixJob {
+public class PearsonSimilarityJob extends BaseMatrixJob {
     
-    public CosineSimilarityJob(int n1, int n2, int n3, Path multiplyerPath) {
+    public PearsonSimilarityJob(int n1, int n2, int n3, Path multiplyerPath) {
         super(n1, n2, n3, multiplyerPath);
     }
 
     @Override
     protected Class<? extends MatrixReducer> getMatrixReducer() {
-        return CosineReducer.class;
+        return PearsonReducer.class;
     }
     
-    public static class CosineReducer extends MatrixReducer {
+    public static class PearsonReducer extends MatrixReducer {
         
-        public CosineReducer() {
+        public PearsonReducer() {
             super();
         }
 
         @Override
         protected double calculate(int i, int j, Vector vector1, Vector vector2) {
-            return HadoopHelper.cosinSimilarity(vector1, vector2);
+            return HadoopHelper.pearsonSimilarity(vector1, vector2);
         }
     }
 }

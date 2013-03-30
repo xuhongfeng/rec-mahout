@@ -10,7 +10,7 @@ import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.PearsonSimilarityJob;
 
 import java.util.List;
 import java.util.Map;
@@ -41,12 +41,12 @@ public class UserBasedRecommender extends BaseRecommender {
         int userCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserCosineSimilarityPath(), getConf())) {
-                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
+            if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserSimilarityPath(), getConf())) {
+                PearsonSimilarityJob job = new PearsonSimilarityJob(userCount,
                         itemCount, userCount, MovielensDataConfig.getUserItemVectorPath());
                 ToolRunner.run(job, new String[] {
                         "--input", MovielensDataConfig.getUserItemVectorPath().toString(),
-                        "--output", MovielensDataConfig.getUserCosineSimilarityPath().toString()
+                        "--output", MovielensDataConfig.getUserSimilarityPath().toString()
                 });
             }
         }
@@ -59,7 +59,7 @@ public class UserBasedRecommender extends BaseRecommender {
                 Path multipyerPath = MovielensDataConfig.getItemUserVectorPath();
                 MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
                 ToolRunner.run(job, new String[] {
-                        "--input", new Path(MovielensDataConfig.getUserCosineSimilarityPath(), "rowVector").toString(),
+                        "--input", new Path(MovielensDataConfig.getUserSimilarityPath(), "rowVector").toString(),
                         "--output", MovielensDataConfig.getUserBasedMatrix().toString()
                 });
             }
