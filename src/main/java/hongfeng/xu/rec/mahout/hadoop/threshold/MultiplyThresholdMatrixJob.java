@@ -5,15 +5,14 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
-import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MatrixReducer;
 import hongfeng.xu.rec.mahout.hadoop.matrix.VectorCache;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.math.Vector;
 
 /**
@@ -21,10 +20,22 @@ import org.apache.mahout.math.Vector;
  *
  */
 public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
+    private final Path averageSimilarityPath;
+    private final int averageVectorSize;
     
     public MultiplyThresholdMatrixJob(int n1, int n2, int n3,
-            Path multiplyerPath, int threshold) {
+            Path multiplyerPath, int threshold, Path averageSimilarityPath
+            , int averageVectorSize) {
         super(n1, n2, n3, multiplyerPath, threshold);
+        this.averageSimilarityPath = averageSimilarityPath;
+        this.averageVectorSize = averageVectorSize;
+    }
+    
+    @Override
+    protected void initConf(Configuration conf) {
+        super.initConf(conf);
+        conf.set("averageSimilarityPath", averageSimilarityPath.toString());
+        conf.setInt("averageVectorSize", averageVectorSize);
     }
 
     @Override
@@ -33,17 +44,20 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
     }
 
     public static class MyReducer extends MatrixReducer {
-        private VectorCache uuuuCache;
+        private VectorCache averageCache;
+        private int averageVectorSize;
+        private Path averageSimilarityPath;
         private int threshold;
         
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
-            int vectorCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), conf);
-            int vectorSize = vectorCount;
+            averageSimilarityPath = new Path(conf.get("averageSimilarityPath"));
+            int vectorSize = conf.getInt("averageVectorSize", -1);
+            int vectorCount = vectorSize;
             threshold = conf.getInt("threshold", 0);
-            Path uuuuAveragePath = new Path(MovielensDataConfig.getUUUUSimilarityAverage(), "rowVector");
-            uuuuCache = VectorCache.create(vectorCount, vectorSize, uuuuAveragePath, conf);
+            averageCache = VectorCache.create(vectorCount, vectorSize,
+                    new Path(averageSimilarityPath, "rowVector"), conf);
         }
 
         public MyReducer() {
@@ -59,7 +73,7 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
             if (n >= threshold) {
                 return HadoopHelper.cosineSimilarity(vector1, vector2);
             } else {
-                Vector v = uuuuCache.get(i);
+                Vector v = averageCache.get(i);
                 return v.getQuick(j);
             }
         }

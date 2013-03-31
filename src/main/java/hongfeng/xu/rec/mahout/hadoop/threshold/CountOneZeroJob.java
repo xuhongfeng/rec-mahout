@@ -5,7 +5,6 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
-import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 
@@ -30,7 +29,7 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class CountUIIUOneZeroJob extends AbstractJob {
+public class CountOneZeroJob extends AbstractJob {
 
     @Override
     public int run(String[] args) throws Exception {
@@ -44,10 +43,9 @@ public class CountUIIUOneZeroJob extends AbstractJob {
         
         AtomicInteger currentPhase = new AtomicInteger();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Path output = MovielensDataConfig.getCountUIIUOneZeroPath();
-            if (!HadoopHelper.isFileExists(output, getConf())) {
-                Path input = new Path(MovielensDataConfig.getUIIUOneZero(), "rowVector");
-                Job job = prepareJob(input, output, MultipleInputFormat.class,
+            if (!HadoopHelper.isFileExists(getOutputPath(), getConf())) {
+                Path input = new Path(getInputPath(), "rowVector");
+                Job job = prepareJob(input, getOutputPath(), MultipleInputFormat.class,
                         MyMapper.class, IntWritable.class, IntWritable.class,
                         MyReducer.class, IntWritable.class, IntWritable.class,
                         SequenceFileOutputFormat.class);

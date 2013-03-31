@@ -5,7 +5,6 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
-import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
 
 import java.awt.image.BufferedImage;
@@ -22,6 +21,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.iterator.sequencefile.PathType;
@@ -38,16 +38,27 @@ import org.jfree.data.xy.XYDataset;
  * @author xuhongfeng
  *
  */
-public class DrawCountUUOneZero {
+public class DrawCountOneZero {
     private static final int WIDTH = 1280;
     private static final int HEIGHT = 800;
     private static final String FORMAT = "png";
+    
+    private final Path inputPath;
+    private final String title;
+    private final String imgFile;
+
+    public DrawCountOneZero(Path inputPath, String title, String imgFile) {
+        super();
+        this.inputPath = inputPath;
+        this.title = title;
+        this.imgFile = imgFile;
+    }
 
     public void draw(Configuration conf) throws IOException {
         List<Pair<Integer, Integer>> list = new ArrayList<Pair<Integer,Integer>>();
         SequenceFileDirIterator<IntWritable, IntWritable> iterator =
                 new SequenceFileDirIterator<IntWritable, IntWritable>(
-                        MovielensDataConfig.getCountUIIUOneZeroPath(),
+                        inputPath,
                         PathType.LIST, MultipleSequenceOutputFormat.FILTER,
                         null, true, conf);
         while (iterator.hasNext()) {
@@ -68,14 +79,14 @@ public class DrawCountUUOneZero {
             }
         });
         XYDataset dataSet = createDataSet(list);
-        JFreeChart chart = ChartFactory.createXYLineChart("User-User relation",
+        JFreeChart chart = ChartFactory.createXYLineChart(title,
                 "", "count", dataSet, PlotOrientation.VERTICAL, true, true, false);
         XYPlot plot = (XYPlot) chart.getPlot();
         NumberAxis axis = (NumberAxis) plot.getRangeAxis();
         axis.setNumberFormatOverride(numberFormat);
         
         BufferedImage image = chart.createBufferedImage(WIDTH, HEIGHT);
-        ImageIO.write(image, FORMAT, new File("img/uu-count.png"));
+        ImageIO.write(image, FORMAT, new File(imgFile));
     }
     
     private XYDataset createDataSet(List<Pair<Integer, Integer>> list) {
@@ -98,7 +109,7 @@ public class DrawCountUUOneZero {
         return dataSet;
         
     }
-    private NumberFormat numberFormat= new NumberFormat() {
+    private static final NumberFormat numberFormat= new NumberFormat() {
         private static final long serialVersionUID = 7178959953024323658L;
 
         @Override

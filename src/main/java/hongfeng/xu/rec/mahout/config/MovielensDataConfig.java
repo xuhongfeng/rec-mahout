@@ -107,6 +107,10 @@ public class MovielensDataConfig {
         return new Path(getRootPath(), "uiiu-one-zero");
     }
     
+    public static Path getIUUIOneZero() {
+        return new Path(getRootPath(), "iuui-one-zero");
+    }
+    
     public static Path getUIIU() {
         return new Path(getRootPath(), "uiiu");
     }
@@ -119,6 +123,10 @@ public class MovielensDataConfig {
         return new Path(getRootPath(), "uuuu-similarity-average");
     }
     
+    public static Path getIIIISimilarityAverage() {
+        return new Path(getRootPath(), "iiii-similarity-average");
+    }
+    
     
     /********** misc **********/
     public static Path getMiscPath() {
@@ -129,6 +137,10 @@ public class MovielensDataConfig {
         return  new Path(getMiscPath(), "countUIIUOneZero");
     }
     
+    public static Path getCountIUUIOneZeroPath() {
+        return  new Path(getMiscPath(), "countIUUIOneZero");
+    }
+    
     /*************** similarity ***************************/
     public static Path getSimilarityPath() {
         return new Path(getRootPath(), "similarity");
@@ -136,6 +148,10 @@ public class MovielensDataConfig {
     
     public static Path getUserSimilarityPath() {
         return new Path(getSimilarityPath(), "user");
+    }
+    
+    public static Path getItemSimilarityPath() {
+        return new Path(getSimilarityPath(), "item");
     }
     
     /***************** random recommender ********************/
@@ -170,6 +186,24 @@ public class MovielensDataConfig {
         return new Path(getPopularRecommenderDir(), "evaluate");
     }
     
+    /*************** ItemBased ***************************/
+    public static Path getItemBasedDir() {
+        return new Path(getRootPath(), "itemBased");
+    }
+    
+    public static Path getItemBasedResult() {
+        return new Path(getItemBasedDir(), "result");
+    }
+    
+    public static Path getItemBasedEvaluate() {
+        return new Path(getItemBasedDir(), "evaluate");
+    }
+    
+    public static Path getItemBasedMatrix() {
+        return new Path(getItemBasedDir(), "matrix");
+    }
+    
+    
     /*************** UserBased ***************************/
     public static Path getUserBasedDir() {
         return new Path(getRootPath(), "userBased");
@@ -192,8 +226,18 @@ public class MovielensDataConfig {
         return new Path(getRootPath(), "threshold");
     }
     
+    public static Path getIIThresholdPath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "ii");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    
     public static Path getUUThresholdPath(int threshold) {
         Path dir = new Path(getThresholdDir(), "uu");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    
+    public static Path getUIIIThresholdPath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "uiii");
         return new Path(dir, String.valueOf(threshold));
     }
     
