@@ -85,6 +85,13 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
                 while (iterator.hasNext()) {
                     Element e = iterator.next();
                     double pref = vector2.getQuick(e.index());
+                    if (pref > 3.5) {
+                        pref = 1.0;
+                    } else if (pref <2.5 && pref>0.5) {
+                        pref = -1.0;
+                    } else {
+                        pref = 0.0;
+                    }
                     double sim = e.get();
                     Pair<Double, Double> pair = 
                             new Pair<Double, Double>(sim, pref);
@@ -95,6 +102,13 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
                 while (iterator.hasNext()) {
                     Element e = iterator.next();
                     double pref = vector1.getQuick(e.index());
+                    if (pref > 3.5) {
+                        pref = 1.0;
+                    } else if (pref <2.5 && pref>0.5) {
+                        pref = -1.0;
+                    } else {
+                        pref = 0.0;
+                    }
                     double sim = e.get();
                     Pair<Double, Double> pair = 
                             new Pair<Double, Double>(sim, pref);

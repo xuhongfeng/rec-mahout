@@ -8,6 +8,7 @@ package hongfeng.xu.rec.mahout.hadoop.threshold;
 import hongfeng.xu.rec.mahout.chart.ChartDrawer;
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.matrix.DrawMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
 import hongfeng.xu.rec.mahout.runner.AbsTopNRunner.Result;
@@ -88,21 +89,21 @@ public class Main extends AbstractJob {
 //        new DrawCountUUOneZero().draw(getConf());
         
         
-        /* random recommender */
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            runJob(new EvaluateRecommenderJob<RandomRecommender>(new RandomRecommender(),
-                    MovielensDataConfig.getRandomRecommenderResultPath()), new String[] {},
-                MovielensDataConfig.getUserItemVectorPath(),
-                MovielensDataConfig.getRandomRecommenderEvaluate());
-        }
-        
-        /* popular recommender */
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            runJob(new EvaluateRecommenderJob<PopularRecommender>(new PopularRecommender(),
-                    MovielensDataConfig.getPopularRecommenderResultPath()), new String[] {},
-                MovielensDataConfig.getUserItemVectorPath(),
-                MovielensDataConfig.getPopularRecommederEvaluate());
-        }
+//        /* random recommender */
+//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+//            runJob(new EvaluateRecommenderJob<RandomRecommender>(new RandomRecommender(),
+//                    MovielensDataConfig.getRandomRecommenderResultPath()), new String[] {},
+//                MovielensDataConfig.getUserItemVectorPath(),
+//                MovielensDataConfig.getRandomRecommenderEvaluate());
+//        }
+//        
+//        /* popular recommender */
+//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+//            runJob(new EvaluateRecommenderJob<PopularRecommender>(new PopularRecommender(),
+//                    MovielensDataConfig.getPopularRecommenderResultPath()), new String[] {},
+//                MovielensDataConfig.getUserItemVectorPath(),
+//                MovielensDataConfig.getPopularRecommederEvaluate());
+//        }
         /* user based recommender */
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             runJob(new EvaluateRecommenderJob<UserBasedRecommender>(new UserBasedRecommender(),
@@ -114,16 +115,18 @@ public class Main extends AbstractJob {
         
         /* threshold recommender */
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            runJob(new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(),
-                    MovielensDataConfig.getThresholdResult()), new String[] {},
-                MovielensDataConfig.getUserItemVectorPath(),
-                MovielensDataConfig.getThresholdEvaluate());
+            for (int threshold=10; threshold<=100; threshold+=10) {
+                runJob(new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(threshold),
+                        MovielensDataConfig.getThresholdResult(threshold)), new String[] {},
+                    MovielensDataConfig.getUserItemVectorPath(),
+                    MovielensDataConfig.getThresholdEvaluate(threshold));
+                calculateResult(MovielensDataConfig.getThresholdEvaluate(threshold), "Threshold-" + threshold);
+            }
         }
         
-        calculateResult(MovielensDataConfig.getRandomRecommenderEvaluate(), "random");
-        calculateResult(MovielensDataConfig.getPopularRecommederEvaluate(), "popular");
+//        calculateResult(MovielensDataConfig.getRandomRecommenderEvaluate(), "random");
+//        calculateResult(MovielensDataConfig.getPopularRecommederEvaluate(), "popular");
         calculateResult(MovielensDataConfig.getUserBasedEvaluate(), "UserBased");
-        calculateResult(MovielensDataConfig.getThresholdEvaluate(), "Threshold");
         
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);
         chartDrawer.draw();
@@ -135,18 +138,32 @@ public class Main extends AbstractJob {
         chartDrawer.draw();
         
         /* draw user similarity distribution */
-//        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-//            if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserSimilarityPath(), getConf())) {
-//                PearsonSimilarityJob job = new PearsonSimilarityJob(userCount,
-//                        itemCount, userCount, MovielensDataConfig.getUserItemVectorPath());
-//                ToolRunner.run(job, new String[] {
-//                        "--input", MovielensDataConfig.getUserItemVectorPath().toString(),
-//                        "--output", MovielensDataConfig.getUserSimilarityPath().toString()
-//                });
-//            }
-//        }
-//        
-//        
+//        Path[] matrixDirs = new Path[] {
+//                MovielensDataConfig.getUserSimilarityPath(),
+//                MovielensDataConfig.getUUThresholdPath(10),
+//                MovielensDataConfig.getUUThresholdPath(20),
+//                MovielensDataConfig.getUUThresholdPath(30),
+//                MovielensDataConfig.getUUThresholdPath(40),
+//                MovielensDataConfig.getUUThresholdPath(50),
+//                MovielensDataConfig.getUUThresholdPath(60),
+//                MovielensDataConfig.getUUThresholdPath(70),
+//                MovielensDataConfig.getUUThresholdPath(80),
+//                MovielensDataConfig.getUUThresholdPath(90),
+//                MovielensDataConfig.getUUThresholdPath(100)
+//        };
+//        String[] series = new String[] {
+//                "origin",
+//                "threshold-10",
+//                "threshold-20",
+//                "threshold-30",
+//                "threshold-40",
+//                "threshold-50",
+//                "threshold-60",
+//                "threshold-70",
+//                "threshold-80",
+//                "threshold-90",
+//                "threshold-100"
+//        };
 //        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
 //            int mode = DrawMatrixJob.MODE_WITH_ZERO;
 //            float precesion = 0.001f;
@@ -155,12 +172,10 @@ public class Main extends AbstractJob {
 //            DrawMatrixJob job = new DrawMatrixJob(mode, precesion, imageFile, title
 //                    , new String[] {
 //                    String.format("userCount = %d", userCount)
-//            });
-//            Path input = MovielensDataConfig.getUserSimilarityPath();
-//            Path output = input;
+//            }, matrixDirs, series);
 //            ToolRunner.run(job, new String[] {
-//                    "--input", input.toString(),
-//                "--output", output.toString(),
+//                    "--input", "test",
+//                "--output", "test"
 //            });
 //        }
         

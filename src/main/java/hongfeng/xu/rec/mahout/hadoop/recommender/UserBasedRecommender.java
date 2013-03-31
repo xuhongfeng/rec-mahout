@@ -8,7 +8,7 @@ package hongfeng.xu.rec.mahout.hadoop.recommender;
 import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.PearsonSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class UserBasedRecommender extends BaseRecommender {
             if (!HadoopHelper.isFileExists(DeliciousDataConfig.getUserSimilarityPath(), getConf())) {
                 int itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
                 int userCount = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
-                PearsonSimilarityJob job = new PearsonSimilarityJob(userCount,
+                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
                         itemCount, userCount, DeliciousDataConfig.getUserItemVectorPath());
                 ToolRunner.run(job, new String[] {
                         "--input", DeliciousDataConfig.getUserItemVectorPath().toString(),

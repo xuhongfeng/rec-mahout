@@ -192,27 +192,23 @@ public class MovielensDataConfig {
         return new Path(getRootPath(), "threshold");
     }
     
-    public static Path getUUThresholdPath() {
-        return new Path(getThresholdDir(), "uu");
+    public static Path getUUThresholdPath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "uu");
+        return new Path(dir, String.valueOf(threshold));
     }
     
-    public static Path getUUUIThresholdPath() {
-        return new Path(getThresholdDir(), "uuui");
+    public static Path getUUUIThresholdPath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "uuui");
+        return new Path(dir, String.valueOf(threshold));
     }
     
-    public static Path getSimilarityThresholdPath() {
-        return new Path(getThresholdDir(), "similarity");
+    public static Path getThresholdEvaluate(int threshold) {
+        Path dir = new Path(getThresholdDir(), "evaluate");
+        return new Path(dir, String.valueOf(threshold));
     }
     
-    public static Path getSimilarityThresholdAveragePath() {
-        return new Path(getThresholdDir(), "similarity-average");
-    }
-    
-    public static Path getThresholdEvaluate() {
-        return new Path(getThresholdDir(), "evaluate");
-    }
-    
-    public static Path getThresholdResult() {
-        return new Path(getThresholdDir(), "result");
+    public static Path getThresholdResult(int threshold) {
+        Path dir = new Path(getThresholdDir(), "result");
+        return new Path(dir, String.valueOf(threshold));
     }
 }

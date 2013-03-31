@@ -18,7 +18,7 @@ import org.apache.mahout.math.Vector;
  * @author xuhongfeng
  *
  */
-public class ThresholdPearsonSimilarityJob extends PearsonSimilarityJob {
+public class ThresholdPearsonSimilarityJob extends CosineSimilarityJob {
     private final int threshold;
 
     public ThresholdPearsonSimilarityJob(int n1, int n2, int n3,
@@ -38,7 +38,7 @@ public class ThresholdPearsonSimilarityJob extends PearsonSimilarityJob {
         return ThresholdPearsonReducer.class;
     }
     
-    public static class ThresholdPearsonReducer extends PearsonSimilarityJob.PearsonReducer {
+    public static class ThresholdPearsonReducer extends CosineSimilarityJob.CosineReducer {
         private int threshold;
         
         public ThresholdPearsonReducer() {

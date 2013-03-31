@@ -9,6 +9,7 @@ import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,15 +40,19 @@ public class DrawMatrixJob extends AbstractJob {
     private final String imageFile;
     private final String title;
     private final String[] subTitles;
+    private final Path[] matrixDirs;
+    private final String[] series;
     
     public DrawMatrixJob(int mode, float precision, String imageFile,
-            String title, String[] subTitles) {
+            String title, String[] subTitles, Path[] matrixDirs, String[] series) {
         super();
         this.mode = mode;
         this.precision = precision;
         this.imageFile = imageFile;
         this.title = title;
         this.subTitles = subTitles;
+        this.matrixDirs = matrixDirs;
+        this.series = series;
     }
 
     @Override
@@ -63,25 +68,44 @@ public class DrawMatrixJob extends AbstractJob {
         
         AtomicInteger currentPhase = new AtomicInteger();
         
-        Path vectorPath = new Path(getInputPath(), "rowVector");
-        Path distrubutionPath = new Path(getOutputPath(), "distribution");
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(distrubutionPath, getConf())) {
-                Job job = prepareJob(vectorPath, distrubutionPath, MultipleInputFormat.class,
-                        MyMapper.class, DoubleWritable.class, IntWritable.class,
-                        MyReducer.class, DoubleWritable.class, IntWritable.class,
-                        SequenceFileOutputFormat.class);
-                job.getConfiguration().setInt("mode", mode);
-                job.getConfiguration().setFloat("precision", precision);
-                job.setNumReduceTasks(10);
-                job.setCombinerClass(MyReducer.class);
-                if (!job.waitForCompletion(true)) {
-                    return -1;
+        List<Job> jobs = new ArrayList<Job>(matrixDirs.length);
+        for (Path path:matrixDirs) {
+            Path vectorPath = new Path(path, "rowVector");
+            Path distributionPath = new Path(path, "distribution");
+            if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+                if (!HadoopHelper.isFileExists(distributionPath, getConf())) {
+                    Job job = prepareJob(vectorPath, distributionPath, MultipleInputFormat.class,
+                            MyMapper.class, DoubleWritable.class, IntWritable.class,
+                            MyReducer.class, DoubleWritable.class, IntWritable.class,
+                            SequenceFileOutputFormat.class);
+                    job.getConfiguration().setInt("mode", mode);
+                    job.getConfiguration().setFloat("precision", precision);
+                    job.setNumReduceTasks(10);
+                    job.setCombinerClass(MyReducer.class);
+                    job.submit();
+                    jobs.add(job);
                 }
             }
         }
+        while (jobs.size() > 0) {
+            Iterator<Job> iterator = jobs.iterator();
+            while (iterator.hasNext()) {
+                Job job = iterator.next();
+                if (job.isComplete()) {
+                    if (!job.isSuccessful()) {
+                        return -1;
+                    }
+                    iterator.remove();
+                }
+            }
+            Thread.sleep(1000L);
+        }
         
-        MatrixDrawer drawer = new MatrixDrawer(distrubutionPath, imageFile, title,
+        Path[] distributionPaths = new Path[matrixDirs.length];
+        for (int i=0; i<distributionPaths.length; i++) {
+            distributionPaths[i] = new Path(matrixDirs[i], "distribution");
+        }
+        MatrixDrawer drawer = new MatrixDrawer(distributionPaths, series, imageFile, title,
                 precision, subTitles);
         drawer.draw(getConf());
         

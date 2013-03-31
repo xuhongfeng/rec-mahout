@@ -10,7 +10,7 @@ import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyNearestNeighborJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.PearsonSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class UserBasedRecommender extends BaseRecommender {
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserSimilarityPath(), getConf())) {
-                PearsonSimilarityJob job = new PearsonSimilarityJob(userCount,
+                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
                         itemCount, userCount, MovielensDataConfig.getUserItemVectorPath());
                 ToolRunner.run(job, new String[] {
                         "--input", MovielensDataConfig.getUserItemVectorPath().toString(),
@@ -57,7 +57,7 @@ public class UserBasedRecommender extends BaseRecommender {
                 int n2 = n1;
                 int n3 = itemCount;
                 int type = MultiplyNearestNeighborJob.TYPE_FIRST;
-                int k = 10;
+                int k = 50;
                 Path multipyerPath = MovielensDataConfig.getItemUserVectorPath();
                 MultiplyNearestNeighborJob job = new MultiplyNearestNeighborJob(n1,
                         n2, n3, multipyerPath, type, k);

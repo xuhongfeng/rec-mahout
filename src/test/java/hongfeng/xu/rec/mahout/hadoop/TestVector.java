@@ -24,7 +24,7 @@ public class TestVector {
         v1.setQuick(1, 3);
         v2.setQuick(0, 3);
         v2.setQuick(1, 4);
-        Assert.assertEquals(HadoopHelper.cosinSimilarity(v1, v2), 24.0/25.0);
+        Assert.assertEquals(HadoopHelper.cosineSimilarity(v1, v2), 24.0/25.0);
     }
     
     @Test

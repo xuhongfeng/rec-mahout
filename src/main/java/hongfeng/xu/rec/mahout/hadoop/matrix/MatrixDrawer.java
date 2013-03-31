@@ -46,47 +46,54 @@ public class MatrixDrawer {
     private static final int HEIGHT = 800;
     private static final String FORMAT = "png";
     
-    private final Path inputPath;
+    private final Path[] inputPaths;
+    private final String[] series;
     private final String outputFile;
     private final String title;
     private final float precesion;
     private final String[] subTitles;
     
 
-    public MatrixDrawer(Path inputPath, String outputFile, String title
+    public MatrixDrawer(Path[] inputPaths, String[] series, String outputFile, String title
             , float precesion, String[] subTitles) {
         super();
-        this.inputPath = inputPath;
+        this.inputPaths = inputPaths;
         this.outputFile = outputFile;
         this.title = title;
         this.precesion = precesion;
         this.subTitles = subTitles;
+        this.series = series;
     }
 
     public void draw(Configuration conf) throws IOException {
-        List<Pair<Double, Integer>> list = new ArrayList<Pair<Double,Integer>>();
-        SequenceFileDirIterator<DoubleWritable, IntWritable> iterator =
-                new SequenceFileDirIterator<DoubleWritable, IntWritable>(
-                        inputPath, PathType.LIST, MultipleSequenceOutputFormat.FILTER,
-                        null, true, conf);
-        while (iterator.hasNext()) {
-            Pair<DoubleWritable, IntWritable> writablePair = iterator.next();
-            Pair<Double, Integer> pair = new Pair<Double, Integer>(writablePair.getFirst().get(),
-                    writablePair.getSecond().get());
-            list.add(pair);
-        }
-        iterator.close();
-        Collections.sort(list, new Comparator<Pair<Double, Integer>> () {
-            @Override
-            public int compare(Pair<Double, Integer> o1,
-                    Pair<Double, Integer> o2) {
-                if (o1.getFirst() < o2.getFirst()) {
-                    return -1;
-                }
-                return 1;
+        DefaultXYDataset dataSet = new DefaultXYDataset();
+        for (int i=0; i<inputPaths.length; i++) {
+            Path inputPath = inputPaths[i];
+            String serie = series[i];
+            List<Pair<Double, Integer>> list = new ArrayList<Pair<Double,Integer>>();
+            SequenceFileDirIterator<DoubleWritable, IntWritable> iterator =
+                    new SequenceFileDirIterator<DoubleWritable, IntWritable>(
+                            inputPath, PathType.LIST, MultipleSequenceOutputFormat.FILTER,
+                            null, true, conf);
+            while (iterator.hasNext()) {
+                Pair<DoubleWritable, IntWritable> writablePair = iterator.next();
+                Pair<Double, Integer> pair = new Pair<Double, Integer>(writablePair.getFirst().get(),
+                        writablePair.getSecond().get());
+                list.add(pair);
             }
-        });
-        XYDataset dataSet = createDataSet(list);
+            iterator.close();
+            Collections.sort(list, new Comparator<Pair<Double, Integer>> () {
+                @Override
+                public int compare(Pair<Double, Integer> o1,
+                        Pair<Double, Integer> o2) {
+                    if (o1.getFirst() < o2.getFirst()) {
+                        return -1;
+                    }
+                    return 1;
+                }
+            });
+            updateDataSet(dataSet, serie, list);
+        }
         JFreeChart chart = ChartFactory.createXYLineChart(title,
                 "", "value", dataSet, PlotOrientation.VERTICAL, true, true, false);
         XYPlot plot = (XYPlot) chart.getPlot();
@@ -104,9 +111,7 @@ public class MatrixDrawer {
         ImageIO.write(image, FORMAT, new File(outputFile));
     }
     
-    private XYDataset createDataSet(List<Pair<Double, Integer>> list) {
-        DefaultXYDataset dataSet = new DefaultXYDataset();
-        
+    private XYDataset updateDataSet(DefaultXYDataset dataSet, String series, List<Pair<Double, Integer>> list) {
         int i=0;
         int j=0;
         double[][] values = new double[2][2*list.size()];
@@ -119,7 +124,7 @@ public class MatrixDrawer {
             values[0][j] = Double.valueOf(i-1);
             values[1][j++] = v;
         }
-        dataSet.addSeries("", values);
+        dataSet.addSeries(series, values);
         
         return dataSet;
         

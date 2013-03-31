@@ -32,11 +32,6 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
         return MyReducer.class;
     }
 
-    @Override
-    protected Path outputDir() {
-        return new Path(getOutputPath(), String.valueOf(threshold));
-    }
-    
     public static class MyReducer extends MatrixReducer {
         private VectorCache uuuuCache;
         private int threshold;
@@ -47,8 +42,8 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
             int vectorCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), conf);
             int vectorSize = vectorCount;
             threshold = conf.getInt("threshold", 0);
-            uuuuCache = VectorCache.create(vectorCount, vectorSize,
-                    new Path(new Path(MovielensDataConfig.getSimilarityThresholdAveragePath(), String.valueOf(threshold)), "rowVector"), conf);
+            Path uuuuAveragePath = new Path(MovielensDataConfig.getUUUUSimilarityAverage(), "rowVector");
+            uuuuCache = VectorCache.create(vectorCount, vectorSize, uuuuAveragePath, conf);
         }
 
         public MyReducer() {
@@ -62,7 +57,7 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
             }
             int n = HadoopHelper.intersect(vector1, vector2);
             if (n >= threshold) {
-                return HadoopHelper.pearsonSimilarity(vector1, vector2);
+                return HadoopHelper.cosineSimilarity(vector1, vector2);
             } else {
                 Vector v = uuuuCache.get(i);
                 return v.getQuick(j);
