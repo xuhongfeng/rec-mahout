@@ -77,6 +77,7 @@ public class ToVectorJob extends AbstractJob {
                     MovielensDataConfig.getUserItemOneZeroVectorPath(), MultipleInputFormat.class,
                     ToOneZeroMapper.class, IntWritable.class, VectorWritable.class,
                     SequenceFileOutputFormat.class);
+            job.setNumReduceTasks(10);
             if (!job.waitForCompletion(true)) {
                 return -1;
             }
@@ -86,6 +87,7 @@ public class ToVectorJob extends AbstractJob {
                     MovielensDataConfig.getItemUserOneZeroVectorPath(), MultipleInputFormat.class,
                     ToOneZeroMapper.class, IntWritable.class, VectorWritable.class,
                     SequenceFileOutputFormat.class);
+            job.setNumReduceTasks(10);
             if (!job.waitForCompletion(true)) {
                 return -1;
             }

@@ -7,6 +7,7 @@ package hongfeng.xu.rec.mahout.test;
 
 import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
 
 import java.io.IOException;
 
@@ -14,6 +15,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.common.AbstractJob;
+import org.apache.mahout.common.HadoopUtil;
+import org.apache.mahout.common.Pair;
+import org.apache.mahout.common.iterator.sequencefile.PathType;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 import org.apache.mahout.math.VectorWritable;
 
@@ -25,7 +29,8 @@ public class TestMatrix extends AbstractJob {
 
     @Override
     public int run(String[] args) throws Exception {
-//        testUserVectorCount();
+        testItemUserVector();
+        testItemOneZeroCount();
         return 0;
     }
 
@@ -60,4 +65,42 @@ public class TestMatrix extends AbstractJob {
         throw new RuntimeException(msg);
     }
     
+    private void testItemUserVector() throws IOException {
+        int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
+        SequenceFileDirIterator<IntWritable, VectorWritable> iterator = HadoopHelper.openVectorIterator(MovielensDataConfig.getItemUserVectorPath(), getConf());
+        int count = 0;
+        while (iterator.hasNext()) {
+            iterator.next();
+            count++;
+        }
+        if (count != itemCount) {
+            assertFailed("count = " + count);
+        }
+        iterator.close();
+    }
+    
+    private void testItemOneZeroCount() throws IOException {
+        int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
+        HadoopHelper.log(this, "itemCount=" + itemCount);
+        if (itemCount != 1682) {
+            assertFailed("itemCount = " + itemCount);
+        }
+        
+        int count = (itemCount-1)*itemCount/2;
+        
+        
+        SequenceFileDirIterator<IntWritable, IntWritable> iterator = 
+                new SequenceFileDirIterator<IntWritable, IntWritable>(MovielensDataConfig.getCountIUUIOneZeroPath(),
+                PathType.LIST, MultipleSequenceOutputFormat.FILTER, null, true,
+                getConf());
+        int c = 0;
+        while (iterator.hasNext()) {
+            Pair<IntWritable, IntWritable> pair = iterator.next();
+            c += pair.getSecond().get();
+        }
+        if (c != count) {
+            assertFailed("c = " + c);
+        }
+        iterator.close();
+    }
 }
