@@ -6,19 +6,19 @@
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
+import hongfeng.xu.rec.mahout.hadoop.misc.IntIntWritable;
 
 import java.io.IOException;
 
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 /**
  * @author xuhongfeng
  *
  */
-public class ToVectorMapper extends Mapper<LongWritable, Text, IntWritable, IntDoubleWritable> {
+public class ToVectorMapper extends Mapper<IntIntWritable, DoubleWritable, IntWritable, IntDoubleWritable> {
     
     public static final int TYPE_FIRST = 0;
     public static final int TYPE_SECOND = TYPE_FIRST + 1;
@@ -31,12 +31,11 @@ public class ToVectorMapper extends Mapper<LongWritable, Text, IntWritable, IntD
     }
 
     @Override
-    protected void map(LongWritable key, Text value, Context context)
+    protected void map(IntIntWritable key, DoubleWritable value, Context context)
             throws IOException, InterruptedException {
-        String[] ss = value.toString().split("\\s");
-        int id1 = Integer.valueOf(ss[0]);
-        int id2 = Integer.valueOf(ss[1]);
-        double v = Double.valueOf(ss[2]);
+        int id1 = key.getId1();
+        int id2 = key.getId2();
+        double v = value.get();
         
         int type = Integer.valueOf(context.getConfiguration().get("type"));
         if (type == TYPE_FIRST) {

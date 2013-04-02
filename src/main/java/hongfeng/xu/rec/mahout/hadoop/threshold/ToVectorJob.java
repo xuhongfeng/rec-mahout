@@ -5,9 +5,11 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
-import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
+import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorMapper;
+import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorReducer;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 
 import java.io.IOException;
@@ -45,17 +47,17 @@ public class ToVectorJob extends AbstractJob {
           return -1;
         }
         
-        int userCount = HadoopUtil.readInt(MovielensDataConfig.getUserCountPath(), getConf());
-        int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
+        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+        int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
         
         AtomicInteger currentPhase = new AtomicInteger();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             List<Job> jobs = new ArrayList<Job>();
-            runJob(jobs, MovielensDataConfig.getRawTrainingDataPath(),
-                    MovielensDataConfig.getUserItemVectorPath(), userCount, itemCount,
+            runJob(jobs, DataSetConfig.getRawTrainingDataPath(),
+                    DataSetConfig.getUserItemVectorPath(), userCount, itemCount,
                     ToVectorMapper.TYPE_FIRST);
-            runJob(jobs, MovielensDataConfig.getRawTrainingDataPath(),
-                    MovielensDataConfig.getItemUserVectorPath(), itemCount, userCount,
+            runJob(jobs, DataSetConfig.getRawTrainingDataPath(),
+                    DataSetConfig.getItemUserVectorPath(), itemCount, userCount,
                     ToVectorMapper.TYPE_SECOND);
             while (jobs.size() > 0) {
                 Iterator<Job> iterator = jobs.iterator();
@@ -72,9 +74,9 @@ public class ToVectorJob extends AbstractJob {
             }
         }
         
-        if (!HadoopHelper.isFileExists(MovielensDataConfig.getUserItemOneZeroVectorPath(), getConf())) {
-            Job job = prepareJob(MovielensDataConfig.getUserItemVectorPath(),
-                    MovielensDataConfig.getUserItemOneZeroVectorPath(), MultipleInputFormat.class,
+        if (!HadoopHelper.isFileExists(DataSetConfig.getUserItemOneZeroVectorPath(), getConf())) {
+            Job job = prepareJob(DataSetConfig.getUserItemVectorPath(),
+                    DataSetConfig.getUserItemOneZeroVectorPath(), MultipleInputFormat.class,
                     ToOneZeroMapper.class, IntWritable.class, VectorWritable.class,
                     SequenceFileOutputFormat.class);
             job.setNumReduceTasks(10);
@@ -82,9 +84,9 @@ public class ToVectorJob extends AbstractJob {
                 return -1;
             }
         }
-        if (!HadoopHelper.isFileExists(MovielensDataConfig.getItemUserOneZeroVectorPath(), getConf())) {
-            Job job = prepareJob(MovielensDataConfig.getItemUserVectorPath(),
-                    MovielensDataConfig.getItemUserOneZeroVectorPath(), MultipleInputFormat.class,
+        if (!HadoopHelper.isFileExists(DataSetConfig.getItemUserOneZeroVectorPath(), getConf())) {
+            Job job = prepareJob(DataSetConfig.getItemUserVectorPath(),
+                    DataSetConfig.getItemUserOneZeroVectorPath(), MultipleInputFormat.class,
                     ToOneZeroMapper.class, IntWritable.class, VectorWritable.class,
                     SequenceFileOutputFormat.class);
             job.setNumReduceTasks(10);

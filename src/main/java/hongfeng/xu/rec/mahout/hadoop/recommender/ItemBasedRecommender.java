@@ -1,13 +1,13 @@
 /**
- * 2013-3-24
+ * 2013-3-31
  * 
  * xuhongfeng
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyNearestNeighborJob;
 import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
 
 import java.util.List;
@@ -35,29 +35,37 @@ public class ItemBasedRecommender extends BaseRecommender {
         }
         AtomicInteger currentPhase = new AtomicInteger();
         
+        int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
+        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+        
+        Path itemSimilarityPath = DataSetConfig.getItemSimilarityPath();
+        Path itemUserVectorPath = DataSetConfig.getItemUserVectorPath();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getItemSimilarityPath(), getConf())) {
-                int itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
-                int userCount = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
+            if (!HadoopHelper.isFileExists(itemSimilarityPath, getConf())) {
                 CosineSimilarityJob job = new CosineSimilarityJob(itemCount,
-                        userCount, itemCount, DeliciousDataConfig.getItemUserVectorPath());
+                        userCount, itemCount, itemUserVectorPath);
                 ToolRunner.run(job, new String[] {
-                        "--input", DeliciousDataConfig.getItemUserVectorPath().toString(),
-                        "--output", DeliciousDataConfig.getItemSimilarityPath().toString()
+                        "--input", itemUserVectorPath.toString(),
+                        "--output", itemSimilarityPath.toString()
                 });
             }
         }
         
+        Path itemBasedMatrixPath = DataSetConfig.getItemBasedMatrix();
+        Path userItemVectorPath = DataSetConfig.getUserItemVectorPath();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getItemBasedMatrix(), getConf())) {
-                int n1 = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
-                int n2 = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
-                int n3 = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
-                Path multipyerPath = new Path(DeliciousDataConfig.getItemSimilarityPath(), "rowVector");
-                MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
+            if (!HadoopHelper.isFileExists(itemBasedMatrixPath, getConf())) {
+                int n1 = userCount;
+                int n2 = itemCount;
+                int n3 = itemCount;
+                int type = MultiplyNearestNeighborJob.TYPE_SECOND;
+                int k = 50;
+                Path multipyerPath = new Path(itemSimilarityPath, "rowVector");
+                MultiplyNearestNeighborJob job = new MultiplyNearestNeighborJob(n1,
+                        n2, n3, multipyerPath, type, k);
                 ToolRunner.run(job, new String[] {
-                        "--input", DeliciousDataConfig.getUserItemVectorPath().toString(),
-                        "--output", DeliciousDataConfig.getItemBasedMatrix().toString()
+                        "--input", userItemVectorPath.toString(),
+                        "--output", itemBasedMatrixPath.toString()
                 });
             }
         }
@@ -67,11 +75,12 @@ public class ItemBasedRecommender extends BaseRecommender {
                     getConf())) {
                 RecommendJob job = new RecommendJob();
                 ToolRunner.run(job, new String[] {
-                        "--input", new Path(DeliciousDataConfig.getItemBasedMatrix(), "rowVector").toString(),
+                        "--input", new Path(itemBasedMatrixPath, "rowVector").toString(),
                         "--output", getOutputPath().toString() 
                 });
             }
         }
+        
         return 0;
     }
 

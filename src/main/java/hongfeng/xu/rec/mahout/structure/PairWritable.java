@@ -3,7 +3,7 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.misc;
+package hongfeng.xu.rec.mahout.structure;
 
 import java.io.DataInput;
 import java.io.DataOutput;

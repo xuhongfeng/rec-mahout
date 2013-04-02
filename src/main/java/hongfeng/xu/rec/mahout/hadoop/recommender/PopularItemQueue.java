@@ -5,7 +5,8 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
  *
  */
 public class PopularItemQueue {
-    private static final int STEP = DeliciousDataConfig.TOP_N;
+    private static final int STEP = DataSetConfig.TOP_N;
     private List<Item> list = new ArrayList<Item>();
     private Configuration conf;
     
@@ -47,7 +48,7 @@ public class PopularItemQueue {
     }
     
     private void loadMore(int size) throws IOException {
-        Path path = DeliciousDataConfig.getPopularItemSortPath();
+        Path path = DataSetConfig.getPopularItemSortPath();
         SequenceFileDirIterator<IntWritable, DoubleWritable> iterator
             = new SequenceFileDirIterator<IntWritable, DoubleWritable> (
             path, PathType.LIST, PathFilters.partFilter(), null, false, conf);

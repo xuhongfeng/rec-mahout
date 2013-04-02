@@ -3,9 +3,9 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.threshold;
+package hongfeng.xu.rec.mahout.hadoop.matrix;
 
-import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 
 import java.io.IOException;
 
@@ -49,9 +49,9 @@ public abstract class BaseIndexMap {
     
     private Path getPath(IndexType type) {
         if (type == IndexType.UserIndex) {
-            return MovielensDataConfig.getUserIndexPath();
+            return DataSetConfig.getUserIndexPath();
         } else if (type == IndexType.ItemIndex) {
-            return MovielensDataConfig.getItemIndexPath();
+            return DataSetConfig.getItemIndexPath();
         } else {
             throw new RuntimeException();
         }

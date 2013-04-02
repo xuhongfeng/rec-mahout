@@ -5,8 +5,11 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.eval;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
+import hongfeng.xu.rec.mahout.hadoop.recommender.PopularityMap;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItem;
+import hongfeng.xu.rec.mahout.structure.RecommendedItemsAndUserIdWritable;
+import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -36,7 +39,7 @@ public class TopNReducer extends Reducer<TypeAndNWritable, RecommendedItemsAndUs
         hitSet = HitSet.create(context.getConfiguration());
         popularityMap = PopularityMap.create(context.getConfiguration());
         userValueMap = UserValueMap.create(context.getConfiguration());
-        itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), context.getConfiguration());
+        itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), context.getConfiguration());
     }
 
     public TopNReducer() {

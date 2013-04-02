@@ -5,7 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 
 import java.io.IOException;
@@ -42,11 +42,11 @@ public class PopularRecommender extends BaseRecommender {
         AtomicInteger currentPhase = new AtomicInteger();
         
         if(shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getPopularItemSortPath(), getConf())) {
+            if (!HadoopHelper.isFileExists(DataSetConfig.getPopularItemSortPath(), getConf())) {
                 Tool job = new PopularityItemJob();
                 ToolRunner.run(job, new String[] {
-                        "--input", DeliciousDataConfig.getItemUserVectorPath().toString(),
-                        "--output", DeliciousDataConfig.getPopularItemSortPath().toString()
+                        "--input", DataSetConfig.getItemUserVectorPath().toString(),
+                        "--output", DataSetConfig.getPopularItemSortPath().toString()
                 });
             }
         }
@@ -82,7 +82,7 @@ public class PopularRecommender extends BaseRecommender {
         protected void map(IntWritable key, VectorWritable value,
                 Context context)
                 throws IOException, InterruptedException {
-            int n = DeliciousDataConfig.TOP_N;
+            int n = DataSetConfig.TOP_N;
             List<RecommendedItem> items = new ArrayList<RecommendedItem>();
             Vector vector = value.get();
             int i = 0;

@@ -1,11 +1,11 @@
 /**
- * 2013-3-17
+ * 2013-3-26
  * 
  * xuhongfeng
  */
 package hongfeng.xu.rec.mahout.hadoop.parser;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -54,11 +54,9 @@ public class IdIndexReducer extends Reducer<IntWritable, LongWritable, NullWrita
             writer.close();
         }
         if (key.get() == IdIndexMapper.TYPE_USER_ID) {
-            HadoopUtil.writeInt(incrId, DeliciousDataConfig.getUserCountPath(), context.getConfiguration());
+            HadoopUtil.writeInt(incrId, DataSetConfig.getUserCountPath(), context.getConfiguration());
         } else if (key.get() == IdIndexMapper.TYPE_ITEM_ID) {
-            HadoopUtil.writeInt(incrId, DeliciousDataConfig.getItemCountPath(), context.getConfiguration());
-        } else if (key.get() == IdIndexMapper.TYPE_TAG_ID) {
-            HadoopUtil.writeInt(incrId, DeliciousDataConfig.getTagCountPath(), context.getConfiguration());
+            HadoopUtil.writeInt(incrId, DataSetConfig.getItemCountPath(), context.getConfiguration());
         } else {
             throw new RuntimeException();
         }
@@ -68,11 +66,9 @@ public class IdIndexReducer extends Reducer<IntWritable, LongWritable, NullWrita
         FileSystem fs = FileSystem.get(conf);
         Path path = null;
         if (type == IdIndexMapper.TYPE_USER_ID) {
-            path = DeliciousDataConfig.getUserIndexPath();
+            path = DataSetConfig.getUserIndexPath();
         } else if (type == IdIndexMapper.TYPE_ITEM_ID) {
-            path = DeliciousDataConfig.getItemIndexPath();
-        } else if (type == IdIndexMapper.TYPE_TAG_ID) {
-            path = DeliciousDataConfig.getTagIndexPath();
+            path = DataSetConfig.getItemIndexPath();
         } else {
             throw new RuntimeException();
         }

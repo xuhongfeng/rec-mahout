@@ -11,7 +11,7 @@ import org.apache.hadoop.fs.Path;
  * @author xuhongfeng
  *
  */
-public class MovielensDataConfig {
+public class DataSetConfig {
     public static final int TOP_N = 100;
     
     public static Path getAllDataPath() {

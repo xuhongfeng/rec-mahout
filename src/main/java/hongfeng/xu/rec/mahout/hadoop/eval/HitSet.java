@@ -5,7 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.eval;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 
 import java.io.BufferedReader;
@@ -42,7 +42,7 @@ public class HitSet {
     
     public static HitSet create(Configuration conf) throws IOException {
         HitSet set = new HitSet();
-        FSDataInputStream in = HadoopHelper.open(DeliciousDataConfig.getTestDataPath(), conf);
+        FSDataInputStream in = HadoopHelper.open(DataSetConfig.getTestDataPath(), conf);
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line = null;
         while ( (line=reader.readLine()) != null) {

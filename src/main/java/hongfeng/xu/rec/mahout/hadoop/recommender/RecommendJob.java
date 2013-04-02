@@ -5,7 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 import hongfeng.xu.rec.mahout.hadoop.matrix.VectorCache;
@@ -49,7 +49,7 @@ public class RecommendJob extends AbstractJob {
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             if (!HadoopHelper.isFileExists(getOutputPath(), getConf())) {
-                Job job = prepareJob(DeliciousDataConfig.getUserItemVectorPath(),
+                Job job = prepareJob(DataSetConfig.getUserItemVectorPath(),
                         getOutputPath(), MultipleInputFormat.class,
                         RecommendMapper.class, IntWritable.class, RecommendedItemList.class,
                         SequenceFileOutputFormat.class);
@@ -69,7 +69,7 @@ public class RecommendJob extends AbstractJob {
         private int itemCount;
         
         private FixedSizePriorityQueue<RecommendedItem> queue = new FixedSizePriorityQueue<RecommendedItem>(
-                DeliciousDataConfig.TOP_N, new Comparator<RecommendedItem>() {
+                DataSetConfig.TOP_N, new Comparator<RecommendedItem>() {
                     @Override
                     public int compare(RecommendedItem o1, RecommendedItem o2) {
                         if (o1.getValue() > o2.getValue()) {
@@ -93,9 +93,9 @@ public class RecommendJob extends AbstractJob {
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
-            userCount = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(),
+            userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(),
                     context.getConfiguration());
-            itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(),
+            itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(),
                     context.getConfiguration());
             recommendVectorPath = new Path(context.getConfiguration().get("recommendVectorPath"));
             vectorCache = VectorCache.create(userCount, itemCount, recommendVectorPath,
@@ -124,7 +124,7 @@ public class RecommendJob extends AbstractJob {
             
             recommendedItemList.clear();
             recommendedItemList.addAll(queue.toArray(new RecommendedItem[0]));
-            while (recommendedItemList.size() != DeliciousDataConfig.TOP_N) {
+            while (recommendedItemList.size() != DataSetConfig.TOP_N) {
                 int itemId = random.nextInt(originVector.size());
                 if (originVector.getQuick(itemId) == 0.0) {
                     RecommendedItem item = new RecommendedItem(itemId, 0.0);

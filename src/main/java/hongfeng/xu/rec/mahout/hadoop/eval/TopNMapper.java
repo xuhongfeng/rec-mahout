@@ -5,9 +5,11 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.eval;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItem;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItemList;
+import hongfeng.xu.rec.mahout.structure.RecommendedItemsAndUserIdWritable;
+import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ public class TopNMapper extends Mapper<IntWritable, RecommendedItemList,
             Context context)
             throws IOException, InterruptedException {
         List<RecommendedItem> totalList = value.getItems();
-        for (int n=10; n<=DeliciousDataConfig.TOP_N; n+=10) {
+        for (int n=10; n<=DataSetConfig.TOP_N; n+=10) {
             List<RecommendedItem> list = new ArrayList<RecommendedItem>();
             for (int i=0; i<n; i++) {
                 list.add(totalList.get(i));

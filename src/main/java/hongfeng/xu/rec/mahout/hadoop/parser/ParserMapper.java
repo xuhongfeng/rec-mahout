@@ -1,16 +1,17 @@
 /**
- * 2013-3-10
+ * 2013-3-27
  * 
  * xuhongfeng
  */
 package hongfeng.xu.rec.mahout.hadoop.parser;
 
-import hongfeng.xu.rec.mahout.model.DeliciousDataModel.RawDataLine;
+import hongfeng.xu.rec.mahout.hadoop.misc.IdIndexMap;
+import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
+import hongfeng.xu.rec.mahout.hadoop.misc.BaseIndexMap.IndexType;
 
 import java.io.IOException;
-import java.util.Random;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -19,26 +20,39 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @author xuhongfeng
  *
  */
-public final class ParserMapper extends Mapper<LongWritable, Text, KeyType, DoubleWritable> {
-    private static final double TRAINING_RATE = 0.9;
-    private final Random random = new Random();
+public final class ParserMapper extends Mapper<LongWritable, Text, IntWritable, IntDoubleWritable> {
+    private IdIndexMap itemMap;
+    private IdIndexMap userMap;
+    
+    private IntWritable keyWritable = new IntWritable();
+    private IntDoubleWritable valueWritable = new IntDoubleWritable();
     
     public ParserMapper() {
         super();
     }
-
-
+    
+    @Override
+    protected void setup(Context context) throws IOException, InterruptedException {
+        super.setup(context);
+        itemMap = IdIndexMap.create(IndexType.ItemIndex, context.getConfiguration());
+        userMap = IdIndexMap.create(IndexType.UserIndex, context.getConfiguration());
+    }
 
     @Override
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
-        RawDataLine line = RawDataLine.parse(value.toString());
-        if (random.nextDouble() <= TRAINING_RATE) {
-            context.write(new KeyType(KeyType.TYPE_USER_ITEM, line.userId, line.bookmarkId), new DoubleWritable(1.0));
-            context.write(new KeyType(KeyType.TYPE_USER_TAG, line.userId, line.tagId), new DoubleWritable(1.0));
-            context.write(new KeyType(KeyType.TYPE_ITEM_TAG, line.bookmarkId, line.tagId), new DoubleWritable(1.0));
-        } else {
-            context.write(new KeyType(KeyType.TYPE_TEST_DATA, line.userId, line.bookmarkId), new DoubleWritable(1.0));
-        }
+        String[] ss = value.toString().split("\\s");
+        long userId = Long.valueOf(ss[0]);
+        long itemId = Long.valueOf(ss[1]);
+        double rate = Double.valueOf(ss[2]);
+        
+        int userIndex = userMap.getIndex(userId);
+        int itemIndex = itemMap.getIndex(itemId);
+        
+        keyWritable.set(userIndex);
+        valueWritable.setId(itemIndex);
+        valueWritable.setValue(rate);
+        
+        context.write(keyWritable, valueWritable);
     }
 }

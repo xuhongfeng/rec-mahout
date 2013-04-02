@@ -5,7 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class RandomRecommender extends BaseRecommender {
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
-            numItems = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(),
+            numItems = HadoopUtil.readInt(DataSetConfig.getItemCountPath(),
                     context.getConfiguration());
         }
 
@@ -74,7 +74,7 @@ public class RandomRecommender extends BaseRecommender {
         protected void map(IntWritable key, VectorWritable value,
                 Context context)
                 throws IOException, InterruptedException {
-            int n = DeliciousDataConfig.TOP_N;
+            int n = DataSetConfig.TOP_N;
             List<RecommendedItem> items = new ArrayList<RecommendedItem>();
             Vector vector = value.get();
             while (items.size() < n) {

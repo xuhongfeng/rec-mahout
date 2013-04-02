@@ -7,6 +7,8 @@ package hongfeng.xu.rec.mahout.hadoop.eval;
 
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
+import hongfeng.xu.rec.mahout.structure.RecommendedItemsAndUserIdWritable;
+import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 
 import java.util.List;
 import java.util.Map;

@@ -3,7 +3,7 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.eval;
+package hongfeng.xu.rec.mahout.structure;
 
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItem;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendedItemList;

@@ -5,8 +5,6 @@
  */
 package hongfeng.xu.rec.mahout.chart;
 
-import hongfeng.xu.rec.mahout.runner.AbsTopNRunner.Result;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;

@@ -3,9 +3,9 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.eval;
+package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class PopularityMap {
     public static PopularityMap create(Configuration conf) throws IOException {
         PopularityMap map = new PopularityMap();
         SequenceFileDirIterator<IntWritable, VectorWritable> iterator =
-                HadoopHelper.openVectorIterator(DeliciousDataConfig.getItemUserVectorPath(), conf);
+                HadoopHelper.openVectorIterator(DataSetConfig.getItemUserVectorPath(), conf);
         while (iterator.hasNext()) {
             Pair<IntWritable, VectorWritable> pair = iterator.next();
             map.add(pair.getFirst().get(), pair.getSecond().get().zSum());

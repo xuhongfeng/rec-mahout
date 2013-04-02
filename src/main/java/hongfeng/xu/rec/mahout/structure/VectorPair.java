@@ -3,9 +3,8 @@
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.matrix;
+package hongfeng.xu.rec.mahout.structure;
 
-import hongfeng.xu.rec.mahout.hadoop.misc.PairWritable;
 
 import org.apache.mahout.math.VectorWritable;
 

@@ -1,5 +1,5 @@
 /**
- * 2013-3-17
+ * 2013-3-26
  * 
  * xuhongfeng
  */
@@ -19,7 +19,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 public class IdIndexMapper extends Mapper<LongWritable, Text, IntWritable, LongWritable> {
     public static final int TYPE_USER_ID = 0;
     public static final int TYPE_ITEM_ID = TYPE_USER_ID + 1;
-    public static final int TYPE_TAG_ID = TYPE_ITEM_ID + 1;
     
     private final LongWritable longWritable = new LongWritable();
     private final IntWritable intWritable = new IntWritable();
@@ -34,10 +33,8 @@ public class IdIndexMapper extends Mapper<LongWritable, Text, IntWritable, LongW
         String[] ss = value.toString().split("\\s");
         long userId = Long.valueOf(ss[0]);
         long itemId = Long.valueOf(ss[1]);
-        long tagId = Long.valueOf(ss[2]);
         write(context, TYPE_USER_ID, userId);
         write(context, TYPE_ITEM_ID, itemId);
-        write(context, TYPE_TAG_ID, tagId);
     }
     
     private void write(Context context, int key, long value) throws IOException, InterruptedException {

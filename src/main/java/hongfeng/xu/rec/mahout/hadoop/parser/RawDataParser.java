@@ -1,19 +1,24 @@
 /**
- * 2013-3-10
+ * 2013-3-27
  * 
  * xuhongfeng
  */
 package hongfeng.xu.rec.mahout.hadoop.parser;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
+import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
+import hongfeng.xu.rec.mahout.hadoop.misc.IntIntWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.util.Tool;
@@ -39,21 +44,37 @@ public class RawDataParser extends AbstractJob {
         AtomicInteger currentPhase = new AtomicInteger();
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getIdIndexPath(), getConf())) {
+            if (!HadoopHelper.isFileExists(DataSetConfig.getIdIndexPath(), getConf())) {
                 Tool job = new IdIndexJob();
                 ToolRunner.run(job, new String[] {
-                    "--input", getInputPath().toString(),
-                    "--output", DeliciousDataConfig.getIdIndexPath().toString(),
+                    "--input", DataSetConfig.getAllDataPath().toString(),
+                    "--output", DataSetConfig.getIdIndexPath().toString(),
                 });
             }
         }
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Job job = prepareJob(getInputPath(), getOutputPath(), TextInputFormat.class, 
-                    ParserMapper.class, KeyType.class, DoubleWritable.class, ParserReducer.class,
-                    KeyType.class, DoubleWritable.class, ParserOutputFormat.class);
-            if (!job.waitForCompletion(true)) {
-                return -1;
+            if (!HadoopHelper.isFileExists(DataSetConfig.getRawTrainingDataPath(), getConf())) {
+                Job job = prepareJob(DataSetConfig.getTrainingDataPath(),
+                        DataSetConfig.getRawTrainingDataPath(), TextInputFormat.class, 
+                        ParserMapper.class, IntWritable.class, IntDoubleWritable.class,
+                        ParserReducer.class,
+                        IntIntWritable.class, DoubleWritable.class, UserItemRate.class);
+                if (!job.waitForCompletion(true)) {
+                    return -1;
+                }
+            }
+        }
+        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+            if (!HadoopHelper.isFileExists(DataSetConfig.getRawTestDataPath(), getConf())) {
+                Job job = prepareJob(DataSetConfig.getTestDataPath(),
+                        DataSetConfig.getRawTestDataPath(), TextInputFormat.class, 
+                        ParserMapper.class, IntWritable.class, IntDoubleWritable.class,
+                        ParserReducer.class, IntIntWritable.class, DoubleWritable.class,
+                        UserItemRate.class);
+                if (!job.waitForCompletion(true)) {
+                    return -1;
+                }
             }
         }
         
@@ -70,4 +91,15 @@ public class RawDataParser extends AbstractJob {
         }
     }
     
+    public static class UserItemRate extends MultipleSequenceOutputFormat<IntIntWritable, DoubleWritable> {
+        @Override
+        protected String getFile(IntIntWritable key, Configuration conf) {
+            int totalCount = conf.getInt("totalCount", -1);
+            if (totalCount == -1) {
+                return String.valueOf(key.getId1()%10);
+            } else {
+                return String.valueOf(key.getId1()/(totalCount/10));
+            }
+        }
+    }
 } 

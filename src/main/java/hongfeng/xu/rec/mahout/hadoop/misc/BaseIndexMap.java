@@ -5,7 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.misc;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ import org.apache.mahout.common.iterator.sequencefile.SequenceFileIterator;
  */
 public abstract class BaseIndexMap {
     public static enum IndexType {
-        UserIndex, ItemIndex, TagIndex
+        UserIndex, ItemIndex
     }
     
     protected final IndexType indexType;
@@ -49,11 +49,9 @@ public abstract class BaseIndexMap {
     
     private Path getPath(IndexType type) {
         if (type == IndexType.UserIndex) {
-            return DeliciousDataConfig.getUserIndexPath();
+            return DataSetConfig.getUserIndexPath();
         } else if (type == IndexType.ItemIndex) {
-            return DeliciousDataConfig.getItemIndexPath();
-        } else if (type == IndexType.TagIndex) {
-            return DeliciousDataConfig.getTagIndexPath();
+            return DataSetConfig.getItemIndexPath();
         } else {
             throw new RuntimeException();
         }

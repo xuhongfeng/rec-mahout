@@ -5,7 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.test;
 
-import hongfeng.xu.rec.mahout.config.MovielensDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
 
@@ -46,7 +46,7 @@ public class TestMatrix extends AbstractJob {
     }
     
     private void testUserVectorCount() throws IOException {
-        Path path = MovielensDataConfig.getUserItemVectorPath();
+        Path path = DataSetConfig.getUserItemVectorPath();
         SequenceFileDirIterator<IntWritable, VectorWritable> iterator
             = HadoopHelper.openVectorIterator(path, getConf());
         int count = 0;
@@ -66,8 +66,8 @@ public class TestMatrix extends AbstractJob {
     }
     
     private void testItemUserVector() throws IOException {
-        int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
-        SequenceFileDirIterator<IntWritable, VectorWritable> iterator = HadoopHelper.openVectorIterator(MovielensDataConfig.getItemUserVectorPath(), getConf());
+        int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
+        SequenceFileDirIterator<IntWritable, VectorWritable> iterator = HadoopHelper.openVectorIterator(DataSetConfig.getItemUserVectorPath(), getConf());
         int count = 0;
         while (iterator.hasNext()) {
             iterator.next();
@@ -80,7 +80,7 @@ public class TestMatrix extends AbstractJob {
     }
     
     private void testItemOneZeroCount() throws IOException {
-        int itemCount = HadoopUtil.readInt(MovielensDataConfig.getItemCountPath(), getConf());
+        int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
         HadoopHelper.log(this, "itemCount=" + itemCount);
         if (itemCount != 1682) {
             assertFailed("itemCount = " + itemCount);
@@ -90,7 +90,7 @@ public class TestMatrix extends AbstractJob {
         
         
         SequenceFileDirIterator<IntWritable, IntWritable> iterator = 
-                new SequenceFileDirIterator<IntWritable, IntWritable>(MovielensDataConfig.getCountIUUIOneZeroPath(),
+                new SequenceFileDirIterator<IntWritable, IntWritable>(DataSetConfig.getCountIUUIOneZeroPath(),
                 PathType.LIST, MultipleSequenceOutputFormat.FILTER, null, true,
                 getConf());
         int c = 0;

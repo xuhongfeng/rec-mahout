@@ -5,9 +5,9 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import hongfeng.xu.rec.mahout.config.DeliciousDataConfig;
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyNearestNeighborJob;
 import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
 
 import java.util.List;
@@ -35,29 +35,33 @@ public class UserBasedRecommender extends BaseRecommender {
         }
         AtomicInteger currentPhase = new AtomicInteger();
         
+        int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
+        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+        
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getUserSimilarityPath(), getConf())) {
-                int itemCount = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
-                int userCount = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
+            if (!HadoopHelper.isFileExists(DataSetConfig.getUserSimilarityPath(), getConf())) {
                 CosineSimilarityJob job = new CosineSimilarityJob(userCount,
-                        itemCount, userCount, DeliciousDataConfig.getUserItemVectorPath());
+                        itemCount, userCount, DataSetConfig.getUserItemVectorPath());
                 ToolRunner.run(job, new String[] {
-                        "--input", DeliciousDataConfig.getUserItemVectorPath().toString(),
-                        "--output", DeliciousDataConfig.getUserSimilarityPath().toString()
+                        "--input", DataSetConfig.getUserItemVectorPath().toString(),
+                        "--output", DataSetConfig.getUserSimilarityPath().toString()
                 });
             }
         }
         
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DeliciousDataConfig.getUserBasedMatrix(), getConf())) {
-                int n1 = HadoopUtil.readInt(DeliciousDataConfig.getUserCountPath(), getConf());
+            if (!HadoopHelper.isFileExists(DataSetConfig.getUserBasedMatrix(), getConf())) {
+                int n1 = userCount;
                 int n2 = n1;
-                int n3 = HadoopUtil.readInt(DeliciousDataConfig.getItemCountPath(), getConf());
-                Path multipyerPath = DeliciousDataConfig.getItemUserVectorPath();
-                MultiplyMatrixJob job = new MultiplyMatrixJob(n1, n2, n3, multipyerPath);
+                int n3 = itemCount;
+                int type = MultiplyNearestNeighborJob.TYPE_FIRST;
+                int k = 50;
+                Path multipyerPath = DataSetConfig.getItemUserVectorPath();
+                MultiplyNearestNeighborJob job = new MultiplyNearestNeighborJob(n1,
+                        n2, n3, multipyerPath, type, k);
                 ToolRunner.run(job, new String[] {
-                        "--input", new Path(DeliciousDataConfig.getUserSimilarityPath(), "rowVector").toString(),
-                        "--output", DeliciousDataConfig.getUserBasedMatrix().toString()
+                        "--input", new Path(DataSetConfig.getUserSimilarityPath(), "rowVector").toString(),
+                        "--output", DataSetConfig.getUserBasedMatrix().toString()
                 });
             }
         }
@@ -67,7 +71,7 @@ public class UserBasedRecommender extends BaseRecommender {
                     getConf())) {
                 RecommendJob job = new RecommendJob();
                 ToolRunner.run(job, new String[] {
-                        "--input", new Path(DeliciousDataConfig.getUserBasedMatrix(), "rowVector").toString(),
+                        "--input", new Path(DataSetConfig.getUserBasedMatrix(), "rowVector").toString(),
                         "--output", getOutputPath().toString() 
                 });
             }
