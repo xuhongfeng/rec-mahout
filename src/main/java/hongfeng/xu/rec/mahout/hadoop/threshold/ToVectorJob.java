@@ -53,10 +53,10 @@ public class ToVectorJob extends AbstractJob {
         AtomicInteger currentPhase = new AtomicInteger();
         if (shouldRunNextPhase(parsedArgs, currentPhase)) {
             List<Job> jobs = new ArrayList<Job>();
-            runJob(jobs, DataSetConfig.getRawTrainingDataPath(),
+            runJob(jobs, DataSetConfig.getTrainingDataPath(),
                     DataSetConfig.getUserItemVectorPath(), userCount, itemCount,
                     ToVectorMapper.TYPE_FIRST);
-            runJob(jobs, DataSetConfig.getRawTrainingDataPath(),
+            runJob(jobs, DataSetConfig.getTrainingDataPath(),
                     DataSetConfig.getItemUserVectorPath(), itemCount, userCount,
                     ToVectorMapper.TYPE_SECOND);
             while (jobs.size() > 0) {

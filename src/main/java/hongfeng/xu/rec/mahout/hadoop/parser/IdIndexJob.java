@@ -5,36 +5,24 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.parser;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import hongfeng.xu.rec.mahout.hadoop.BaseJob;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.mahout.common.AbstractJob;
 
 /**
  * @author xuhongfeng
  *
  */
-public class IdIndexJob extends AbstractJob {
+public class IdIndexJob extends BaseJob {
 
     @Override
-    public int run(String[] args) throws Exception {
-        
-        addInputOption();
-        addOutputOption();
-        
-        Map<String,List<String>> parsedArgs = parseArguments(args);
-        if (parsedArgs == null) {
-          return -1;
-        }
-        
-        AtomicInteger currentPhase = new AtomicInteger();
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
+    protected int innerRun() throws Exception {
+        if (!HadoopHelper.isFileExists(getOutputPath(), getConf())) {
             Job job = prepareJob(getInputPath(), getOutputPath(), IdIndexMapper.class,
                     IntWritable.class, LongWritable.class,
                     IdIndexReducer.class, NullWritable.class, NullWritable.class);

@@ -14,17 +14,9 @@ import org.apache.hadoop.fs.Path;
 public class DataSetConfig {
     public static final int TOP_N = 100;
     
-    public static Path getAllDataPath() {
-        return new Path("data/movielens-100k/u.data");
-    }
-    
-    public static Path getTrainingDataPath() {
-        return new Path("data/movielens-100k/u1.base");
-    }
-    
-    public static Path getTestDataPath() {
-        return new Path("data/movielens-100k/u1.test");
-    }
+    public static Path inputAll = new Path("data/movielens-100k/u.data");
+    public static Path inputTraining = new Path("data/movielens-100k/u1.base");
+    public static Path inputTest = new Path("data/movielens-100k/u1.test");
     
     public static Path getRootPath() {
         return new Path("movielens-100k");
@@ -35,11 +27,15 @@ public class DataSetConfig {
         return new Path(getRootPath(), "rawData");
     }
     
-    public static Path getRawTrainingDataPath() {
+    public static Path getAllDataPath() {
+        return new Path(getRawDataPath(), "all");
+    }
+    
+    public static Path getTrainingDataPath() {
         return new Path(getRawDataPath(), "training");
     }
     
-    public static Path getRawTestDataPath() {
+    public static Path getTestDataPath() {
         return new Path(getRawDataPath(), "test");
     }
     
