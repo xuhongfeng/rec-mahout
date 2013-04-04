@@ -11,6 +11,7 @@ import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -27,27 +28,27 @@ import org.apache.mahout.math.VectorWritable;
  *
  */
 public class DrawMatrixJob extends BaseJob {
-    public static int MODE_NON_ZERO = 0;
-    public static int MODE_WITH_ZERO = MODE_NON_ZERO + 1;
-    
-    private final int mode;
     private final float precision;
     private final String imageFile;
     private final String title;
     private final String[] subTitles;
     private final Path[] matrixDirs;
     private final String[] series;
+    private final boolean withZero;
+    private final boolean diagonalOnly;
     
-    public DrawMatrixJob(int mode, float precision, String imageFile,
-            String title, String[] subTitles, Path[] matrixDirs, String[] series) {
+    public DrawMatrixJob(float precision, String imageFile,
+            String title, String[] subTitles, Path[] matrixDirs, String[] series,
+            boolean withZero, boolean diagonalOnly) {
         super();
-        this.mode = mode;
         this.precision = precision;
         this.imageFile = imageFile;
         this.title = title;
         this.subTitles = subTitles;
         this.matrixDirs = matrixDirs;
         this.series = series;
+        this.withZero = withZero;
+        this.diagonalOnly = diagonalOnly;
     }
 
     @Override
@@ -60,7 +61,8 @@ public class DrawMatrixJob extends BaseJob {
                     MyMapper.class, DoubleWritable.class, IntWritable.class,
                     MyReducer.class, DoubleWritable.class, IntWritable.class,
                     SequenceFileOutputFormat.class);
-            job.getConfiguration().setInt("mode", mode);
+            job.getConfiguration().setBoolean("withZero", withZero);
+            job.getConfiguration().setBoolean("diagonalOnly", diagonalOnly);
             job.getConfiguration().setFloat("precision", precision);
             job.setNumReduceTasks(10);
             job.setCombinerClass(MyReducer.class);
@@ -83,35 +85,49 @@ public class DrawMatrixJob extends BaseJob {
 
     public static class MyMapper extends Mapper<IntWritable, VectorWritable, DoubleWritable,
         IntWritable> {
+        
         private DoubleWritable keyWritable = new DoubleWritable();
         private static final IntWritable ONE = new IntWritable(1);
+        
+        private float precision;
+        private boolean withZero;
+        private boolean diagonalOnly;
 
         public MyMapper() {
             super();
         }
         
         @Override
+        protected void setup(Context context) throws IOException, InterruptedException {
+            super.setup(context);
+            Configuration conf = context.getConfiguration();
+            precision = conf.getFloat("precision", 0.01f);
+            withZero = conf.getBoolean("withZero", true);
+            diagonalOnly = conf.getBoolean("diagonalOnly", true);
+        }
+        
+        @Override
         protected void map(IntWritable key, VectorWritable value, Context context)
                 throws IOException, InterruptedException {
             float precision = context.getConfiguration().getFloat("precision", 0.001f);
-            int mode = context.getConfiguration().getInt("mode", MODE_WITH_ZERO);
             
             int i = key.get();
             Vector vector = value.get();
             Iterator<Element> iterator = null;
-            if (mode == MODE_NON_ZERO) {
-                iterator = vector.iterateNonZero();
-            } else {
+            if (withZero) {
                 iterator = vector.iterator();
+            } else {
+                iterator = vector.iterateNonZero();
             }
             while (iterator.hasNext()) {
                 Element e = iterator.next();
-                if (e.index() > i) {
-                    double v = e.get();
-                    int n = (int) (v/precision);
-                    keyWritable.set(n*precision);
-                    context.write(keyWritable, ONE);
+                if (diagonalOnly && e.index()<=i) {
+                    continue;
                 }
+                double v = e.get();
+                int n = (int) (v/precision);
+                keyWritable.set(n*precision);
+                context.write(keyWritable, ONE);
             }
         }
     }
