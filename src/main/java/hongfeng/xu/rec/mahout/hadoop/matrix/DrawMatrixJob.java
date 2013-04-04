@@ -5,15 +5,11 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
@@ -22,7 +18,6 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.Vector.Element;
 import org.apache.mahout.math.VectorWritable;
@@ -31,7 +26,7 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class DrawMatrixJob extends AbstractJob {
+public class DrawMatrixJob extends BaseJob {
     public static int MODE_NON_ZERO = 0;
     public static int MODE_WITH_ZERO = MODE_NON_ZERO + 1;
     
@@ -56,49 +51,23 @@ public class DrawMatrixJob extends AbstractJob {
     }
 
     @Override
-    public int run(String[] args) throws Exception {
-        
-        addInputOption();
-        addOutputOption();
-        
-        Map<String,List<String>> parsedArgs = parseArguments(args);
-        if (parsedArgs == null) {
-          return -1;
-        }
-        
-        AtomicInteger currentPhase = new AtomicInteger();
-        
-        List<Job> jobs = new ArrayList<Job>(matrixDirs.length);
+    protected int innerRun() throws Exception {
+        JobQueue queue = createJobQueue();
         for (Path path:matrixDirs) {
             Path vectorPath = new Path(path, "rowVector");
             Path distributionPath = new Path(path, "distribution");
-            if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-                if (!HadoopHelper.isFileExists(distributionPath, getConf())) {
-                    Job job = prepareJob(vectorPath, distributionPath, MultipleInputFormat.class,
-                            MyMapper.class, DoubleWritable.class, IntWritable.class,
-                            MyReducer.class, DoubleWritable.class, IntWritable.class,
-                            SequenceFileOutputFormat.class);
-                    job.getConfiguration().setInt("mode", mode);
-                    job.getConfiguration().setFloat("precision", precision);
-                    job.setNumReduceTasks(10);
-                    job.setCombinerClass(MyReducer.class);
-                    job.submit();
-                    jobs.add(job);
-                }
-            }
+            Job job = prepareJob(vectorPath, distributionPath, MultipleInputFormat.class,
+                    MyMapper.class, DoubleWritable.class, IntWritable.class,
+                    MyReducer.class, DoubleWritable.class, IntWritable.class,
+                    SequenceFileOutputFormat.class);
+            job.getConfiguration().setInt("mode", mode);
+            job.getConfiguration().setFloat("precision", precision);
+            job.setNumReduceTasks(10);
+            job.setCombinerClass(MyReducer.class);
+            queue.submitJob(job);
         }
-        while (jobs.size() > 0) {
-            Iterator<Job> iterator = jobs.iterator();
-            while (iterator.hasNext()) {
-                Job job = iterator.next();
-                if (job.isComplete()) {
-                    if (!job.isSuccessful()) {
-                        return -1;
-                    }
-                    iterator.remove();
-                }
-            }
-            Thread.sleep(1000L);
+        if (queue.waitForComplete() == -1) {
+            return -1;
         }
         
         Path[] distributionPaths = new Path[matrixDirs.length];

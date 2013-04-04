@@ -18,7 +18,8 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @author xuhongfeng
  *
  */
-public class ToVectorMapper extends Mapper<IntIntWritable, DoubleWritable, IntWritable, IntDoubleWritable> {
+public class ToVectorMapper extends Mapper<IntIntWritable, DoubleWritable, IntWritable,
+        IntDoubleWritable> {
     
     public static final int TYPE_FIRST = 0;
     public static final int TYPE_SECOND = TYPE_FIRST + 1;
@@ -28,6 +29,16 @@ public class ToVectorMapper extends Mapper<IntIntWritable, DoubleWritable, IntWr
 
     public ToVectorMapper() {
         super();
+    }
+    
+    @Override
+    protected void setup(Context context) throws IOException, InterruptedException {
+        super.setup(context);
+        int vectorCount = context.getConfiguration().getInt("vectorCount", 0);
+        for (int i=0; i<vectorCount; i++) {
+            intWritable.set(i);
+            context.write(intWritable, IntDoubleWritable.NONE);
+        }
     }
 
     @Override

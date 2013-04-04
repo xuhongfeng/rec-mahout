@@ -78,11 +78,11 @@ public class DataSetConfig {
     }
     
     public static Path getItemUserVectorPath() {
-        return new Path(getUserItemMatrixPath(), "itemUserVector");
+        return new Path(getUserItemMatrixPath(), "rowVector");
     }
     
     public static Path getUserItemVectorPath() {
-        return new Path(getUserItemMatrixPath(), "userItemVector");
+        return new Path(getUserItemMatrixPath(), "columnVector");
     }
     
     /*************** one-zero matrix *******************/

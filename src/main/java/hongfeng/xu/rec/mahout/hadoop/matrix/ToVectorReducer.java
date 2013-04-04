@@ -32,7 +32,9 @@ public class ToVectorReducer extends Reducer<IntWritable, IntDoubleWritable, Int
         int vectorSize = context.getConfiguration().getInt("vectorSize", 0);
         Vector vector = new RandomAccessSparseVector(vectorSize);
         for (IntDoubleWritable value:values) {
-            vector.setQuick(value.getId(), value.getValue());
+            if (!value.isNone()) {
+                vector.setQuick(value.getId(), value.getValue());
+            }
         }
         vectorWritable.set(vector);
         context.write(key, vectorWritable);
