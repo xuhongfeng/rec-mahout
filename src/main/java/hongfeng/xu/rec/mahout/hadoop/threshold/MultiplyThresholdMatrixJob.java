@@ -69,9 +69,7 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
                 return HadoopHelper.cosineSimilarity(vector1, vector2);
             } else {
                 Vector v = averageCache.get(i);
-                double vv = v.getQuick(j);
-                HadoopHelper.log(this, "vv=" + vv);
-                return vv;
+                return v.getQuick(j);
             }
         }
     }

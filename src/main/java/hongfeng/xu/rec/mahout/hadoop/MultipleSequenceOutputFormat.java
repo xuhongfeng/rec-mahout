@@ -49,8 +49,6 @@ public class MultipleSequenceOutputFormat<K, V> extends MultipleOutputFormat<K, 
             public void write(K key, V value) throws IOException,
                     InterruptedException {
                 writer.append(key, value);
-                //TODO
-                HadoopHelper.log(this, "write key = " + key.toString());
             }
 
             @Override

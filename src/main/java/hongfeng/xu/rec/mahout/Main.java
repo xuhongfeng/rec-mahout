@@ -14,6 +14,7 @@ import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
 import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
 import hongfeng.xu.rec.mahout.hadoop.similarity.ThresholdCosineSimilarityJob;
 import hongfeng.xu.rec.mahout.hadoop.threshold.MultiplyThresholdMatrixJob;
+import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommender;
 import hongfeng.xu.rec.mahout.util.L;
 
 import org.apache.hadoop.fs.Path;
@@ -31,7 +32,11 @@ public class Main extends BaseJob {
         
         toVector();
         
-        calculateSimilarity();
+//        calculateSimilarity();
+        
+        int threshold = 30;
+        ThresholdRecommender job = new ThresholdRecommender(threshold);
+        runJob(job, DataSetConfig.getUserItemVectorPath(), DataSetConfig.getThresholdResult(threshold), true);
         
         return 0;
     }

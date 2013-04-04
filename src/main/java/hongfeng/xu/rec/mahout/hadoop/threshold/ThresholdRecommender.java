@@ -6,22 +6,11 @@
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixAverageJob;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyNearestNeighborJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
-import hongfeng.xu.rec.mahout.hadoop.recommender.RecommendJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
+import hongfeng.xu.rec.mahout.hadoop.similarity.ThresholdCosineSimilarityJob;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.common.HadoopUtil;
 
 /**
  * @author xuhongfeng
@@ -29,101 +18,62 @@ import org.apache.mahout.common.HadoopUtil;
  */
 public class ThresholdRecommender extends BaseRecommender {
     private final int threshold;
+    
+    private int n1, n2, n3;
 
     public ThresholdRecommender(int threshold) {
         super();
         this.threshold = threshold;
     }
 
-    @Override
-    public int run(String[] args) throws Exception {
-        addInputOption();
-        addOutputOption();
+    protected int innerRun() throws Exception {
+        n1 = userCount();
+        n2 = itemCount();
+        n3 = n1;
         
-        Map<String,List<String>> parsedArgs = parseArguments(args);
-        if (parsedArgs == null) {
-          return -1;
-        }
-        AtomicInteger currentPhase = new AtomicInteger();
+        calculateThresholdSimilarity();
         
-        int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
-        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+        calculateThresholdAverageSimilarity();
         
-        /* similarity */
-        Path userItemVectorPath = DataSetConfig.getUserItemVectorPath();
-        Path similarityPath = DataSetConfig.getUserSimilarityPath();
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(similarityPath, getConf())) {
-                CosineSimilarityJob job = new CosineSimilarityJob(userCount,
-                        itemCount, userCount, userItemVectorPath);
-                ToolRunner.run(job, new String[] {
-                        "--input", userItemVectorPath.toString(),
-                        "--output", similarityPath.toString()
-                });
-            }
-        }
+        calculateUUThreshold();
         
-        /* average similarity */
-        Path similarityAveragePath = DataSetConfig.getUUUUSimilarityAverage();
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(similarityAveragePath, getConf())) {
-                int n1 = userCount;
-                int n2 = n1;
-                int n3 = n1;
-                Path uuSimilarityPath = new Path(similarityPath, "rowVector");
-                MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, uuSimilarityPath);
-                runJob(job, new String[] {}, uuSimilarityPath, similarityAveragePath);
-            }
-        }
+        calculateUIThreshold();
         
-        /* threshold similarity */
-        Path uuThresholdPath = DataSetConfig.getUUThresholdPath(threshold);
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(uuThresholdPath, getConf())) {
-                int n1 = userCount;
-                int n2 = itemCount;
-                int n3 = n1;
-                MultiplyThresholdMatrixJob job = new MultiplyThresholdMatrixJob(n1, n2, n3, userItemVectorPath
-                        ,threshold, similarityAveragePath);
-                runJob(job, new String[] {}, userItemVectorPath, DataSetConfig.getUUThresholdPath(threshold));
-            }
-        }
-        
-        Path uuuiThresholdPath = DataSetConfig.getUUUIThresholdPath(threshold);
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(uuuiThresholdPath, getConf())) {
-                int n1 = userCount;
-                int n2 = n1;
-                int n3 = itemCount;
-                int type = MultiplyNearestNeighborJob.TYPE_FIRST;
-                int k = 50;
-                MultiplyNearestNeighborJob job = new MultiplyNearestNeighborJob(n1,
-                        n2, n3, userItemVectorPath, type, k);
-                runJob(job, new String[] {}, new Path(uuThresholdPath, "rowVector"), uuuiThresholdPath);
-            }
-        }
-        
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(getOutputPath(),
-                    getConf())) {
-                RecommendJob job = new RecommendJob();
-                ToolRunner.run(job, new String[] {
-                        "--input", new Path(uuuiThresholdPath, "rowVector").toString(),
-                        "--output", getOutputPath().toString() 
-                });
-            }
-        }
         return 0;
     }
     
-    private void runJob (Tool job, String[] args, Path input, Path output) throws Exception {
-        if (!HadoopHelper.isFileExists(output, getConf())) {
-            args = (String[]) ArrayUtils.addAll(new String[] {
-                "--input", input.toString(),
-                "--output", output.toString(),
-            }, args);
-            ToolRunner.run(getConf(), job, args);
-        }
+    private void calculateThresholdSimilarity() throws Exception {
+        Path multiplyerPath = DataSetConfig.getUserItemVectorPath();
+        ThresholdCosineSimilarityJob thresholdCosineSimilarityJob =
+                new ThresholdCosineSimilarityJob(n1, n2, n3, multiplyerPath, threshold);
+        runJob(thresholdCosineSimilarityJob, DataSetConfig.getUserItemVectorPath(),
+                DataSetConfig.getSimilarityThresholdPath(threshold), true);
     }
-
+    
+    private void calculateThresholdAverageSimilarity () throws Exception {
+        Path similarityVectorPath = new Path(DataSetConfig.getSimilarityThresholdPath(threshold), "rowVector");
+        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(n1, n2, n3,
+                similarityVectorPath);
+        runJob(matrixAverageJob, similarityVectorPath, DataSetConfig.getSimilarityThresholdAveragePath(threshold)
+                , true);
+    }
+    
+    private void calculateUUThreshold() throws Exception {
+        Path averageSimilarityPath = new Path(DataSetConfig.getSimilarityThresholdAveragePath(threshold), "rowVector");
+        MultiplyThresholdMatrixJob multiplyThresholdMatrixJob =
+                new MultiplyThresholdMatrixJob(n1, n2, n3, DataSetConfig.getUserItemVectorPath(),
+                        threshold, averageSimilarityPath);
+        runJob(multiplyThresholdMatrixJob, DataSetConfig.getUserItemVectorPath(),
+                DataSetConfig.getUUThresholdPath(threshold), true);
+    }
+    
+    private void calculateUIThreshold() throws Exception {
+        int n1 = userCount();
+        int n2 = n1;
+        int n3 = itemCount();
+        Path multiplyerPath = DataSetConfig.getItemUserVectorPath();
+        Path input = new Path(DataSetConfig.getUUThresholdPath(threshold), "rowVector");
+        MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, multiplyerPath);
+        runJob(job, input, DataSetConfig.getUUUIThresholdPath(threshold), true);
+    }
 }

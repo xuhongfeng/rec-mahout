@@ -5,12 +5,12 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
-import org.apache.mahout.common.AbstractJob;
+import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 
 /**
  * @author xuhongfeng
  *
  */
-public abstract class BaseRecommender extends AbstractJob {
+public abstract class BaseRecommender extends BaseJob {
     public static final int TOP_N = 100;
 }
