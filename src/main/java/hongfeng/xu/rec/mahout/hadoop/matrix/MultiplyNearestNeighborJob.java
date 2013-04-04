@@ -5,6 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.structure.FixedSizePriorityQueue;
 
 import java.io.IOException;
@@ -102,13 +103,13 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
                     queue.add(pair);
                 }
             }
-//            if (DataSetConfig.ONE_ZERO) {
-//                double totalSim = 0.0;
-//                for (Pair<Double, Double> pair:queue) {
-//                    totalSim += pair.getFirst();
-//                }
-//                return totalSim;
-//            } else {
+            if (DataSetConfig.ONE_ZERO) {
+                double totalSim = 0.0;
+                for (Pair<Double, Double> pair:queue) {
+                    totalSim += pair.getFirst();
+                }
+                return totalSim;
+            } else {
                 double v = 0.0;
                 double c = 0.0;
                 for (Pair<Double, Double> pair:queue) {
@@ -121,7 +122,7 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
                     c += Math.abs(sim);
                 }
                 return c==0.0?0.0:v/c;
-//            }
+            }
         }
     }
     

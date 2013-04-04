@@ -7,6 +7,7 @@ package hongfeng.xu.rec.mahout.hadoop.threshold;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixAverageJob;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyNearestNeighborJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
 import hongfeng.xu.rec.mahout.hadoop.similarity.ThresholdCosineSimilarityJob;
 
@@ -39,6 +40,8 @@ public class ThresholdRecommender extends BaseRecommender {
         
         calculateUIThreshold();
         
+        recommend(DataSetConfig.getUUUIThresholdPath(threshold));
+        
         return 0;
     }
     
@@ -68,12 +71,18 @@ public class ThresholdRecommender extends BaseRecommender {
     }
     
     private void calculateUIThreshold() throws Exception {
-        int n1 = userCount();
+        int itemCount = itemCount();
+        int userCount = userCount();
+        int n1 = userCount;
         int n2 = n1;
-        int n3 = itemCount();
-        Path multiplyerPath = DataSetConfig.getItemUserVectorPath();
+        int n3 = itemCount;
+        int type = MultiplyNearestNeighborJob.TYPE_FIRST;
+        int k = 50;
+        Path multipyerPath = DataSetConfig.getItemUserVectorPath();
         Path input = new Path(DataSetConfig.getUUThresholdPath(threshold), "rowVector");
-        MultiplyMatrixAverageJob job = new MultiplyMatrixAverageJob(n1, n2, n3, multiplyerPath);
-        runJob(job, input, DataSetConfig.getUUUIThresholdPath(threshold), true);
+        MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(n1,
+                n2, n3, multipyerPath, type, k);
+        runJob(multiplyNearestNeighborJob, input,
+                DataSetConfig.getUUUIThresholdPath(threshold), true);
     }
 }

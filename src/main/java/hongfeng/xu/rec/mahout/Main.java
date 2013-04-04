@@ -20,6 +20,7 @@ import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
 import hongfeng.xu.rec.mahout.hadoop.similarity.ThresholdCosineSimilarityJob;
 import hongfeng.xu.rec.mahout.hadoop.threshold.MultiplyThresholdMatrixJob;
+import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommender;
 import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -77,6 +78,16 @@ public class Main extends BaseJob {
         calculateResult(DataSetConfig.getRandomRecommenderEvaluate(), "random");
         calculateResult(DataSetConfig.getPopularRecommederEvaluate(), "popular");
         calculateResult(DataSetConfig.getUserBasedEvaluate(), "UserBased");
+        
+        /* threshold recommender */
+        for (int threshold=10; threshold<=10; threshold+=10) {
+            EvaluateRecommenderJob<ThresholdRecommender> evaluateThreshold =
+                    new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(threshold),
+                    DataSetConfig.getThresholdResult(threshold));
+            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+                    DataSetConfig.getThresholdEvaluate(threshold), true);
+            calculateResult(DataSetConfig.getThresholdEvaluate(threshold), "Threshold-" + threshold);
+        }
         
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);
         chartDrawer.draw();
