@@ -77,6 +77,7 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
             });
         }
         
+        
         @Override
         protected double calculate(int i, int j, Vector vector1, Vector vector2) {
             queue.clear();
@@ -85,13 +86,6 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
                 while (iterator.hasNext()) {
                     Element e = iterator.next();
                     double pref = vector2.getQuick(e.index());
-                    if (pref > 3.5) {
-                        pref = 1.0;
-                    } else if (pref <2.5 && pref>0.5) {
-                        pref = -1.0;
-                    } else {
-                        pref = 0.0;
-                    }
                     double sim = e.get();
                     Pair<Double, Double> pair = 
                             new Pair<Double, Double>(sim, pref);
@@ -102,24 +96,32 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
                 while (iterator.hasNext()) {
                     Element e = iterator.next();
                     double pref = vector1.getQuick(e.index());
-                    if (pref > 3.5) {
-                        pref = 1.0;
-                    } else if (pref <2.5 && pref>0.5) {
-                        pref = -1.0;
-                    } else {
-                        pref = 0.0;
-                    }
                     double sim = e.get();
                     Pair<Double, Double> pair = 
                             new Pair<Double, Double>(sim, pref);
                     queue.add(pair);
                 }
             }
-            double v = 0.0;
-            for (Pair<Double, Double> pair:queue) {
-                v += pair.getFirst()*pair.getSecond();
-            }
-            return v;
+//            if (DataSetConfig.ONE_ZERO) {
+//                double totalSim = 0.0;
+//                for (Pair<Double, Double> pair:queue) {
+//                    totalSim += pair.getFirst();
+//                }
+//                return totalSim;
+//            } else {
+                double v = 0.0;
+                double c = 0.0;
+                for (Pair<Double, Double> pair:queue) {
+                    double pref = pair.getSecond();
+                    if (pref == 0.0) {
+                        continue;
+                    }
+                    double sim = pair.getFirst();
+                    v += sim*pref;
+                    c += Math.abs(sim);
+                }
+                return c==0.0?0.0:v/c;
+//            }
         }
     }
     

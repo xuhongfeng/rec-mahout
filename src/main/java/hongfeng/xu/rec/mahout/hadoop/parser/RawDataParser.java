@@ -28,21 +28,17 @@ public class RawDataParser extends BaseJob {
     private final Path inputAll;
     private final Path inputTraining;
     private final Path inputTest;
-    private final boolean toOneZero;
     
-    public RawDataParser(Path inputAll, Path inputTraining, Path inputTest,
-            boolean toOneZero) {
+    public RawDataParser(Path inputAll, Path inputTraining, Path inputTest ) {
         super();
         this.inputAll = inputAll;
         this.inputTraining = inputTraining;
         this.inputTest = inputTest;
-        this.toOneZero = toOneZero;
     }
     
     @Override
     protected void initConf(Configuration conf) {
         super.initConf(conf);
-        conf.setBoolean("toOneZero", toOneZero);
     }
     
     @Override

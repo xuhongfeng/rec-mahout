@@ -21,6 +21,7 @@ import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.function.DoubleDoubleFunction;
+import org.apache.mahout.math.function.DoubleFunction;
 
 /**
  * @author xuhongfeng
@@ -88,6 +89,29 @@ public class HadoopHelper {
     };
     
     public static double cosineSimilarity(Vector vector1, Vector vector2) {
-        return vector1.dot(vector2)/(Math.sqrt(vector1.getLengthSquared()) * Math.sqrt(vector2.getLengthSquared()));
+        double dot = vector1.dot(vector2);
+        if (dot == 0.0) {
+            return  0.0;
+        }
+        double n = Math.sqrt(vector1.getLengthSquared()) * Math.sqrt(vector2.getLengthSquared());
+        return dot/n;
     }
+    
+    public static int numNonZero(Vector vector) {
+        return (int) vector.aggregate(aggregatorNumNonZero, mapNumNonZero);
+    }
+    private static DoubleFunction mapNumNonZero = new DoubleFunction() {
+        public double apply(double arg1) {
+            if (arg1 == 0.0) {
+                return 0.0;
+            }
+            return 1.0;
+        }
+    };
+    private static DoubleDoubleFunction aggregatorNumNonZero = new DoubleDoubleFunction() {
+        @Override
+        public double apply(double arg1, double arg2) {
+            return arg1 + arg2;
+        }
+    };
 }

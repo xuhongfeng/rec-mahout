@@ -9,8 +9,11 @@ import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
 import hongfeng.xu.rec.mahout.hadoop.matrix.VectorCache;
+import hongfeng.xu.rec.mahout.structure.FixedSizePriorityQueue;
+import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.IOException;
+import java.util.Comparator;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -134,5 +137,32 @@ public class TestMatrix extends AbstractJob {
             assertFailed("c = " + c);
         }
         iterator.close();
+    }
+    
+    private static void testNearest() {
+        int k = 3;
+        FixedSizePriorityQueue<Pair<Double, Double>> queue =
+                new FixedSizePriorityQueue<Pair<Double,Double>>(k,
+            new Comparator<Pair<Double, Double>>() {
+                @Override
+                public int compare(Pair<Double, Double> o1,
+                        Pair<Double, Double> o2) {
+                    if (o1.getFirst() > o2.getFirst()) {
+                        return 1;
+                    }
+                    if (o1.getFirst() < o2.getFirst()) {
+                        return -1;
+                    }
+                    return 0;
+                }
+        });
+        queue.add(new Pair<Double, Double>(1.0, 1.0));
+        queue.add(new Pair<Double, Double>(3.0, 1.0));
+        queue.add(new Pair<Double, Double>(5.0, 1.0));
+        queue.add(new Pair<Double, Double>(2.0, 1.0));
+        queue.add(new Pair<Double, Double>(4.0, 1.0));
+        for (Pair<Double, Double> pair:queue) {
+            L.i("", "" + pair.getFirst());
+        }
     }
 }

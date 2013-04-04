@@ -10,9 +10,7 @@ import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
@@ -30,24 +28,12 @@ import org.apache.mahout.math.VectorWritable;
 public class RandomRecommender extends BaseRecommender {
     
     @Override
-    public int run(String[] args) throws Exception {
-        addInputOption();
-        addOutputOption();
-        
-        
-        Map<String,List<String>> parsedArgs = parseArguments(args);
-        if (parsedArgs == null) {
-          return -1;
-        }
-        AtomicInteger currentPhase = new AtomicInteger();
-        
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Job job = prepareJob(getInputPath(), getOutputPath(), SequenceFileInputFormat.class,
-                    MyMapper.class, IntWritable.class, RecommendedItemList.class,
-                    SequenceFileOutputFormat.class);
-            if (!job.waitForCompletion(true)) {
-                return -1;
-            }
+    protected int innerRun() throws Exception {
+        Job job = prepareJob(getInputPath(), getOutputPath(), SequenceFileInputFormat.class,
+                MyMapper.class, IntWritable.class, RecommendedItemList.class,
+                SequenceFileOutputFormat.class);
+        if (!job.waitForCompletion(true)) {
+            return -1;
         }
         return 0;
     }

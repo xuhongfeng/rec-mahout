@@ -5,6 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.parser;
 
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.misc.BaseIndexMap.IndexType;
 import hongfeng.xu.rec.mahout.hadoop.misc.IdIndexMap;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
@@ -23,7 +24,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 public final class ParserMapper extends Mapper<LongWritable, Text, IntWritable, IntDoubleWritable> {
     private IdIndexMap itemMap;
     private IdIndexMap userMap;
-    private boolean toOneZero = true;
     
     private IntWritable keyWritable = new IntWritable();
     private IntDoubleWritable valueWritable = new IntDoubleWritable();
@@ -37,7 +37,6 @@ public final class ParserMapper extends Mapper<LongWritable, Text, IntWritable, 
         super.setup(context);
         itemMap = IdIndexMap.create(IndexType.ItemIndex, context.getConfiguration());
         userMap = IdIndexMap.create(IndexType.UserIndex, context.getConfiguration());
-        toOneZero = context.getConfiguration().getBoolean("toOneZero", true);
     }
 
     @Override
@@ -53,13 +52,13 @@ public final class ParserMapper extends Mapper<LongWritable, Text, IntWritable, 
         
         keyWritable.set(userIndex);
         valueWritable.setId(itemIndex);
-        if (toOneZero) {
+        if (DataSetConfig.ONE_ZERO) {
             if (rate >= 3) {
                 rate = 1.0;
             } else {
-                rate = -1.0;
+                return;
             }
-        }
+        } 
         valueWritable.setValue(rate);
         
         context.write(keyWritable, valueWritable);

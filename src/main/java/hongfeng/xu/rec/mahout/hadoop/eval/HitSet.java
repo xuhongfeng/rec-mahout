@@ -6,15 +6,17 @@
 package hongfeng.xu.rec.mahout.hadoop.eval;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
+import hongfeng.xu.rec.mahout.hadoop.misc.IntIntWritable;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
+import org.apache.mahout.common.Pair;
+import org.apache.mahout.common.iterator.sequencefile.PathType;
+import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 
 /**
  * @author xuhongfeng
@@ -42,14 +44,19 @@ public class HitSet {
     
     public static HitSet create(Configuration conf) throws IOException {
         HitSet set = new HitSet();
-        FSDataInputStream in = HadoopHelper.open(DataSetConfig.getTestDataPath(), conf);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line = null;
-        while ( (line=reader.readLine()) != null) {
-            String[] ss = line.split("\t");
-            int userId = Integer.valueOf(ss[0]);
-            int itemId = Integer.valueOf(ss[1]);
-            set.add(userId, itemId);
+        SequenceFileDirIterator<IntIntWritable, DoubleWritable> iterator =
+                new SequenceFileDirIterator<IntIntWritable, DoubleWritable>(
+                        DataSetConfig.getTestDataPath(), PathType.LIST,
+                        MultipleSequenceOutputFormat.FILTER, null,
+                        true, conf);
+        try {
+            while (iterator.hasNext()) {
+                Pair<IntIntWritable, DoubleWritable> pair = iterator.next();
+                IntIntWritable key = pair.getFirst();
+                set.add(key.getId1(), key.getId2());
+            }
+        } finally {
+            iterator.close();
         }
         return set;
     }

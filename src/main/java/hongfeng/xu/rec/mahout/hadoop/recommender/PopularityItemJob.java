@@ -106,7 +106,7 @@ public class PopularityItemJob extends AbstractJob {
                 throws IOException, InterruptedException {
             Vector vector = value.get();
             writable.setId(key.get());
-            writable.setValue(vector.zSum());
+            writable.setValue(HadoopHelper.numNonZero(vector));
             context.write(ONE, writable);
         }
     }

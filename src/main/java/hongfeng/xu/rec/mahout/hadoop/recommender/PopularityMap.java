@@ -16,6 +16,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
+import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 /**
@@ -49,7 +50,10 @@ public class PopularityMap {
                 HadoopHelper.openVectorIterator(DataSetConfig.getItemUserVectorPath(), conf);
         while (iterator.hasNext()) {
             Pair<IntWritable, VectorWritable> pair = iterator.next();
-            map.add(pair.getFirst().get(), pair.getSecond().get().zSum());
+            int id = pair.getFirst().get();
+            Vector vector = pair.getSecond().get();
+            int num = HadoopHelper.numNonZero(vector);
+            map.add(id, num);
         }
         iterator.close();
         return map;

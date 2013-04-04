@@ -6,21 +6,16 @@
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
@@ -31,33 +26,16 @@ import org.apache.mahout.math.VectorWritable;
 public class PopularRecommender extends BaseRecommender {
     
     @Override
-    public int run(String[] args) throws Exception {
-        addInputOption();
-        addOutputOption();
-        
-        Map<String,List<String>> parsedArgs = parseArguments(args);
-        if (parsedArgs == null) {
-          return -1;
-        }
-        AtomicInteger currentPhase = new AtomicInteger();
-        
-        if(shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(DataSetConfig.getPopularItemSortPath(), getConf())) {
-                Tool job = new PopularityItemJob();
-                ToolRunner.run(job, new String[] {
-                        "--input", DataSetConfig.getItemUserVectorPath().toString(),
-                        "--output", DataSetConfig.getPopularItemSortPath().toString()
-                });
-            }
-        }
-        
-        if(shouldRunNextPhase(parsedArgs, currentPhase)) {
-            Job job = prepareJob(getInputPath(), getOutputPath(), SequenceFileInputFormat.class,
-                    MyMapper.class, IntWritable.class, RecommendedItemList.class,
-                    SequenceFileOutputFormat.class);
-            if (!job.waitForCompletion(true)) {
-                return -1;
-            }
+    protected int innerRun() throws Exception {
+        PopularityItemJob popularityItemJob = new PopularityItemJob();
+        runJob(popularityItemJob, DataSetConfig.getItemUserVectorPath(),
+                DataSetConfig.getPopularItemSortPath(), true);
+    
+        Job job = prepareJob(getInputPath(), getOutputPath(), SequenceFileInputFormat.class,
+                MyMapper.class, IntWritable.class, RecommendedItemList.class,
+                SequenceFileOutputFormat.class);
+        if (!job.waitForCompletion(true)) {
+            return -1;
         }
         
         return 0;
