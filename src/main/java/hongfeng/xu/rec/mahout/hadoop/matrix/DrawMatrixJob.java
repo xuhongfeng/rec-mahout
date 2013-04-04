@@ -6,6 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
 import hongfeng.xu.rec.mahout.hadoop.BaseJob;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 
 import java.io.IOException;
@@ -55,8 +56,11 @@ public class DrawMatrixJob extends BaseJob {
     protected int innerRun() throws Exception {
         JobQueue queue = createJobQueue();
         for (Path path:matrixDirs) {
-            Path vectorPath = new Path(path, "rowVector");
             Path distributionPath = new Path(path, "distribution");
+            if (HadoopHelper.isFileExists(distributionPath, getConf())) {
+                continue;
+            }
+            Path vectorPath = new Path(path, "rowVector");
             Job job = prepareJob(vectorPath, distributionPath, MultipleInputFormat.class,
                     MyMapper.class, DoubleWritable.class, IntWritable.class,
                     MyReducer.class, DoubleWritable.class, IntWritable.class,

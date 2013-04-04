@@ -8,6 +8,7 @@ package hongfeng.xu.rec.mahout.test;
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
+import hongfeng.xu.rec.mahout.hadoop.matrix.VectorCache;
 
 import java.io.IOException;
 
@@ -29,8 +30,9 @@ public class TestMatrix extends AbstractJob {
 
     @Override
     public int run(String[] args) throws Exception {
-        testItemUserVector();
-        testItemOneZeroCount();
+        testUUThreshold();
+//        testItemUserVector();
+//        testItemOneZeroCount();
         return 0;
     }
 
@@ -42,6 +44,36 @@ public class TestMatrix extends AbstractJob {
             });
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    private void testUUThreshold() throws IOException {
+        int threshold = 10;
+//        int vectorCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+//        int vectorSize = vectorCount;
+//        Path path = new Path(DataSetConfig.getUUThresholdPath(threshold), "rowVector");
+//        VectorCache cache = VectorCache.create(vectorCount, vectorSize, path, getConf());
+//        for (int i=0; i<vectorCount; i++) {
+//            HadoopHelper.log(this, "zSum = " + cache.get(i).zSum());
+//        }
+        
+//        Path path = new Path(DataSetConfig.getUUThresholdPath(threshold), "distribution");
+//        SequenceFileDirIterator<DoubleWritable, IntWritable> iterator
+//            = new SequenceFileDirIterator<DoubleWritable, IntWritable>(path, PathType.LIST,
+//                    MultipleSequenceOutputFormat.FILTER, null, true, getConf());
+//        while (iterator.hasNext()) {
+//            Pair<DoubleWritable, IntWritable> pair = iterator.next();
+//            HadoopHelper.log(this, pair.toString());
+//        }
+//        iterator.close();
+        
+        Path averageSimilarityPath = new Path(DataSetConfig.getSimilarityThresholdAveragePath(threshold), "rowVector");
+        int vectorCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+        int vectorSize = vectorCount;
+        Path path = new Path(DataSetConfig.getUUThresholdPath(30), "rowVector");
+        VectorCache cache = VectorCache.create(vectorCount, vectorSize, path, getConf());
+        for (int i=0; i<vectorCount; i++) {
+            HadoopHelper.log(this, "zSum = " + cache.get(i).zSum());
         }
     }
     

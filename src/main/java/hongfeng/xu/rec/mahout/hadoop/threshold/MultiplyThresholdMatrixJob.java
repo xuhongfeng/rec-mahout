@@ -21,21 +21,17 @@ import org.apache.mahout.math.Vector;
  */
 public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
     private final Path averageSimilarityPath;
-    private final int averageVectorSize;
     
     public MultiplyThresholdMatrixJob(int n1, int n2, int n3,
-            Path multiplyerPath, int threshold, Path averageSimilarityPath
-            , int averageVectorSize) {
+            Path multiplyerPath, int threshold, Path averageSimilarityPath) {
         super(n1, n2, n3, multiplyerPath, threshold);
         this.averageSimilarityPath = averageSimilarityPath;
-        this.averageVectorSize = averageVectorSize;
     }
     
     @Override
     protected void initConf(Configuration conf) {
         super.initConf(conf);
         conf.set("averageSimilarityPath", averageSimilarityPath.toString());
-        conf.setInt("averageVectorSize", averageVectorSize);
     }
 
     @Override
@@ -45,7 +41,6 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
 
     public static class MyReducer extends MatrixReducer {
         private VectorCache averageCache;
-        private int averageVectorSize;
         private Path averageSimilarityPath;
         private int threshold;
         
@@ -53,11 +48,11 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
             averageSimilarityPath = new Path(conf.get("averageSimilarityPath"));
-            int vectorSize = conf.getInt("averageVectorSize", -1);
-            int vectorCount = vectorSize;
+            int vectorCount = conf.getInt("n1", 0);
+            int vectorSize = vectorCount;
             threshold = conf.getInt("threshold", 0);
             averageCache = VectorCache.create(vectorCount, vectorSize,
-                    new Path(averageSimilarityPath, "rowVector"), conf);
+                    averageSimilarityPath, conf);
         }
 
         public MyReducer() {
@@ -74,7 +69,9 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
                 return HadoopHelper.cosineSimilarity(vector1, vector2);
             } else {
                 Vector v = averageCache.get(i);
-                return v.getQuick(j);
+                double vv = v.getQuick(j);
+                HadoopHelper.log(this, "vv=" + vv);
+                return vv;
             }
         }
     }

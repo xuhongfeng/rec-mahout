@@ -84,7 +84,7 @@ public class ThresholdRecommender extends BaseRecommender {
                 int n2 = itemCount;
                 int n3 = n1;
                 MultiplyThresholdMatrixJob job = new MultiplyThresholdMatrixJob(n1, n2, n3, userItemVectorPath
-                        ,threshold, similarityAveragePath, userCount);
+                        ,threshold, similarityAveragePath);
                 runJob(job, new String[] {}, userItemVectorPath, DataSetConfig.getUUThresholdPath(threshold));
             }
         }

@@ -18,10 +18,10 @@ import org.apache.mahout.math.Vector;
  * @author xuhongfeng
  *
  */
-public class ThresholdPearsonSimilarityJob extends CosineSimilarityJob {
+public class ThresholdCosineSimilarityJob extends CosineSimilarityJob {
     private final int threshold;
 
-    public ThresholdPearsonSimilarityJob(int n1, int n2, int n3,
+    public ThresholdCosineSimilarityJob(int n1, int n2, int n3,
             Path multiplyerPath, int threshold) {
         super(n1, n2, n3, multiplyerPath);
         this.threshold = threshold;

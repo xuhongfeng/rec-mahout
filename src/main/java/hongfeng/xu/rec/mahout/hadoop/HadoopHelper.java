@@ -80,7 +80,7 @@ public class HadoopHelper {
     private static DoubleDoubleFunction combiner = new DoubleDoubleFunction() {
         @Override
         public double apply(double arg1, double arg2) {
-            if (arg1>0 && arg2>0) {
+            if (arg1 != 0 && arg2 != 0) {
                 return 1;
             }
             return 0;

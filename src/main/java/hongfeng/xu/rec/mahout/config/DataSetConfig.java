@@ -222,13 +222,25 @@ public class DataSetConfig {
         return new Path(getRootPath(), "threshold");
     }
     
-    public static Path getIIThresholdPath(int threshold) {
-        Path dir = new Path(getThresholdDir(), "ii");
+    public static Path getSimilarityThresholdPath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "similarity");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    
+    public static Path getSimilarityThresholdAveragePath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "similarityAverage");
         return new Path(dir, String.valueOf(threshold));
     }
     
     public static Path getUUThresholdPath(int threshold) {
         Path dir = new Path(getThresholdDir(), "uu");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    
+    //TODO
+    
+    public static Path getIIThresholdPath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "ii");
         return new Path(dir, String.valueOf(threshold));
     }
     
