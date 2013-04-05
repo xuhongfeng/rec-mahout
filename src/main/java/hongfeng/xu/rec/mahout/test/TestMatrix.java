@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.Comparator;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.common.AbstractJob;
@@ -33,9 +34,10 @@ public class TestMatrix extends AbstractJob {
 
     @Override
     public int run(String[] args) throws Exception {
-        testUUThreshold();
+//        testUUThreshold();
 //        testItemUserVector();
 //        testItemOneZeroCount();
+        testUserItemVector();
         return 0;
     }
 
@@ -48,6 +50,32 @@ public class TestMatrix extends AbstractJob {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    private void testUserItemVector() throws IOException {
+//        int vectorCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+//        int vectorSize = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
+//        VectorCache cache = VectorCache.create(vectorCount, vectorSize,
+//                DataSetConfig.getUserItemVectorPath(), getConf());
+//        for (int i=0; i<vectorCount; i++) {
+//            Vector vector = cache.get(i);
+//            Iterator<Element> iterator = vector.iterator();
+//            while (iterator.hasNext()) {
+//                Element e = iterator.next();
+//                if (e.get() > 1.0) {
+//                    HadoopHelper.log(this, "value = " + e.get());
+//                }
+//            }
+//        }
+        Path path = new Path(DataSetConfig.getUserItemMatrixPath(), "distribution");
+        SequenceFileDirIterator<DoubleWritable, IntWritable> iterator
+            = new SequenceFileDirIterator<DoubleWritable, IntWritable>(path, PathType.LIST,
+                    MultipleSequenceOutputFormat.FILTER, null, true, getConf());
+        while (iterator.hasNext()) {
+            Pair<DoubleWritable, IntWritable> pair = iterator.next();
+            HadoopHelper.log(this, pair.toString());
+        }
+        iterator.close();
     }
     
     private void testUUThreshold() throws IOException {

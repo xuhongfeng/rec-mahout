@@ -13,7 +13,7 @@ import org.apache.hadoop.fs.Path;
  */
 public class DataSetConfig {
     public static final int TOP_N = 100;
-    public static final boolean ONE_ZERO = true;
+    public static final boolean ONE_ZERO = false;
     
     public static Path inputAll = new Path("data/movielens-100k/u.data");
     public static Path inputTraining = new Path("data/movielens-100k/u1.base");

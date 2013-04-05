@@ -6,7 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop.recommender;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 import hongfeng.xu.rec.mahout.hadoop.matrix.VectorCache;
 import hongfeng.xu.rec.mahout.structure.FixedSizePriorityQueue;
@@ -14,17 +14,13 @@ import hongfeng.xu.rec.mahout.structure.FixedSizePriorityQueue;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.Vector.Element;
@@ -34,30 +30,22 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class RecommendJob extends AbstractJob {
+public class RecommendJob extends BaseJob {
     
     @Override
-    public int run(String[] args) throws Exception {
-        addInputOption();
-        addOutputOption();
-        
-        Map<String,List<String>> parsedArgs = parseArguments(args);
-        if (parsedArgs == null) {
-          return -1;
-        }
-        AtomicInteger currentPhase = new AtomicInteger();
-        
-        if (shouldRunNextPhase(parsedArgs, currentPhase)) {
-            if (!HadoopHelper.isFileExists(getOutputPath(), getConf())) {
-                Job job = prepareJob(DataSetConfig.getUserItemVectorPath(),
-                        getOutputPath(), MultipleInputFormat.class,
-                        RecommendMapper.class, IntWritable.class, RecommendedItemList.class,
-                        SequenceFileOutputFormat.class);
-                job.getConfiguration().set("recommendVectorPath", getInputPath().toString());
-                if (!job.waitForCompletion(true)) {
-                    return -1;
-                }
-            }
+    protected void initConf(Configuration conf) {
+        super.initConf(conf);
+        conf.set("recommendVectorPath", getInputPath().toString());
+    }
+    
+    @Override
+    protected int innerRun() throws Exception {
+        Job job = prepareJob(DataSetConfig.getUserItemVectorPath(),
+                getOutputPath(), MultipleInputFormat.class,
+                RecommendMapper.class, IntWritable.class, RecommendedItemList.class,
+                SequenceFileOutputFormat.class);
+        if (!job.waitForCompletion(true)) {
+            return -1;
         }
         return 0;
     }
@@ -72,10 +60,10 @@ public class RecommendJob extends AbstractJob {
                 DataSetConfig.TOP_N, new Comparator<RecommendedItem>() {
                     @Override
                     public int compare(RecommendedItem o1, RecommendedItem o2) {
-                        if (o1.getValue() > o2.getValue()) {
+                        if (o1.getValue() < o2.getValue()) {
                             return -1;
                         }
-                        if (o1.getValue() < o2.getValue()) {
+                        if (o1.getValue() > o2.getValue()) {
                             return 1;
                         }
                         return 0;
@@ -83,7 +71,6 @@ public class RecommendJob extends AbstractJob {
                 });
         
         private RecommendedItemList recommendedItemList = new RecommendedItemList();
-        private Random random = new Random();
         private Path recommendVectorPath;
         
         public RecommendMapper() {
@@ -111,7 +98,7 @@ public class RecommendJob extends AbstractJob {
             int userId = key.get();
             Vector uiVector = vectorCache.get(userId);
             
-            Iterator<Element> iterator = uiVector.iterateNonZero();
+            Iterator<Element> iterator = uiVector.iterator();
             while (iterator.hasNext()) {
                 Element e = iterator.next();
                 int itemId = e.index();
@@ -124,12 +111,8 @@ public class RecommendJob extends AbstractJob {
             
             recommendedItemList.clear();
             recommendedItemList.addAll(queue.toArray(new RecommendedItem[0]));
-            while (recommendedItemList.size() != DataSetConfig.TOP_N) {
-                int itemId = random.nextInt(originVector.size());
-                if (originVector.getQuick(itemId) == 0.0) {
-                    RecommendedItem item = new RecommendedItem(itemId, 0.0);
-                    recommendedItemList.add(item);
-                }
+            if (recommendedItemList.size() != DataSetConfig.TOP_N) {
+                throw new RuntimeException();
             }
             context.write(key, recommendedItemList);
         }

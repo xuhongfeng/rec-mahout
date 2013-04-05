@@ -11,16 +11,10 @@ import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
 
-import java.io.IOException;
-import java.util.Iterator;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.mahout.math.RandomAccessSparseVector;
-import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 /**
@@ -60,29 +54,6 @@ public class ToVectorJob extends BaseJob {
             job.getConfiguration().setInt("vectorSize", vectorSize);
             job.getConfiguration().setInt("type", type);
             queue.submitJob(job);
-        }
-    }
-    
-    public static class ToOneZeroMapper extends Mapper<IntWritable, VectorWritable,
-        IntWritable, VectorWritable> {
-
-        public ToOneZeroMapper() {
-            super();
-        }
-        
-        @Override
-        protected void map(IntWritable key, VectorWritable value, Context context)
-                throws IOException, InterruptedException {
-            Vector vector = value.get();
-            Vector newVector = new RandomAccessSparseVector(vector.size(),
-                    vector.getNumNondefaultElements());
-            Iterator<Vector.Element> iterator = vector.iterateNonZero();
-            while (iterator.hasNext()) {
-                Vector.Element e = iterator.next();
-                newVector.setQuick(e.index(), 1);
-            }
-            value.set(newVector);
-            context.write(key, value);
         }
     }
 }

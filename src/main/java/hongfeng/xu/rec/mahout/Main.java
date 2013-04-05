@@ -80,7 +80,8 @@ public class Main extends BaseJob {
         calculateResult(DataSetConfig.getUserBasedEvaluate(), "UserBased");
         
         /* threshold recommender */
-        for (int threshold=10; threshold<=10; threshold+=10) {
+        int[] thresholdList = new int[] {5, 10, 20, 30, 50, 80, 100};
+        for (int threshold:thresholdList) {
             EvaluateRecommenderJob<ThresholdRecommender> evaluateThreshold =
                     new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(threshold),
                     DataSetConfig.getThresholdResult(threshold));
@@ -105,14 +106,14 @@ public class Main extends BaseJob {
         runJob(job, DataSetConfig.getRawDataPath(), DataSetConfig.getMatrixPath(), false);
         
         //draw distribution
-//        float precesion = 0.001f;
-//        String imageFile = "img/others/distribution_origin_matrix.png";
-//        String title = "origin matrix distribution";
-//        DrawMatrixJob drawJob = new DrawMatrixJob(precesion, imageFile, title,
-//                new String[0], new Path[] {DataSetConfig.getUserItemMatrixPath()},
-//                new String[] {""}, true, false);
-//        runJob(drawJob, DataSetConfig.getUserItemMatrixPath(), new Path(DataSetConfig.getUserItemMatrixPath(),
-//                "distributon"), false);
+        float precesion = 0.001f;
+        String imageFile = "img/others/distribution_origin_matrix.png";
+        String title = "origin matrix distribution";
+        DrawMatrixJob drawJob = new DrawMatrixJob(precesion, imageFile, title,
+                new String[0], new Path[] {DataSetConfig.getUserItemMatrixPath()},
+                new String[] {""}, true, false);
+        runJob(drawJob, DataSetConfig.getUserItemMatrixPath(), new Path(DataSetConfig.getUserItemMatrixPath(),
+                "distributon"), false);
     }
     
     private void parseRawData() throws Exception {
@@ -121,7 +122,7 @@ public class Main extends BaseJob {
         RawDataParser parser = new RawDataParser(DataSetConfig.inputAll, DataSetConfig.inputTraining,
                 DataSetConfig.inputTest);
         runJob(parser, DataSetConfig.inputAll, output, false);
-        
+//        
 //        new DrawRawData(DataSetConfig.inputTraining, DataSetConfig.getTrainingDataPath(),
 //                "rawData-training", getConf()).draw("img/others/rawData-training.png");
 //        new DrawRawData(DataSetConfig.inputTest, DataSetConfig.getTestDataPath(),

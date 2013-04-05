@@ -28,11 +28,11 @@ public class UserValueMap {
     
     private UserValueMap() {}
 
-    private void add(int userId, int itemId, double value) {
+    private void add(int userId, int itemId) {
         if (map.containsKey(userId)) {
-            map.put(userId, map.get(userId) + value);
+            map.put(userId, map.get(userId) + 1.0);
         } else {
-            map.put(userId, value);
+            map.put(userId, 1.0);
         }
     }
     
@@ -54,8 +54,16 @@ public class UserValueMap {
             while (iterator.hasNext()) {
                 Pair<IntIntWritable, DoubleWritable> pair = iterator.next();
                 IntIntWritable key = pair.getFirst();
-                DoubleWritable value = pair.getSecond();
-                map.add(key.getId1(), key.getId2(), value.get());
+                double pref = pair.getSecond().get();
+                if (DataSetConfig.ONE_ZERO) {
+                    if (pref == 1.0) {
+                        map.add(key.getId1(), key.getId2());
+                    }
+                } else {
+                    if (pref >= 3.0) {
+                        map.add(key.getId1(), key.getId2());
+                    }
+                }
             }
         } finally {
             iterator.close();

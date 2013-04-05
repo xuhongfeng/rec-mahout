@@ -53,7 +53,16 @@ public class HitSet {
             while (iterator.hasNext()) {
                 Pair<IntIntWritable, DoubleWritable> pair = iterator.next();
                 IntIntWritable key = pair.getFirst();
-                set.add(key.getId1(), key.getId2());
+                double pref = pair.getSecond().get();
+                if (DataSetConfig.ONE_ZERO) {
+                    if (pref == 1.0) {
+                        set.add(key.getId1(), key.getId2());
+                    }
+                } else {
+                    if (pref >= 3.0) {
+                        set.add(key.getId1(), key.getId2());
+                    }
+                }
             }
         } finally {
             iterator.close();
