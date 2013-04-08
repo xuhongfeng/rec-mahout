@@ -98,14 +98,14 @@ public class TestMatrix extends AbstractJob {
 //        }
 //        iterator.close();
         
-        Path averageSimilarityPath = new Path(DataSetConfig.getSimilarityThresholdAveragePath(threshold), "rowVector");
-        int vectorCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
-        int vectorSize = vectorCount;
-        Path path = new Path(DataSetConfig.getUUThresholdPath(30), "rowVector");
-        VectorCache cache = VectorCache.create(vectorCount, vectorSize, path, getConf());
-        for (int i=0; i<vectorCount; i++) {
-            HadoopHelper.log(this, "zSum = " + cache.get(i).zSum());
-        }
+//        Path averageSimilarityPath = new Path(DataSetConfig.getSimilarityThresholdAveragePath(threshold), "rowVector");
+//        int vectorCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+//        int vectorSize = vectorCount;
+//        Path path = new Path(DataSetConfig.getUUThresholdPath(30), "rowVector");
+//        VectorCache cache = VectorCache.create(vectorCount, vectorSize, path, getConf());
+//        for (int i=0; i<vectorCount; i++) {
+//            HadoopHelper.log(this, "zSum = " + cache.get(i).zSum());
+//        }
     }
     
     private void testUserVectorCount() throws IOException {

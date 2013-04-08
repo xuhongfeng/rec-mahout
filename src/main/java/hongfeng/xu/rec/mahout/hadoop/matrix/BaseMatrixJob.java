@@ -5,6 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
@@ -57,7 +58,7 @@ public abstract class BaseMatrixJob extends BaseJob {
                     MatrixMapper.class, IntWritable.class, VectorWritable.class,
                     getMatrixReducer(), IntIntWritable.class,
                     DoubleWritable.class, SequenceFileOutputFormat.class);
-            job.setNumReduceTasks(10);
+            job.setNumReduceTasks(DataSetConfig.REDUCE_COUNT);
             if (!job.waitForCompletion(true)) {
                 return -1;
             }
@@ -72,7 +73,7 @@ public abstract class BaseMatrixJob extends BaseJob {
             job.getConfiguration().setInt("type", CombineMatrixMapper.TYPE_ROW);
             job.getConfiguration().setInt("vectorSize", n3);
             job.getConfiguration().setInt("vectorCount", n1);
-            job.setNumReduceTasks(10);
+            job.setNumReduceTasks(DataSetConfig.REDUCE_COUNT);
             queue.submitJob(job);
         }
         
@@ -85,7 +86,7 @@ public abstract class BaseMatrixJob extends BaseJob {
             job.getConfiguration().setInt("type", CombineMatrixMapper.TYPE_COLUMN);
             job.getConfiguration().setInt("vectorSize", n1);
             job.getConfiguration().setInt("vectorCount", n3);
-            job.setNumReduceTasks(10);
+            job.setNumReduceTasks(DataSetConfig.REDUCE_COUNT);
             queue.submitJob(job);
         }
         if (queue.waitForComplete() == -1) {

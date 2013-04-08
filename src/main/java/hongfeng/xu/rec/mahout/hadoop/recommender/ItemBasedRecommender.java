@@ -16,10 +16,10 @@ import org.apache.hadoop.fs.Path;
  * @author xuhongfeng
  *
  */
-public class UserBasedRecommender extends BaseRecommender {
+public class ItemBasedRecommender extends BaseRecommender {
     private final int k;
     
-    public UserBasedRecommender(int k) {
+    public ItemBasedRecommender(int k) {
         super();
         this.k = k;
     }
@@ -29,48 +29,48 @@ public class UserBasedRecommender extends BaseRecommender {
         
         calculateSimilarity();
         
-        calculateUUUI();
+        calculateUIII();
         
-        recommend(DataSetConfig.getUserBasedMatrix());
+        recommend(DataSetConfig.getItemBasedMatrix());
         
         drawMatrix();
         
         return 0;
     }
     
-    private void calculateUUUI() throws Exception {
+    private void calculateUIII() throws Exception {
         int itemCount = itemCount();
         int userCount = userCount();
         int n1 = userCount;
-        int n2 = n1;
-        int n3 = itemCount;
-        int type = MultiplyNearestNeighborJob.TYPE_FIRST;
-        Path multipyerPath = DataSetConfig.getItemUserVectorPath();
+        int n2 = itemCount;
+        int n3 = n2;
+        int type = MultiplyNearestNeighborJob.TYPE_SECOND;
+        Path multipyerPath = new Path(DataSetConfig.getItemSimilarityPath(), "rpwVector");
         MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(n1,
                 n2, n3, multipyerPath, type, k);
-        runJob(multiplyNearestNeighborJob, new Path(DataSetConfig.getUserSimilarityPath(), "rowVector"),
-                DataSetConfig.getUserBasedMatrix(), true);
+        runJob(multiplyNearestNeighborJob, DataSetConfig.getUserItemVectorPath(),
+                DataSetConfig.getItemBasedMatrix(), true);
     }
     
     private void calculateSimilarity() throws Exception {
         int itemCount = itemCount();
         int userCount = userCount();
-        CosineSimilarityJob similarityJob = new CosineSimilarityJob(userCount,
-                itemCount, userCount, DataSetConfig.getUserItemVectorPath());
-        runJob(similarityJob, DataSetConfig.getUserItemVectorPath(),
-                DataSetConfig.getUserSimilarityPath(), true);
+        CosineSimilarityJob similarityJob = new CosineSimilarityJob(itemCount,
+                userCount, itemCount, DataSetConfig.getItemUserVectorPath());
+        runJob(similarityJob, DataSetConfig.getItemUserVectorPath(),
+                DataSetConfig.getItemSimilarityPath(), true);
     }
     
     private void drawMatrix() throws Exception {
         float precision = 0.001f;
-        String imageFile = "img/others/user_based_uuui_matrix.png";
-        String title = "uuui";
+        String imageFile = "img/others/item_based_uuui_matrix.png";
+        String title = "uiii";
         String[] subTitles = new String[0];
         Path[] matrixDirs = new Path[] {
-                DataSetConfig.getUserBasedMatrix()
+                DataSetConfig.getItemBasedMatrix()
         };
         String[] series = new String[] {
-                "uuui"
+                "uiii"
         };
         boolean withZero = true;
         boolean diagonalOnly = false;

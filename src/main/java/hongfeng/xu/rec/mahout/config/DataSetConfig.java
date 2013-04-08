@@ -12,15 +12,23 @@ import org.apache.hadoop.fs.Path;
  *
  */
 public class DataSetConfig {
+    public static final int REDUCE_COUNT = 13;
+    
     public static final int TOP_N = 100;
     public static final boolean ONE_ZERO = false;
     
-    public static Path inputAll = new Path("data/movielens-100k/u.data");
-    public static Path inputTraining = new Path("data/movielens-100k/u1.base");
-    public static Path inputTest = new Path("data/movielens-100k/u1.test");
+    public static Path inputAll = new Path("data/movielens-1m/all.dat");
+    public static Path inputTraining = new Path("data/movielens-1m/training.dat");
+    public static Path inputTest = new Path("data/movielens-1m/test.dat");
+    public static Path ROOT = new Path("movielens-1m");
+    
+//    public static Path inputAll = new Path("data/movielens-100k/u.data");
+//    public static Path inputTraining = new Path("data/movielens-100k/u1.base");
+//    public static Path inputTest = new Path("data/movielens-100k/u1.test");
+//    public static Path ROOT = new Path("movielens-100k");
     
     public static Path getRootPath() {
-        return new Path("movielens-100k");
+        return ROOT;
     }
     
     /*************** raw data ***************************/
@@ -138,6 +146,10 @@ public class DataSetConfig {
         return  new Path(getMiscPath(), "countIUUIOneZero");
     }
     
+    public static Path getIntersectPath() {
+        return  new Path(getMiscPath(), "intersect");
+    }
+    
     /*************** similarity ***************************/
     public static Path getSimilarityPath() {
         return new Path(getRootPath(), "similarity");
@@ -223,13 +235,23 @@ public class DataSetConfig {
         return new Path(getRootPath(), "threshold");
     }
     
-    public static Path getSimilarityThresholdPath(int threshold) {
-        Path dir = new Path(getThresholdDir(), "similarity");
+    public static Path getItemSimilarityThresholdPath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "itemSimilarity");
         return new Path(dir, String.valueOf(threshold));
     }
     
-    public static Path getSimilarityThresholdAveragePath(int threshold) {
-        Path dir = new Path(getThresholdDir(), "similarityAverage");
+    public static Path getItemSimilarityThresholdAveragePath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "itemSimilarityAverage");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    
+    public static Path getUserSimilarityThresholdPath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "userSimilarity");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    
+    public static Path getUserSimilarityThresholdAveragePath(int threshold) {
+        Path dir = new Path(getThresholdDir(), "userSimilarityAverage");
         return new Path(dir, String.valueOf(threshold));
     }
     
@@ -237,8 +259,6 @@ public class DataSetConfig {
         Path dir = new Path(getThresholdDir(), "uu");
         return new Path(dir, String.valueOf(threshold));
     }
-    
-    //TODO
     
     public static Path getIIThresholdPath(int threshold) {
         Path dir = new Path(getThresholdDir(), "ii");
@@ -255,13 +275,23 @@ public class DataSetConfig {
         return new Path(dir, String.valueOf(threshold));
     }
     
-    public static Path getThresholdEvaluate(int threshold) {
-        Path dir = new Path(getThresholdDir(), "evaluate");
+    public static Path getUserThresholdEvaluate(int threshold) {
+        Path dir = new Path(getThresholdDir(), "evaluateUser");
         return new Path(dir, String.valueOf(threshold));
     }
     
-    public static Path getThresholdResult(int threshold) {
-        Path dir = new Path(getThresholdDir(), "result");
+    public static Path getUserThresholdResult(int threshold) {
+        Path dir = new Path(getThresholdDir(), "resultUser");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    
+    public static Path getItemThresholdEvaluate(int threshold) {
+        Path dir = new Path(getThresholdDir(), "evaluateItem");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    
+    public static Path getItemThresholdResult(int threshold) {
+        Path dir = new Path(getThresholdDir(), "resultItem");
         return new Path(dir, String.valueOf(threshold));
     }
 }

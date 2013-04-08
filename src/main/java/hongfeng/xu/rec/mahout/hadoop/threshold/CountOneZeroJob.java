@@ -5,6 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
 
@@ -49,7 +50,7 @@ public class CountOneZeroJob extends AbstractJob {
                         MyMapper.class, IntWritable.class, IntWritable.class,
                         MyReducer.class, IntWritable.class, IntWritable.class,
                         SequenceFileOutputFormat.class);
-                job.setNumReduceTasks(10);
+                job.setNumReduceTasks(DataSetConfig.REDUCE_COUNT);
                 job.setCombinerClass(MyReducer.class);
                 if (!job.waitForCompletion(true)) {
                     return -1;

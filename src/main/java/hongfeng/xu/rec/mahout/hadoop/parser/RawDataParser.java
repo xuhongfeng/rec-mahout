@@ -74,10 +74,11 @@ public class RawDataParser extends BaseJob {
         @Override
         protected String getFile(IntIntWritable key, Configuration conf) {
             int totalCount = conf.getInt("totalCount", -1);
+            int mapCount = DataSetConfig.REDUCE_COUNT*4/3;
             if (totalCount == -1) {
-                return String.valueOf(key.getId1()%10);
+                return String.valueOf(key.getId1()%mapCount);
             } else {
-                return String.valueOf(key.getId1()/(totalCount/10));
+                return String.valueOf(key.getId1()/(totalCount/mapCount));
             }
         }
     }

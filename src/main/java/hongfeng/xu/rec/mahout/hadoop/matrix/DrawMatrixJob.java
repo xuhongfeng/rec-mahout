@@ -5,6 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleInputFormat;
@@ -68,7 +69,7 @@ public class DrawMatrixJob extends BaseJob {
             job.getConfiguration().setBoolean("withZero", withZero);
             job.getConfiguration().setBoolean("diagonalOnly", diagonalOnly);
             job.getConfiguration().setFloat("precision", precision);
-            job.setNumReduceTasks(10);
+            job.setNumReduceTasks(DataSetConfig.REDUCE_COUNT);
             job.setCombinerClass(MyReducer.class);
             queue.submitJob(job);
         }

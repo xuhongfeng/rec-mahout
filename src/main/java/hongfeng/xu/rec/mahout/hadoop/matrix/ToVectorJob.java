@@ -49,7 +49,7 @@ public class ToVectorJob extends BaseJob {
                     MultipleInputFormat.class, ToVectorMapper.class, IntWritable.class,
                     IntDoubleWritable.class, ToVectorReducer.class, IntWritable.class,
                     VectorWritable.class, SequenceFileOutputFormat.class);
-            job.setNumReduceTasks(10);
+            job.setNumReduceTasks(DataSetConfig.REDUCE_COUNT);
             job.getConfiguration().setInt("vectorCount", vectorCount);
             job.getConfiguration().setInt("vectorSize", vectorSize);
             job.getConfiguration().setInt("type", type);
