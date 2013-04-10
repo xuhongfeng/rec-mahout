@@ -77,8 +77,7 @@ public abstract class BaseMatrixJob extends BaseJob {
             queue.submitJob(job);
         }
         
-        if (!HadoopHelper.isFileExists(columnVectorPath, getConf())
-                && n1!=n3) {
+        if (!HadoopHelper.isFileExists(columnVectorPath, getConf())) {
             Job job = prepareJob(rawMatrixPath, columnVectorPath, MultipleInputFormat.class,
                     CombineMatrixMapper.class, IntWritable.class, IntDoubleWritable.class,
                     CombineMatrixReducer.class, IntWritable.class,

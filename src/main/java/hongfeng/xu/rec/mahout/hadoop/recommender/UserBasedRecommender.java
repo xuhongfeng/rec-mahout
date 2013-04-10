@@ -33,7 +33,7 @@ public class UserBasedRecommender extends BaseRecommender {
         
         recommend(DataSetConfig.getUserBasedMatrix());
         
-        drawMatrix();
+//        drawMatrix();
         
         return 0;
     }

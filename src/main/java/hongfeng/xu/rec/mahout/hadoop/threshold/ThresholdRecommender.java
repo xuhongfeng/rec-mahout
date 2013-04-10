@@ -56,7 +56,7 @@ public class ThresholdRecommender extends BaseRecommender {
     
     private void calculateThresholdAverageSimilarity () throws Exception {
         Path similarityVectorPath = new Path(DataSetConfig.getUserSimilarityThresholdPath(threshold), "rowVector");
-        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(n1, n2, n3,
+        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(n1, n1, n1,
                 similarityVectorPath);
         runJob(matrixAverageJob, similarityVectorPath, DataSetConfig.getUserSimilarityThresholdAveragePath(threshold)
                 , true);

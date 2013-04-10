@@ -61,9 +61,6 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
         
         @Override
         protected double calculate(int i, int j, Vector vector1, Vector vector2) {
-            if (threshold == 0) {
-                throw new RuntimeException();
-            }
             int n = HadoopHelper.intersect(vector1, vector2);
             if (n >= threshold) {
                 return HadoopHelper.cosineSimilarity(vector1, vector2);

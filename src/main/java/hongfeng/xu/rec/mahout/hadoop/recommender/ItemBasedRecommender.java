@@ -33,7 +33,7 @@ public class ItemBasedRecommender extends BaseRecommender {
         
         recommend(DataSetConfig.getItemBasedMatrix());
         
-        drawMatrix();
+//        drawMatrix();
         
         return 0;
     }

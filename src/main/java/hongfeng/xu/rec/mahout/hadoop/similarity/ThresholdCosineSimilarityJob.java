@@ -35,13 +35,13 @@ public class ThresholdCosineSimilarityJob extends CosineSimilarityJob {
     
     @Override
     protected Class<? extends MatrixReducer> getMatrixReducer() {
-        return ThresholdPearsonReducer.class;
+        return ThresholdCosineReducer.class;
     }
     
-    public static class ThresholdPearsonReducer extends CosineSimilarityJob.CosineReducer {
+    public static class ThresholdCosineReducer extends CosineSimilarityJob.CosineReducer {
         private int threshold;
         
-        public ThresholdPearsonReducer() {
+        public ThresholdCosineReducer() {
             super();
         }
         
@@ -49,9 +49,6 @@ public class ThresholdCosineSimilarityJob extends CosineSimilarityJob {
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
             this.threshold = context.getConfiguration().getInt("threshold", 0);
-            if (threshold <= 0) {
-                throw new RuntimeException();
-            }
         }
 
         @Override
