@@ -53,6 +53,9 @@ public class ThresholdCosineSimilarityJob extends CosineSimilarityJob {
 
         @Override
         protected double calculate(int i, int j, Vector vector1, Vector vector2) {
+            if (i == j) {
+                return 0.0;
+            }
             int n = HadoopHelper.intersect(vector1, vector2);
             if (n < threshold) {
                 return 0.0;

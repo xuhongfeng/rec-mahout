@@ -17,10 +17,10 @@ import org.apache.hadoop.fs.Path;
  * @author xuhongfeng
  *
  */
-public class ItemThresholdRecommender extends BaseRecommender {
+public class ItemThresholdRecommenderV2 extends BaseRecommender {
     private final int threshold, k;
     
-    public ItemThresholdRecommender(int threshold, int k) {
+    public ItemThresholdRecommenderV2(int threshold, int k) {
         super();
         this.threshold = threshold;
         this.k = k;
@@ -29,13 +29,15 @@ public class ItemThresholdRecommender extends BaseRecommender {
     protected int innerRun() throws Exception {
         calculateThresholdSimilarity();
         
+        calculateAllocateMatrix();
+        
         calculateThresholdAverageSimilarity();
         
         calculateIIThreshold();
         
         calculateUIThreshold();
         
-        recommend(DataSetConfig.getUIIIThresholdPath(threshold));
+        recommend(DataSetConfig.getV2UUUIThresholdPath(threshold));
         
         return 0;
     }
@@ -49,30 +51,41 @@ public class ItemThresholdRecommender extends BaseRecommender {
                 DataSetConfig.getItemSimilarityThresholdPath(threshold), true);
     }
     
-    private void calculateThresholdAverageSimilarity () throws Exception {
-        Path similarityVectorPath = new Path(DataSetConfig.getItemSimilarityThresholdPath(threshold), "rowVector");
-        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(itemCount(),
+    private void calculateAllocateMatrix() throws Exception {
+        Path similarityVectorPath = new Path(DataSetConfig.getItemSimilarityThresholdPath(threshold),
+                "rowVector");
+        AllocateMatrixJob allocateMatrixJob = new AllocateMatrixJob(itemCount(),
                 itemCount(), itemCount(), similarityVectorPath);
-        runJob(matrixAverageJob, similarityVectorPath, DataSetConfig.getItemSimilarityThresholdAveragePath(threshold)
+        Path output = DataSetConfig.getV2ItemAllocate(threshold);
+        runJob(allocateMatrixJob, similarityVectorPath, output, true);
+    }
+    
+    private void calculateThresholdAverageSimilarity () throws Exception {
+        Path input = new Path(DataSetConfig.getV2ItemAllocate(threshold), "rowVector");
+        Path multiplyerPath = new Path(DataSetConfig.getV2ItemAllocate(threshold), "columnVector");
+        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(itemCount(), itemCount(),
+                itemCount(), multiplyerPath);
+        runJob(matrixAverageJob, input, DataSetConfig.getV2ItemAllocateAverage(threshold)
                 , true);
     }
     
     private void calculateIIThreshold() throws Exception {
-        Path averageSimilarityPath = new Path(DataSetConfig.getItemSimilarityThresholdAveragePath(threshold), "rowVector");
+        Path averageSimilarityPath = new Path(DataSetConfig.getV2ItemAllocateAverage(threshold), "rowVector");
         MultiplyThresholdMatrixJob multiplyThresholdMatrixJob =
                 new MultiplyThresholdMatrixJob(itemCount(), userCount(), itemCount(),
-                        DataSetConfig.getItemUserVectorPath(), threshold, averageSimilarityPath);
+                        DataSetConfig.getItemUserVectorPath(),
+                        threshold, averageSimilarityPath);
         runJob(multiplyThresholdMatrixJob, DataSetConfig.getItemUserVectorPath(),
-                DataSetConfig.getIIThresholdPath(threshold), true);
+                DataSetConfig.getV2IIThresholdPath(threshold), true);
     }
     
     private void calculateUIThreshold() throws Exception {
         int type = MultiplyNearestNeighborJob.TYPE_SECOND;
-        Path multipyerPath = new Path(DataSetConfig.getIIThresholdPath(threshold), "rowVector");
+        Path multipyerPath = new Path(DataSetConfig.getV2IIThresholdPath(threshold), "columnVector");
         Path input = DataSetConfig.getUserItemVectorPath();
-        MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(
-                userCount(),itemCount(), itemCount(), multipyerPath, type, k);
+        MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(userCount(),
+                itemCount(), itemCount(), multipyerPath, type, k);
         runJob(multiplyNearestNeighborJob, input,
-                DataSetConfig.getUIIIThresholdPath(threshold), true);
+                DataSetConfig.getV2UIIIThresholdPath(threshold), true);
     }
 }

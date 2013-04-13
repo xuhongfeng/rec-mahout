@@ -45,7 +45,7 @@ public class ItemBasedRecommender extends BaseRecommender {
         int n2 = itemCount;
         int n3 = n2;
         int type = MultiplyNearestNeighborJob.TYPE_SECOND;
-        Path multipyerPath = new Path(DataSetConfig.getItemSimilarityPath(), "rpwVector");
+        Path multipyerPath = new Path(DataSetConfig.getItemSimilarityPath(), "rowVector");
         MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(n1,
                 n2, n3, multipyerPath, type, k);
         runJob(multiplyNearestNeighborJob, DataSetConfig.getUserItemVectorPath(),

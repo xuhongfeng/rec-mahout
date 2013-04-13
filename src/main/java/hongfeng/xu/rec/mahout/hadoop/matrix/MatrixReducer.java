@@ -29,6 +29,7 @@ public abstract class MatrixReducer extends Reducer<IntWritable, VectorWritable,
     private DoubleWritable valueWritable = new DoubleWritable();
     private IntIntWritable keyWritable = new IntIntWritable();
     
+    private int n1;
     private int n2;
     private int n3;
     private Path multiplyerPath;
@@ -39,6 +40,7 @@ public abstract class MatrixReducer extends Reducer<IntWritable, VectorWritable,
     protected void setup(Context context) throws IOException, InterruptedException {
         super.setup(context);
         conf = context.getConfiguration();
+        n1 = conf.getInt("n1", 0);
         n2 = conf.getInt("n2", 0);
         n3 = conf.getInt("n3", 0);
         multiplyerPath = new Path(conf.get("multiplyerPath"));
@@ -49,14 +51,28 @@ public abstract class MatrixReducer extends Reducer<IntWritable, VectorWritable,
         super();
     }
     
+    private boolean checked = false;
     @Override
     protected void reduce(IntWritable key, Iterable<VectorWritable> value,
             Context context) throws IOException, InterruptedException {
         int i = key.get();
         keyWritable.setId1(i);
-        Vector vector = value.iterator().next().get();
+        Vector vector1 = value.iterator().next().get();
         for (int j=0; j<vectorCache.size(); j++) {
-            double v = calculate(i, j, vector, vectorCache.get(j));
+            Vector vector2 = vectorCache.get(j);
+            if (!checked) {
+                if (vectorCache.size() != n3) {
+                    throw new RuntimeException("n3="+n3 + ", vectorCache.size=" + vectorCache.size());
+                }
+                if (n2 != vector1.size()) {
+                    throw new RuntimeException("n2="+n2 + ", vector1.size=" + vector1.size());
+                }
+                if (n2 != vector2.size()) {
+                    throw new RuntimeException("n2="+n2 + ", vector2.size=" + vector2.size());
+                }
+                checked = false;
+            }
+            double v = calculate(i, j, vector1, vector2);
             if (v != 0) {
                 keyWritable.setId2(j);
                 valueWritable.set(v);

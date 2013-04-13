@@ -47,6 +47,7 @@ public class VectorCache {
     }
     
     public static VectorCache create(int vectorCount, int vectorSize, Path path, Configuration conf) throws IOException {
+        boolean checked = false;;
         VectorCache cache = new VectorCache();
         cache.init(vectorCount, vectorSize);
         SequenceFileDirIterator<IntWritable, VectorWritable> iterator = new
@@ -58,15 +59,29 @@ public class VectorCache {
                     }
                 }, null, true, conf);
         try {
+            int count = 0;
             while (iterator.hasNext()) {
                 Pair<IntWritable, VectorWritable> pair = iterator.next();
-                cache.add(pair.getFirst().get(), pair.getSecond().get());
-            }
-            for (int i=0; i<cache.vectors.length; i++) {
-                if (cache.vectors[i] == null) {
-                    cache.vectors[i] = cache.EMPTY_VECTOR;
+                Vector vector = pair.getSecond().get();
+                
+                if (!checked && vector.size()!=vectorSize) {
+                    throw new RuntimeException("vector.size="+vector.size() + ", vectorSize="+vectorSize
+                            + ", path = " + path);
                 }
+                checked=true;
+                
+                cache.add(pair.getFirst().get(), vector);
+                count ++;
             }
+            if (count != vectorCount) {
+                throw new RuntimeException("count = " + count + ", vectorCount=" + vectorCount
+                         + ", path = " + path);
+            }
+//            for (int i=0; i<cache.vectors.length; i++) {
+//                if (cache.vectors[i] == null) {
+//                    cache.vectors[i] = cache.EMPTY_VECTOR;
+//                }
+//            }
             return cache;
         } finally {
             iterator.close();

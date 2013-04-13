@@ -20,8 +20,6 @@ import org.apache.hadoop.fs.Path;
 public class ThresholdRecommender extends BaseRecommender {
     private final int threshold, k;
     
-    private int n1, n2, n3;
-
     public ThresholdRecommender(int threshold, int k) {
         super();
         this.threshold = threshold;
@@ -29,10 +27,6 @@ public class ThresholdRecommender extends BaseRecommender {
     }
 
     protected int innerRun() throws Exception {
-        n1 = userCount();
-        n2 = itemCount();
-        n3 = n1;
-        
         calculateThresholdSimilarity();
         
         calculateThresholdAverageSimilarity();
@@ -49,15 +43,16 @@ public class ThresholdRecommender extends BaseRecommender {
     private void calculateThresholdSimilarity() throws Exception {
         Path multiplyerPath = DataSetConfig.getUserItemVectorPath();
         ThresholdCosineSimilarityJob thresholdCosineSimilarityJob =
-                new ThresholdCosineSimilarityJob(n1, n2, n3, multiplyerPath, threshold);
+                new ThresholdCosineSimilarityJob(userCount(), itemCount(), userCount(),
+                        multiplyerPath, threshold);
         runJob(thresholdCosineSimilarityJob, DataSetConfig.getUserItemVectorPath(),
                 DataSetConfig.getUserSimilarityThresholdPath(threshold), true);
     }
     
     private void calculateThresholdAverageSimilarity () throws Exception {
         Path similarityVectorPath = new Path(DataSetConfig.getUserSimilarityThresholdPath(threshold), "rowVector");
-        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(n1, n1, n1,
-                similarityVectorPath);
+        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(userCount(), userCount(),
+                userCount(), similarityVectorPath);
         runJob(matrixAverageJob, similarityVectorPath, DataSetConfig.getUserSimilarityThresholdAveragePath(threshold)
                 , true);
     }
@@ -65,23 +60,19 @@ public class ThresholdRecommender extends BaseRecommender {
     private void calculateUUThreshold() throws Exception {
         Path averageSimilarityPath = new Path(DataSetConfig.getUserSimilarityThresholdAveragePath(threshold), "rowVector");
         MultiplyThresholdMatrixJob multiplyThresholdMatrixJob =
-                new MultiplyThresholdMatrixJob(n1, n2, n3, DataSetConfig.getUserItemVectorPath(),
+                new MultiplyThresholdMatrixJob(userCount(), itemCount(), userCount(),
+                        DataSetConfig.getUserItemVectorPath(),
                         threshold, averageSimilarityPath);
         runJob(multiplyThresholdMatrixJob, DataSetConfig.getUserItemVectorPath(),
                 DataSetConfig.getUUThresholdPath(threshold), true);
     }
     
     private void calculateUIThreshold() throws Exception {
-        int itemCount = itemCount();
-        int userCount = userCount();
-        int n1 = userCount;
-        int n2 = n1;
-        int n3 = itemCount;
         int type = MultiplyNearestNeighborJob.TYPE_FIRST;
         Path multipyerPath = DataSetConfig.getItemUserVectorPath();
         Path input = new Path(DataSetConfig.getUUThresholdPath(threshold), "rowVector");
-        MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(n1,
-                n2, n3, multipyerPath, type, k);
+        MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(userCount(),
+                userCount(), itemCount(), multipyerPath, type, k);
         runJob(multiplyNearestNeighborJob, input,
                 DataSetConfig.getUUUIThresholdPath(threshold), true);
     }

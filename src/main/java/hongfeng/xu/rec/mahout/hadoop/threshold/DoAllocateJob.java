@@ -1,11 +1,10 @@
 /**
- * 2013-4-7
+ * 2013-4-12
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.misc;
+package hongfeng.xu.rec.mahout.hadoop.threshold;
 
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.BaseMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MatrixReducer;
 
@@ -16,20 +15,20 @@ import org.apache.mahout.math.Vector;
  * @author xuhongfeng
  *
  */
-public class ComputeIntersectJob extends BaseMatrixJob {
+public class DoAllocateJob extends BaseMatrixJob {
 
-    public ComputeIntersectJob(int n1, int n2, int n3, Path multiplyerPath) {
+    public DoAllocateJob(int n1, int n2, int n3, Path multiplyerPath) {
         super(n1, n2, n3, multiplyerPath);
     }
 
     @Override
     protected Class<? extends MatrixReducer> getMatrixReducer() {
-        return ComputeIntersectReducer.class;
+        return MyReducer.class;
     }
 
-    public static class ComputeIntersectReducer extends MatrixReducer {
+    public static class MyReducer extends MatrixReducer {
 
-        public ComputeIntersectReducer() {
+        public MyReducer() {
             super();
         }
 
@@ -38,8 +37,11 @@ public class ComputeIntersectJob extends BaseMatrixJob {
             if (i == j) {
                 return 0.0;
             }
-            return HadoopHelper.intersect(vector1, vector2);
+            double v = vector2.getQuick(i);
+            if (v == 0.0) {
+                return 0.0;
+            }
+            return vector1.zSum()*v;
         }
-        
     }
 }

@@ -6,10 +6,13 @@
 package hongfeng.xu.rec.mahout.test;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
+import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
 import hongfeng.xu.rec.mahout.hadoop.matrix.VectorCache;
+import hongfeng.xu.rec.mahout.hadoop.recommender.ItemBasedRecommender;
 import hongfeng.xu.rec.mahout.structure.FixedSizePriorityQueue;
+import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.IOException;
@@ -19,9 +22,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.common.Pair;
+import org.apache.mahout.common.iterator.sequencefile.PathFilters;
 import org.apache.mahout.common.iterator.sequencefile.PathType;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 import org.apache.mahout.math.VectorWritable;
@@ -30,14 +33,15 @@ import org.apache.mahout.math.VectorWritable;
  * @author xuhongfeng
  *
  */
-public class TestMatrix extends AbstractJob {
+public class TestMatrix extends BaseJob {
 
     @Override
-    public int run(String[] args) throws Exception {
+    protected int innerRun() throws Exception {
 //        testUUThreshold();
 //        testItemUserVector();
 //        testItemOneZeroCount();
-        testUserItemVector();
+//        testUserItemVector();
+        testItemBased();
         return 0;
     }
 
@@ -50,6 +54,19 @@ public class TestMatrix extends AbstractJob {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    private void testItemBased() throws IOException {
+        SequenceFileDirIterator<TypeAndNWritable, DoubleWritable> iterator =
+                new SequenceFileDirIterator<TypeAndNWritable, DoubleWritable>(
+                        DataSetConfig.getItemBasedEvaluate(), PathType.LIST,
+                        PathFilters.partFilter(), null, false, getConf());
+        while (iterator.hasNext()) {
+            Pair<TypeAndNWritable, DoubleWritable> pair = iterator.next();
+            HadoopHelper.log(this, pair.toString());
+        }
+        HadoopHelper.log(this, "done");
+        iterator.close();
     }
     
     private void testUserItemVector() throws IOException {
@@ -128,7 +145,7 @@ public class TestMatrix extends AbstractJob {
         throw new RuntimeException(msg);
     }
     
-    private void testItemUserVector() throws IOException {
+    private void testItemUserVector() throws Exception {
         int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
         SequenceFileDirIterator<IntWritable, VectorWritable> iterator = HadoopHelper.openVectorIterator(DataSetConfig.getItemUserVectorPath(), getConf());
         int count = 0;
@@ -140,6 +157,16 @@ public class TestMatrix extends AbstractJob {
             assertFailed("count = " + count);
         }
         iterator.close();
+        HadoopHelper.log(this, "count=" + count);
+        
+        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+        VectorCache.create(itemCount, userCount, DataSetConfig.getItemUserVectorPath(), getConf());
+        
+        ItemBasedRecommender recommender = new ItemBasedRecommender(1000);
+        Path input = DataSetConfig.getUserItemVectorPath();
+        Path output = DataSetConfig.getItemBasedResult();
+        
+        runJob(recommender, input, output, false);
     }
     
     private void testItemOneZeroCount() throws IOException {

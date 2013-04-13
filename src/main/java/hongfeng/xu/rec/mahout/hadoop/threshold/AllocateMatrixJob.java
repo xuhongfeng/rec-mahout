@@ -1,11 +1,10 @@
 /**
- * 2013-4-7
+ * 2013-4-11
  * 
  * xuhongfeng
  */
-package hongfeng.xu.rec.mahout.hadoop.misc;
+package hongfeng.xu.rec.mahout.hadoop.threshold;
 
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.matrix.BaseMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MatrixReducer;
 
@@ -16,30 +15,31 @@ import org.apache.mahout.math.Vector;
  * @author xuhongfeng
  *
  */
-public class ComputeIntersectJob extends BaseMatrixJob {
+public class AllocateMatrixJob extends BaseMatrixJob {
 
-    public ComputeIntersectJob(int n1, int n2, int n3, Path multiplyerPath) {
+    public AllocateMatrixJob(int n1, int n2, int n3, Path multiplyerPath) {
         super(n1, n2, n3, multiplyerPath);
     }
 
     @Override
     protected Class<? extends MatrixReducer> getMatrixReducer() {
-        return ComputeIntersectReducer.class;
+        return MyReducer.class;
     }
 
-    public static class ComputeIntersectReducer extends MatrixReducer {
-
-        public ComputeIntersectReducer() {
-            super();
-        }
+    public static class MyReducer extends MatrixReducer {
 
         @Override
         protected double calculate(int i, int j, Vector vector1, Vector vector2) {
             if (i == j) {
                 return 0.0;
             }
-            return HadoopHelper.intersect(vector1, vector2);
+            double v = vector1.getQuick(j);
+//            HadoopHelper.log(this, "v=" + v + ", zsum=" + vector1.zSum());
+            if (v == 0.0) {
+                return 0.0;
+            }
+            
+            return v/vector1.zSum();
         }
-        
     }
 }

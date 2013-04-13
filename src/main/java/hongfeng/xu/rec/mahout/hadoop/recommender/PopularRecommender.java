@@ -16,7 +16,6 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 /**
@@ -43,8 +42,8 @@ public class PopularRecommender extends BaseRecommender {
 
     public static class MyMapper extends Mapper<IntWritable, VectorWritable,
         IntWritable, RecommendedItemList> {
-        private PopularItemQueue queue;
-
+        private RecommendedItemList itemList;
+        
         public MyMapper() {
             super();
         }
@@ -53,36 +52,22 @@ public class PopularRecommender extends BaseRecommender {
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             super.setup(context);
-            queue = PopularItemQueue.create(context.getConfiguration());
+            PopularItemQueue queue = PopularItemQueue.create(context.getConfiguration());
+            int n = DataSetConfig.TOP_N;
+            List<RecommendedItem> items = new ArrayList<RecommendedItem>();
+            for (int i=0; i<n; i++) {
+                int id = queue.getItemId(i);
+                RecommendedItem item = new RecommendedItem(id, 1.0);
+                items.add(item);
+            }
+            itemList = new RecommendedItemList(items);
         }
         
         @Override
         protected void map(IntWritable key, VectorWritable value,
                 Context context)
                 throws IOException, InterruptedException {
-            int n = DataSetConfig.TOP_N;
-            List<RecommendedItem> items = new ArrayList<RecommendedItem>();
-            Vector vector = value.get();
-            int i = 0;
-            while (items.size() < n) {
-                int itemId = queue.getItemId(i++);
-                boolean exists = false;
-                for (RecommendedItem item:items) {
-                    if (item.getId() == itemId) {
-                        exists = true;
-                        break;
-                    }
-                }
-                if (exists) {
-                    continue;
-                }
-                double pref = vector.getQuick(itemId);
-                if (pref != 0) {
-                    continue;
-                }
-                items.add(new RecommendedItem(itemId, 1.0));
-            }
-            context.write(key, new RecommendedItemList(items));
+            context.write(key, itemList);
         }
     }
 }

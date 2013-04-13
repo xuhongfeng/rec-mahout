@@ -81,6 +81,9 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
         
         @Override
         protected double calculate(int i, int j, Vector vector1, Vector vector2) {
+            if (i == j) {
+                return 0.0;
+            }
             queue.clear();
             if (type == TYPE_FIRST) {
                 Iterator<Element> iterator = vector1.iterateNonZero();

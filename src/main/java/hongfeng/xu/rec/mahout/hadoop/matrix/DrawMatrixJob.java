@@ -114,7 +114,6 @@ public class DrawMatrixJob extends BaseJob {
         @Override
         protected void map(IntWritable key, VectorWritable value, Context context)
                 throws IOException, InterruptedException {
-            float precision = context.getConfiguration().getFloat("precision", 0.001f);
             
             int i = key.get();
             Vector vector = value.get();
@@ -126,7 +125,10 @@ public class DrawMatrixJob extends BaseJob {
             }
             while (iterator.hasNext()) {
                 Element e = iterator.next();
-                if (diagonalOnly && e.index()<=i) {
+                if (e.index() == i) {
+                    continue;
+                }
+                if (diagonalOnly && e.index()<i) {
                     continue;
                 }
                 double v = e.get();

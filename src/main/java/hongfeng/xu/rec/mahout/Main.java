@@ -9,19 +9,18 @@ import hongfeng.xu.rec.mahout.chart.ChartDrawer;
 import hongfeng.xu.rec.mahout.chart.Result;
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.BaseJob;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.DrawMatrixJob;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixAverageJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
 import hongfeng.xu.rec.mahout.hadoop.misc.ComputeIntersectJob;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
+import hongfeng.xu.rec.mahout.hadoop.recommender.ItemBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
-import hongfeng.xu.rec.mahout.hadoop.similarity.CosineSimilarityJob;
-import hongfeng.xu.rec.mahout.hadoop.similarity.ThresholdCosineSimilarityJob;
-import hongfeng.xu.rec.mahout.hadoop.threshold.MultiplyThresholdMatrixJob;
-import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommender;
+import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommender;
+import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -55,8 +54,6 @@ public class Main extends BaseJob {
         
         toVector();
         
-        calculateSimilarity();
-        
 //        drawIntersect();
         
         /* random recommender */
@@ -74,49 +71,67 @@ public class Main extends BaseJob {
                 DataSetConfig.getPopularRecommederEvaluate(), true);
         
         /* user based recommender */
-        EvaluateRecommenderJob<UserBasedRecommender> evaluateUserBased =
-                new EvaluateRecommenderJob<UserBasedRecommender>(new UserBasedRecommender(k),
-                DataSetConfig.getUserBasedResult());
-        runJob(evaluateUserBased, DataSetConfig.getUserItemVectorPath(),
-                DataSetConfig.getUserBasedEvaluate(), true);
+//        EvaluateRecommenderJob<UserBasedRecommender> evaluateUserBased =
+//                new EvaluateRecommenderJob<UserBasedRecommender>(new UserBasedRecommender(k),
+//                DataSetConfig.getUserBasedResult());
+//        runJob(evaluateUserBased, DataSetConfig.getUserItemVectorPath(),
+//                DataSetConfig.getUserBasedEvaluate(), true);
         
         calculateResult(DataSetConfig.getRandomRecommenderEvaluate(), "random");
         calculateResult(DataSetConfig.getPopularRecommederEvaluate(), "popular");
-        calculateResult(DataSetConfig.getUserBasedEvaluate(), "UserBased");
+//        calculateResult(DataSetConfig.getUserBasedEvaluate(), "UserBased");
         
         /* threshold recommender */
 //        int[] thresholdList = new int[] {5, 10, 20, 30, 40, 50, 80, 100};
         int[] thresholdList = new int[] {30};
-        for (int threshold:thresholdList) {
-            EvaluateRecommenderJob<ThresholdRecommender> evaluateThreshold =
-                    new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(threshold, k),
-                    DataSetConfig.getUserThresholdResult(threshold));
-            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
-                    DataSetConfig.getUserThresholdEvaluate(threshold), true);
-            calculateResult(DataSetConfig.getUserThresholdEvaluate(threshold), "User-Threshold-" + threshold);
-        }
+//        for (int threshold:thresholdList) {
+//            EvaluateRecommenderJob<ThresholdRecommender> evaluateThreshold =
+//                    new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(threshold, k),
+//                    DataSetConfig.getUserThresholdResult(threshold));
+//            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+//                    DataSetConfig.getUserThresholdEvaluate(threshold), true);
+//            calculateResult(DataSetConfig.getUserThresholdEvaluate(threshold), "User-Threshold-" + threshold);
+//        }
+//        for (int threshold:thresholdList) {
+//            EvaluateRecommenderJob<ThresholdRecommenderV2> evaluateThreshold =
+//                    new EvaluateRecommenderJob<ThresholdRecommenderV2>(new ThresholdRecommenderV2(threshold, k),
+//                    DataSetConfig.getV2UserThresholdResult(threshold));
+//            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+//                    DataSetConfig.getV2UserThresholdEvaluate(threshold), true);
+//            calculateResult(DataSetConfig.getV2UserThresholdEvaluate(threshold),
+//                    "User-Threshold-V2-" + threshold);
+//        }
         
         
         /* item based recommender */
-//        EvaluateRecommenderJob<ItemBasedRecommender> evaluateItemBased =
-//                new EvaluateRecommenderJob<ItemBasedRecommender>(new ItemBasedRecommender(k),
-//                DataSetConfig.getItemBasedResult());
-//        runJob(evaluateItemBased, DataSetConfig.getUserItemVectorPath(),
-//                DataSetConfig.getItemBasedEvaluate(), true);
-//        calculateResult(DataSetConfig.getItemBasedEvaluate(), "ItemBased");
-//        
-//        /* threshold recommender */
-//        thresholdList = new int[] {5, 10, 20, 30};
-//        thresholdList = new int[] {30};
-//        for (int threshold:thresholdList) {
-//            EvaluateRecommenderJob<ItemThresholdRecommender> evaluateThreshold =
-//                    new EvaluateRecommenderJob<ItemThresholdRecommender>(
-//                            new ItemThresholdRecommender(threshold, k),
-//                    DataSetConfig.getItemThresholdResult(threshold));
-//            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
-//                    DataSetConfig.getItemThresholdEvaluate(threshold), true);
-//            calculateResult(DataSetConfig.getItemThresholdEvaluate(threshold), "Item-Threshold-" + threshold);
-//        }
+        EvaluateRecommenderJob<ItemBasedRecommender> evaluateItemBased =
+                new EvaluateRecommenderJob<ItemBasedRecommender>(new ItemBasedRecommender(k),
+                DataSetConfig.getItemBasedResult());
+        runJob(evaluateItemBased, DataSetConfig.getUserItemVectorPath(),
+                DataSetConfig.getItemBasedEvaluate(), true);
+        calculateResult(DataSetConfig.getItemBasedEvaluate(), "ItemBased");
+////        
+////        /* threshold recommender */
+//        thresholdList = new int[] {5, 10, 20, 30, 40, 50, 80, 100};
+////        thresholdList = new int[] {30};
+        for (int threshold:thresholdList) {
+            EvaluateRecommenderJob<ItemThresholdRecommender> evaluateThreshold =
+                    new EvaluateRecommenderJob<ItemThresholdRecommender>(
+                            new ItemThresholdRecommender(threshold, k),
+                    DataSetConfig.getItemThresholdResult(threshold));
+            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+                    DataSetConfig.getItemThresholdEvaluate(threshold), true);
+            calculateResult(DataSetConfig.getItemThresholdEvaluate(threshold), "Item-Threshold-" + threshold);
+        }
+        for (int threshold:thresholdList) {
+            EvaluateRecommenderJob<ItemThresholdRecommenderV2> evaluateThreshold =
+                    new EvaluateRecommenderJob<ItemThresholdRecommenderV2>(
+                            new ItemThresholdRecommenderV2(threshold, k),
+                    DataSetConfig.getV2ItemThresholdResult(threshold));
+            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+                    DataSetConfig.getV2ItemThresholdEvaluate(threshold), true);
+            calculateResult(DataSetConfig.getV2ItemThresholdEvaluate(threshold), "Item-Threshold-v2-" + threshold);
+        }
         
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage", "img/coverage.png", coverageResult, true);
         chartDrawer.draw();
@@ -126,6 +141,11 @@ public class Main extends BaseJob {
         chartDrawer.draw();
         chartDrawer = new ChartDrawer("Popularity", "popularity", "img/popularity.png", popularityResult, false);
         chartDrawer.draw();
+        
+        for (int threshold:thresholdList) {
+//            drawSimilarity(threshold);
+        }
+        
         return 0;
     }
     
@@ -157,52 +177,29 @@ public class Main extends BaseJob {
 //                "rawData-test", getConf()).draw("img/others/rawData-test.png");
     }
     
-    private void calculateSimilarity() throws Exception {
-        int n1 = userCount();
-        int n2 = itemCount();
-        int n3 = n1;
-        int threshold = 30;
-        Path multiplyerPath = DataSetConfig.getUserItemVectorPath();
-        ThresholdCosineSimilarityJob thresholdCosineSimilarityJob =
-                new ThresholdCosineSimilarityJob(n1, n2, n3, multiplyerPath, threshold);
-        runJob(thresholdCosineSimilarityJob, DataSetConfig.getUserItemVectorPath(),
-                DataSetConfig.getUserSimilarityThresholdPath(threshold), true);
-        
-        CosineSimilarityJob cosineSimilarityJob = new CosineSimilarityJob(n1, n2, n3, multiplyerPath);
-        runJob(cosineSimilarityJob, DataSetConfig.getUserItemVectorPath(),
-                DataSetConfig.getUserSimilarityPath(), true);
-        
-        Path similarityVectorPath = new Path(DataSetConfig.getUserSimilarityThresholdPath(threshold), "rowVector");
-        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(n1, n1, n3,
-                similarityVectorPath);
-        runJob(matrixAverageJob, similarityVectorPath, DataSetConfig.getUserSimilarityThresholdAveragePath(threshold)
-                , true);
-        
-        Path averageSimilarityPath = new Path(DataSetConfig.getUserSimilarityThresholdAveragePath(threshold), "rowVector");
-        MultiplyThresholdMatrixJob multiplyThresholdMatrixJob =
-                new MultiplyThresholdMatrixJob(n1, n2, n3, DataSetConfig.getUserItemVectorPath(),
-                        threshold, averageSimilarityPath);
-        runJob(multiplyThresholdMatrixJob, DataSetConfig.getUserItemVectorPath(),
-                DataSetConfig.getUUThresholdPath(threshold), true);
-        
-        float precision = 0.001f;
-        String imageFile = "img/others/similarity_distribution.png";
+    private void drawSimilarity(int threshold) throws Exception {
+        float precision = 0.0001f;
+        String imageFile = "img/others/similarity_distribution-" + threshold + ".png";
         String title = "similarity";
         String[] subTitles = new String[0];
         Path[] matrixDirs = new Path[] {
                 DataSetConfig.getUserSimilarityPath(),
                 DataSetConfig.getUserSimilarityThresholdPath(threshold),
-                DataSetConfig.getUserSimilarityThresholdAveragePath(threshold),
-                DataSetConfig.getUUThresholdPath(threshold)
+                DataSetConfig.getV2UserAllocate(threshold),
+                DataSetConfig.getV2UserMultiplyAllocate(threshold),
+                DataSetConfig.getV2UserDoAllocate(threshold),
+                DataSetConfig.getV2UUThresholdPath(threshold)
         };
         String[] series = new String[] {
                 "origin",
-                "filter-30",
-                "similarity-average-30",
-                "threshold-30"
+                "filter-" + threshold,
+                "allocate-" + threshold,
+                "multiply-allocate-" + threshold,
+                "do-allocate-" + threshold,
+                "threshold-" + threshold
         };
         boolean withZero = true;
-        boolean diagonalOnly = true;
+        boolean diagonalOnly = false;
         DrawMatrixJob drawJob = new DrawMatrixJob(precision, imageFile, title, subTitles,
                 matrixDirs, series, withZero, diagonalOnly);
         runJob(drawJob, new Path("test"), new Path("test"), false);
@@ -231,6 +228,7 @@ public class Main extends BaseJob {
             } else if (type == TypeAndNWritable.TYPE_POPULARITY) {
                 resultPopularity.put(n, value);
             }
+//            HadoopHelper.log(this, pair.toString());
         }
         iterator.close();
         coverageResult.put(name, resultCoverage);

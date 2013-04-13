@@ -33,6 +33,9 @@ public class MultiplyMatrixAverageJob extends BaseMatrixJob {
         
         @Override
         protected double calculate(int i, int j, Vector vector1, Vector vector2) {
+            if (i == j) {
+                return 0.0;
+            }
             double dot = vector1.dot(vector2);
             if (dot == 0) {
                 return 0;
