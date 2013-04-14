@@ -5,7 +5,6 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.parser;
 
-import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.misc.BaseIndexMap.IndexType;
 import hongfeng.xu.rec.mahout.hadoop.misc.IdIndexMap;
 import hongfeng.xu.rec.mahout.hadoop.misc.IntDoubleWritable;
@@ -52,13 +51,6 @@ public final class ParserMapper extends Mapper<LongWritable, Text, IntWritable, 
         
         keyWritable.set(userIndex);
         valueWritable.setId(itemIndex);
-        if (DataSetConfig.ONE_ZERO) {
-            if (rate >= 3) {
-                rate = 1.0;
-            } else {
-                return;
-            }
-        } 
         valueWritable.setValue(rate);
         
         context.write(keyWritable, valueWritable);

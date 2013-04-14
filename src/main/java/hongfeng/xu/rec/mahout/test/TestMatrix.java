@@ -17,6 +17,7 @@ import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Iterator;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
@@ -27,6 +28,7 @@ import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.iterator.sequencefile.PathFilters;
 import org.apache.mahout.common.iterator.sequencefile.PathType;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
+import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 /**
@@ -41,7 +43,8 @@ public class TestMatrix extends BaseJob {
 //        testItemUserVector();
 //        testItemOneZeroCount();
 //        testUserItemVector();
-        testItemBased();
+//        testItemBased();
+        testIntersect();
         return 0;
     }
 
@@ -54,6 +57,23 @@ public class TestMatrix extends BaseJob {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    private void testIntersect() throws IOException {
+        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+        VectorCache cache = VectorCache.create(userCount, userCount,
+                new Path(DataSetConfig.getIntersectPath(), "rowVector"), getConf());
+        int count = 0;
+        for (int i=0; i<userCount; i++) {
+            Vector vector = cache.get(i);
+            Iterator<Vector.Element> it = vector.iterateNonZero();
+            while (it.hasNext()) {
+                if (it.next().get() >= 100) {
+                    count++;
+                }
+            }
+        }
+        HadoopHelper.log(this, "count = " + count);
     }
     
     private void testItemBased() throws IOException {

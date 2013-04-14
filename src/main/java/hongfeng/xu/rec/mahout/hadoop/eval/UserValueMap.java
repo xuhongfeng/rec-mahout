@@ -56,7 +56,7 @@ public class UserValueMap {
                 IntIntWritable key = pair.getFirst();
                 double pref = pair.getSecond().get();
                 if (DataSetConfig.ONE_ZERO) {
-                    if (pref == 1.0) {
+                    if (pref > 0.0) {
                         map.add(key.getId1(), key.getId2());
                     }
                 } else {

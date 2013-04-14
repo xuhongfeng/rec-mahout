@@ -9,7 +9,6 @@ import hongfeng.xu.rec.mahout.chart.ChartDrawer;
 import hongfeng.xu.rec.mahout.chart.Result;
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.BaseJob;
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.DrawMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
@@ -19,8 +18,8 @@ import hongfeng.xu.rec.mahout.hadoop.recommender.ItemBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
-import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommender;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommenderV2;
+import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -71,19 +70,19 @@ public class Main extends BaseJob {
                 DataSetConfig.getPopularRecommederEvaluate(), true);
         
         /* user based recommender */
-//        EvaluateRecommenderJob<UserBasedRecommender> evaluateUserBased =
-//                new EvaluateRecommenderJob<UserBasedRecommender>(new UserBasedRecommender(k),
-//                DataSetConfig.getUserBasedResult());
-//        runJob(evaluateUserBased, DataSetConfig.getUserItemVectorPath(),
-//                DataSetConfig.getUserBasedEvaluate(), true);
+        EvaluateRecommenderJob<UserBasedRecommender> evaluateUserBased =
+                new EvaluateRecommenderJob<UserBasedRecommender>(new UserBasedRecommender(k),
+                DataSetConfig.getUserBasedResult());
+        runJob(evaluateUserBased, DataSetConfig.getUserItemVectorPath(),
+                DataSetConfig.getUserBasedEvaluate(), true);
         
         calculateResult(DataSetConfig.getRandomRecommenderEvaluate(), "random");
         calculateResult(DataSetConfig.getPopularRecommederEvaluate(), "popular");
-//        calculateResult(DataSetConfig.getUserBasedEvaluate(), "UserBased");
+        calculateResult(DataSetConfig.getUserBasedEvaluate(), "UserBased");
         
         /* threshold recommender */
-//        int[] thresholdList = new int[] {5, 10, 20, 30, 40, 50, 80, 100};
-        int[] thresholdList = new int[] {30};
+        int[] thresholdList = new int[] {0, 20,  40, 60, 80, 100, 120, 150, 200, 500};
+//        int[] thresholdList = new int[] {100};
 //        for (int threshold:thresholdList) {
 //            EvaluateRecommenderJob<ThresholdRecommender> evaluateThreshold =
 //                    new EvaluateRecommenderJob<ThresholdRecommender>(new ThresholdRecommender(threshold, k),
@@ -92,15 +91,16 @@ public class Main extends BaseJob {
 //                    DataSetConfig.getUserThresholdEvaluate(threshold), true);
 //            calculateResult(DataSetConfig.getUserThresholdEvaluate(threshold), "User-Threshold-" + threshold);
 //        }
-//        for (int threshold:thresholdList) {
-//            EvaluateRecommenderJob<ThresholdRecommenderV2> evaluateThreshold =
-//                    new EvaluateRecommenderJob<ThresholdRecommenderV2>(new ThresholdRecommenderV2(threshold, k),
-//                    DataSetConfig.getV2UserThresholdResult(threshold));
-//            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
-//                    DataSetConfig.getV2UserThresholdEvaluate(threshold), true);
-//            calculateResult(DataSetConfig.getV2UserThresholdEvaluate(threshold),
-//                    "User-Threshold-V2-" + threshold);
-//        }
+        for (int threshold: thresholdList) {
+            EvaluateRecommenderJob<ThresholdRecommenderV2> evaluateThreshold = new EvaluateRecommenderJob<ThresholdRecommenderV2>(
+                    new ThresholdRecommenderV2(threshold, k),
+                    DataSetConfig.getV2UserThresholdResult(threshold));
+            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+                    DataSetConfig.getV2UserThresholdEvaluate(threshold), true);
+            calculateResult(
+                    DataSetConfig.getV2UserThresholdEvaluate(threshold),
+                    "User-Threshold-V2-" + threshold);
+        }
         
         
         /* item based recommender */
@@ -114,15 +114,15 @@ public class Main extends BaseJob {
 ////        /* threshold recommender */
 //        thresholdList = new int[] {5, 10, 20, 30, 40, 50, 80, 100};
 ////        thresholdList = new int[] {30};
-        for (int threshold:thresholdList) {
-            EvaluateRecommenderJob<ItemThresholdRecommender> evaluateThreshold =
-                    new EvaluateRecommenderJob<ItemThresholdRecommender>(
-                            new ItemThresholdRecommender(threshold, k),
-                    DataSetConfig.getItemThresholdResult(threshold));
-            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
-                    DataSetConfig.getItemThresholdEvaluate(threshold), true);
-            calculateResult(DataSetConfig.getItemThresholdEvaluate(threshold), "Item-Threshold-" + threshold);
-        }
+//        for (int threshold:thresholdList) {
+//            EvaluateRecommenderJob<ItemThresholdRecommender> evaluateThreshold =
+//                    new EvaluateRecommenderJob<ItemThresholdRecommender>(
+//                            new ItemThresholdRecommender(threshold, k),
+//                    DataSetConfig.getItemThresholdResult(threshold));
+//            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+//                    DataSetConfig.getItemThresholdEvaluate(threshold), true);
+//            calculateResult(DataSetConfig.getItemThresholdEvaluate(threshold), "Item-Threshold-" + threshold);
+//        }
         for (int threshold:thresholdList) {
             EvaluateRecommenderJob<ItemThresholdRecommenderV2> evaluateThreshold =
                     new EvaluateRecommenderJob<ItemThresholdRecommenderV2>(
@@ -142,9 +142,30 @@ public class Main extends BaseJob {
         chartDrawer = new ChartDrawer("Popularity", "popularity", "img/popularity.png", popularityResult, false);
         chartDrawer.draw();
         
-        for (int threshold:thresholdList) {
+//        for (int threshold:thresholdList) {
 //            drawSimilarity(threshold);
-        }
+//        }
+//        
+//        Path[] matrixDir = new Path[] {
+//                DataSetConfig.getUserBasedMatrix(), DataSetConfig.getV2UUUIThresholdPath(10)
+//        };
+//        String[] series = new String[] {
+//                "UserBased", "Threshold-v2"
+//        };
+//        DrawMatrixJob drawUI = new DrawMatrixJob(0.0001f, "img/others/ui.png", "", new String[0], matrixDir, series, false, false);
+//        runJob(drawUI, new Path("test"), new Path("test"), false);
+        
+//        ComputeIntersectJob computeIntersectJob = new ComputeIntersectJob(userCount(),
+//                itemCount(), userCount(), DataSetConfig.getUserItemVectorPath());
+//        runJob(computeIntersectJob, DataSetConfig.getUserItemVectorPath(), DataSetConfig.getIntersectPath(),
+//                true);
+//        DrawMatrixJob drawIntersect = new DrawMatrixJob(0.1f, "img/others/intersect.png",
+//                "", new String[0], new Path[] {
+//                DataSetConfig.getIntersectPath()
+//        }, new String[] {
+//                "intersect"
+//        }, false, true);
+//        runJob(drawIntersect, new Path("test"), new Path("test"), false);
         
         return 0;
     }

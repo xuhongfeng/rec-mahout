@@ -15,22 +15,27 @@ public class DataSetConfig {
     public static final int REDUCE_COUNT = 13;
     
     public static final int TOP_N = 100;
-    public static final boolean ONE_ZERO = false;
+    public static final boolean ONE_ZERO = true;
     
 //    public static Path inputAll = new Path("data/movielens-1m/all.dat");
 //    public static Path inputTraining = new Path("data/movielens-1m/training.dat");
 //    public static Path inputTest = new Path("data/movielens-1m/test.dat");
 //    public static Path ROOT = new Path("movielens-1m");
     
-    public static Path inputAll = new Path("data/movielens-100k/u.data");
-    public static Path inputTraining = new Path("data/movielens-100k/u1.base");
-    public static Path inputTest = new Path("data/movielens-100k/u1.test");
-    public static Path ROOT = new Path("movielens-100k");
+//    public static Path inputAll = new Path("data/movielens-100k/u.data");
+//    public static Path inputTraining = new Path("data/movielens-100k/u1.base");
+//    public static Path inputTest = new Path("data/movielens-100k/u1.test");
+//    public static Path ROOT = new Path("movielens-100k");
     
 //    public static Path inputAll = new Path("data/movielens-xiefeng/all.dat");
-//    public static Path inputTraining = new Path("data/movielens-xiefeng/");
+//    public static Path inputTraining = new Path("data/movielens-xiefeng/training.dat");
 //    public static Path inputTest = new Path("data/movielens-xiefeng/test.dat");
 //    public static Path ROOT = new Path("movielens-xiefeng");
+    
+    public static Path inputAll = new Path("data/movielens/all.dat");
+    public static Path inputTraining = new Path("data/movielens/training.dat");
+    public static Path inputTest = new Path("data/movielens/test.dat");
+    public static Path ROOT = new Path("movielens");
     
     public static Path getRootPath() {
         return ROOT;

@@ -109,7 +109,7 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
             if (DataSetConfig.ONE_ZERO) {
                 double totalSim = 0.0;
                 for (Pair<Double, Double> pair:queue) {
-                    totalSim += pair.getFirst();
+                    totalSim += pair.getFirst()*pair.getSecond();
                 }
                 return totalSim;
             } else {

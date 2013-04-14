@@ -66,11 +66,13 @@ public class MultiplyThresholdMatrixJob extends BaseThreshldMatrixJob {
             }
             int n = HadoopHelper.intersect(vector1, vector2);
             if (n >= threshold) {
-                return HadoopHelper.cosineSimilarity(vector1, vector2);
-            } else {
-                Vector v = averageCache.get(i);
-                return v.getQuick(j);
+                double sim = HadoopHelper.cosineSimilarity(vector1, vector2);
+                if (sim != 0.0) {
+                    return sim;
+                }
             }
+            Vector v = averageCache.get(i);
+            return v.getQuick(j);
         }
     }
 }

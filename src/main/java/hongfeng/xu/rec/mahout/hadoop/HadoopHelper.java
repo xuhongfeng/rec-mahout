@@ -5,6 +5,8 @@
  */
 package hongfeng.xu.rec.mahout.hadoop;
 
+import hongfeng.xu.rec.mahout.config.DataSetConfig;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -93,8 +95,16 @@ public class HadoopHelper {
         if (dot == 0.0) {
             return  0.0;
         }
-        double n = Math.sqrt(vector1.getLengthSquared()) * Math.sqrt(vector2.getLengthSquared());
-        return dot/n;
+        if (DataSetConfig.ONE_ZERO) {
+            double len = Math.sqrt(vector1.zSum()*vector2.zSum());
+            double r = dot/len;
+            if (r > 1.0) {
+                throw new RuntimeException("r="+r+", len="+len + ",dot="+dot);
+            }
+            return r;
+        } else {
+            throw new RuntimeException();
+        }
     }
     
     public static int numNonZero(Vector vector) {
