@@ -15,11 +15,14 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.common.AbstractJob;
 import org.apache.mahout.common.HadoopUtil;
+import org.apache.mahout.common.iterator.sequencefile.PathType;
+import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 
 /**
  * @author xuhongfeng
@@ -109,5 +112,11 @@ public abstract class BaseJob extends AbstractJob {
             }
             return 0;
         }
+    }
+    
+    protected <K extends Writable, V extends Writable> SequenceFileDirIterator<K, V> open(Class<K> keyClass
+            ,Class<V> valueClass, Path path) throws IOException {
+        return new SequenceFileDirIterator<K, V>(path, PathType.LIST,
+                MultipleSequenceOutputFormat.FILTER, null, true, getConf());
     }
 }

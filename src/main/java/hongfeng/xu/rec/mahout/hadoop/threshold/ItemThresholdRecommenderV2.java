@@ -37,7 +37,7 @@ public class ItemThresholdRecommenderV2 extends BaseRecommender {
         
         calculateUIThreshold();
         
-        recommend(DataSetConfig.getV2UUUIThresholdPath(threshold));
+        recommend(DataSetConfig.getV2UIIIThresholdPath(threshold));
         
         return 0;
     }

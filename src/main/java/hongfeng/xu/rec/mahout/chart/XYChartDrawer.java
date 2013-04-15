@@ -35,11 +35,17 @@ public class XYChartDrawer {
     protected String xLabel = "";
     protected String yLabel = "";
     protected String imgFile = "img/default";
+    protected boolean percentageFormat = false;
+    
     
     protected DoubleFormater doubleFormater = new DoubleFormater() {
         @Override
         public String format(double value) {
-            return String.format("%.2f", value);
+            if (percentageFormat) {
+                return String.format("%.2f%%", value*100);
+            } else {
+                return String.format("%.2f", value);
+            }
         }
     };
     
@@ -118,5 +124,9 @@ public class XYChartDrawer {
     
     public static interface DoubleFormater {
         public String format(double value);
+    }
+    
+    public void setPercentageFormat(boolean isPercentage) {
+        percentageFormat = isPercentage;
     }
 }
