@@ -8,7 +8,6 @@ import hongfeng.xu.rec.mahout.chart.Result;
 import hongfeng.xu.rec.mahout.chart.XYChartDrawer;
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.BaseJob;
-import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.DrawMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
@@ -49,39 +48,57 @@ public class Main extends BaseJob {
 
     private static final int k = 1000;
 
-//    private int[] thresholdList = new int[] {
-//        0, 20, 40, 60, 80, 100, 120, 150, 200, 500
-//    };
     private int[] thresholdList = new int[] {
-        0
+//        0, 20, 40, 60, 80, 100, 120, 150, 200, 500
+//        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 40, 60
+//        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 40, 60
+//        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20
+          16, 40
     };
 
     @Override
     protected int innerRun() throws Exception {
-        parseRawData();
+//        parseRawData();
+//
+//        toVector();
 
-        toVector();
-
-        evaluate();
+//        evaluate();
         
 //        drawThreshold();
-        
-        drawSimilarity();
+//        
+//        drawSimilarity();
+//        
+//        drawUserBasedUI();
+//        
+//        drawIntersect();
+        float precision = 0.0001f;
+        String imageFile = "img/others/item-similarity.png";
+        String title = "Item Similarity";
+        String[] subTitles = new String[0];
+        Path[] matrixDirs = new Path[] {
+            DataSetConfig.getItemSimilarityPath(),
+        };
+        String[] series = new String[] {
+            "ItemSimilarity"
+        };
+        boolean withZero = true;
+        boolean diagonalOnly = false;
+        DrawMatrixJob drawJob = new DrawMatrixJob(precision, imageFile, title,
+                subTitles, matrixDirs, series, withZero, diagonalOnly);
+        runJob(drawJob, new Path("test"), new Path("test"), false);
         
         return 0;
     }
     
     private void drawThreshold() throws IOException {
-        int N = 100;
-        
-        double[][] coverageUser = new double[2][thresholdList.length];
-        double[][] coverageItem = new double[2][thresholdList.length];
-        double[][] recallUser = new double[2][thresholdList.length];
-        double[][] recallItem = new double[2][thresholdList.length];
-        double[][] precesionUser = new double[2][thresholdList.length];
-        double[][] precesionItem = new double[2][thresholdList.length];
-        double[][] popularityUser = new double[2][thresholdList.length];
-        double[][] popularityItem = new double[2][thresholdList.length];
+        double[][][] coverageUser = new double[10][2][thresholdList.length];
+        double[][][] coverageItem = new double[10][2][thresholdList.length];
+        double[][][] recallUser = new double[10][2][thresholdList.length];
+        double[][][] recallItem = new double[10][2][thresholdList.length];
+        double[][][] precesionUser = new double[10][2][thresholdList.length];
+        double[][][] precesionItem = new double[10][2][thresholdList.length];
+        double[][][] popularityUser = new double[10][2][thresholdList.length];
+        double[][][] popularityItem = new double[10][2][thresholdList.length];
         
         for (int i=0; i<thresholdList.length; i++) {
             int threshold = thresholdList[i];
@@ -92,26 +109,25 @@ public class Main extends BaseJob {
                 Pair<TypeAndNWritable, DoubleWritable> pair = it.next();
                 int type = pair.getFirst().getType();
                 int n = pair.getFirst().getN();
+                int idx = n/10 - 1;
                 double value = pair.getSecond().get();
-                if (n == N) {
-                    switch (type) {
-                        case TypeAndNWritable.TYPE_RECALL:
-                            recallUser[0][i] = threshold;
-                            recallUser[1][i] = value;
-                            break;
-                        case TypeAndNWritable.TYPE_PRECISION:
-                            precesionUser[0][i] = threshold;
-                            precesionUser[1][i] = value;
-                            break;
-                        case TypeAndNWritable.TYPE_POPULARITY:
-                            popularityUser[0][i] = threshold;
-                            popularityUser[1][i] = value;
-                            break;
-                        case TypeAndNWritable.TYPE_COVERAGE:
-                            coverageUser[0][i] = threshold;
-                            coverageUser[1][i] = value;
-                            break;
-                    }
+                switch (type) {
+                    case TypeAndNWritable.TYPE_RECALL:
+                        recallUser[idx][0][i] = threshold;
+                        recallUser[idx][1][i] = value;
+                        break;
+                    case TypeAndNWritable.TYPE_PRECISION:
+                        precesionUser[idx][0][i] = threshold;
+                        precesionUser[idx][1][i] = value;
+                        break;
+                    case TypeAndNWritable.TYPE_POPULARITY:
+                        popularityUser[idx][0][i] = threshold;
+                        popularityUser[idx][1][i] = value;
+                        break;
+                    case TypeAndNWritable.TYPE_COVERAGE:
+                        coverageUser[idx][0][i] = threshold;
+                        coverageUser[idx][1][i] = value;
+                        break;
                 }
             }
             it.close();
@@ -126,56 +142,49 @@ public class Main extends BaseJob {
                 Pair<TypeAndNWritable, DoubleWritable> pair = it.next();
                 int type = pair.getFirst().getType();
                 int n = pair.getFirst().getN();
+                int idx = n/10 - 1;
                 double value = pair.getSecond().get();
-                if (n == N) {
-                    switch (type) {
-                        case TypeAndNWritable.TYPE_RECALL:
-                            recallItem[0][i] = threshold;
-                            recallItem[1][i] = value;
-                            break;
-                        case TypeAndNWritable.TYPE_PRECISION:
-                            precesionItem[0][i] = threshold;
-                            precesionItem[1][i] = value;
-                            break;
-                        case TypeAndNWritable.TYPE_POPULARITY:
-                            popularityItem[0][i] = threshold;
-                            popularityItem[1][i] = value;
-                            break;
-                        case TypeAndNWritable.TYPE_COVERAGE:
-                            coverageItem[0][i] = threshold;
-                            coverageItem[1][i] = value;
-                            break;
-                    }
+                switch (type) {
+                    case TypeAndNWritable.TYPE_RECALL:
+                        recallItem[idx][0][i] = threshold;
+                        recallItem[idx][1][i] = value;
+                        break;
+                    case TypeAndNWritable.TYPE_PRECISION:
+                        precesionItem[idx][0][i] = threshold;
+                        precesionItem[idx][1][i] = value;
+                        break;
+                    case TypeAndNWritable.TYPE_POPULARITY:
+                        popularityItem[idx][0][i] = threshold;
+                        popularityItem[idx][1][i] = value;
+                        break;
+                    case TypeAndNWritable.TYPE_COVERAGE:
+                        coverageItem[idx][0][i] = threshold;
+                        coverageItem[idx][1][i] = value;
+                        break;
                 }
             }
             it.close();
-        }
-        
-        for (int i=0; i<thresholdList.length; i++) {
-            HadoopHelper.log(this, recallUser[0][i] + ", " + recallUser[1][i]);
-        }
-        
-        for (int i=0; i<thresholdList.length; i++) {
-            HadoopHelper.log(this, recallItem[0][i] + ", " + recallItem[1][i]);
         }
         
         XYChartDrawer drawer = new XYChartDrawer();
         drawer.setTitle("Recall");
         drawer.setXLabel("threshold");
         drawer.setYLabel("value");
-        drawer.addSeries("UserBased", recallUser);
-        drawer.addSeries("ItemBased", recallItem);
-        drawer.setOutputFile("img/threshold_recall.png");
+        for (int i=0; i<recallUser.length; i++) {
+            drawer.addSeries("TOP-" + (i+1)*10, recallUser[i]);
+        }
+        drawer.setOutputFile("img/threshold/userBased/recall.png");
         drawer.setPercentageFormat(true);
         drawer.draw();
         
         drawer = new XYChartDrawer();
-        drawer.setTitle("Precesion");
+        drawer.setTitle("Precision");
         drawer.setXLabel("threshold");
         drawer.setYLabel("value");
-        drawer.addSeries("UserBased", precesionUser);
-        drawer.addSeries("ItemBased", precesionItem);
-        drawer.setOutputFile("img/threshold_precesion.png");
+        for (int i=0; i<recallUser.length; i++) {
+            drawer.addSeries("TOP-" + (i+1)*10, precesionUser[i]);
+        }
+        drawer.setOutputFile("img/threshold/userBased/precision.png");
         drawer.setPercentageFormat(true);
         drawer.draw();
         
@@ -183,32 +192,80 @@ public class Main extends BaseJob {
         drawer.setTitle("Coverage");
         drawer.setXLabel("threshold");
         drawer.setYLabel("value");
-        drawer.addSeries("UserBased", coverageUser);
-        drawer.addSeries("ItemBased", coverageItem);
-        drawer.setOutputFile("img/threshold_coverage.png");
+        for (int i=0; i<recallUser.length; i++) {
+            drawer.addSeries("TOP-" + (i+1)*10, coverageUser[i]);
+        }
+        drawer.setOutputFile("img/threshold/userBased/coverage.png");
         drawer.setPercentageFormat(true);
         drawer.draw();
         
         drawer = new XYChartDrawer();
-        drawer.setTitle("Popularity");
+        drawer.setTitle("Popular");
         drawer.setXLabel("threshold");
         drawer.setYLabel("value");
-        drawer.addSeries("UserBased", popularityUser);
-        drawer.addSeries("ItemBased", popularityItem);
-        drawer.setOutputFile("img/threshold_popularity.png");
+        for (int i=0; i<recallUser.length; i++) {
+            drawer.addSeries("TOP-" + (i+1)*10, popularityUser[i]);
+        }
+        drawer.setOutputFile("img/threshold/userBased/popularity.png");
+        drawer.setPercentageFormat(false);
+        drawer.draw();
+        
+        /* ItemBased */
+        drawer = new XYChartDrawer();
+        drawer.setTitle("Recall");
+        drawer.setXLabel("threshold");
+        drawer.setYLabel("value");
+        for (int i=0; i<recallItem.length; i++) {
+            drawer.addSeries("TOP-" + (i+1)*10, recallItem[i]);
+        }
+        drawer.setOutputFile("img/threshold/itemBased/recall.png");
+        drawer.setPercentageFormat(true);
+        drawer.draw();
+        
+        drawer = new XYChartDrawer();
+        drawer.setTitle("Precision");
+        drawer.setXLabel("threshold");
+        drawer.setYLabel("value");
+        for (int i=0; i<recallItem.length; i++) {
+            drawer.addSeries("TOP-" + (i+1)*10, precesionItem[i]);
+        }
+        drawer.setOutputFile("img/threshold/itemBased/precision.png");
+        drawer.setPercentageFormat(true);
+        drawer.draw();
+        
+        drawer = new XYChartDrawer();
+        drawer.setTitle("Coverage");
+        drawer.setXLabel("threshold");
+        drawer.setYLabel("value");
+        for (int i=0; i<recallItem.length; i++) {
+            drawer.addSeries("TOP-" + (i+1)*10, coverageItem[i]);
+        }
+        drawer.setOutputFile("img/threshold/itemBased/coverage.png");
+        drawer.setPercentageFormat(true);
+        drawer.draw();
+        
+        drawer = new XYChartDrawer();
+        drawer.setTitle("Popular");
+        drawer.setXLabel("threshold");
+        drawer.setYLabel("value");
+        for (int i=0; i<recallItem.length; i++) {
+            drawer.addSeries("TOP-" + (i+1)*10, popularityItem[i]);
+        }
+        drawer.setOutputFile("img/threshold/itemBased/popularity.png");
+        drawer.setPercentageFormat(false);
         drawer.draw();
     }
 
     private void drawUserBasedUI() throws Exception {
         Path[] matrixDir = new Path[] {
             DataSetConfig.getUserBasedMatrix(),
-            DataSetConfig.getV2UUUIThresholdPath(10)
+            DataSetConfig.getV2UUUIThresholdPath(14)
         };
         String[] series = new String[] {
             "UserBased", "Threshold-v2"
         };
         DrawMatrixJob drawUI = new DrawMatrixJob(0.0001f, "img/others/ui.png",
-                "", new String[0], matrixDir, series, false, false);
+                "", new String[0], matrixDir, series, true, false);
         runJob(drawUI, new Path("test"), new Path("test"), false);
 
     }
@@ -405,10 +462,23 @@ public class Main extends BaseJob {
                 userCount(), itemCount(), userCount(),
                 DataSetConfig.getUserItemVectorPath());
         runJob(computeIntersectJob, DataSetConfig.getUserItemVectorPath(),
-                DataSetConfig.getIntersectPath(), true);
+                DataSetConfig.getUserIntersectPath(), true);
         DrawMatrixJob drawIntersect = new DrawMatrixJob(0.1f,
-                "img/others/intersect.png", "", new String[0], new Path[] {
-                    DataSetConfig.getIntersectPath()
+                "img/others/intersect-user.png", "", new String[0], new Path[] {
+                    DataSetConfig.getUserIntersectPath()
+                }, new String[] {
+                    "intersect"
+                }, false, true);
+        runJob(drawIntersect, new Path("test"), new Path("test"), false);
+
+        computeIntersectJob = new ComputeIntersectJob(
+                itemCount(), userCount(), itemCount(),
+                DataSetConfig.getItemUserVectorPath());
+        runJob(computeIntersectJob, DataSetConfig.getItemUserVectorPath(),
+                DataSetConfig.getItemIntersectPath(), true);
+        drawIntersect = new DrawMatrixJob(0.1f,
+                "img/others/intersect-item.png", "", new String[0], new Path[] {
+                    DataSetConfig.getItemIntersectPath()
                 }, new String[] {
                     "intersect"
                 }, false, true);
@@ -417,9 +487,9 @@ public class Main extends BaseJob {
 
     private void evaluate() throws Exception {
         evaluateRandom();
-        evaluatePopular();
-        evaluateUserbased();
-        evaluateUserbasedV2();
+//        evaluatePopular();
+//        evaluateUserbased();
+//        evaluateUserbasedV2();
         evaluateItembased();
         evaluateItembasedV2();
 

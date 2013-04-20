@@ -60,27 +60,27 @@ public class TestMatrix extends BaseJob {
     }
     
     private void testIntersect() throws IOException {
-        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
-        VectorCache cache = VectorCache.create(userCount, userCount,
-                new Path(DataSetConfig.getIntersectPath(), "rowVector"), getConf());
-        int edgeCount = 0;
-        int uCount = 0;
-        for (int i=0; i<userCount; i++) {
-            Vector vector = cache.get(i);
-            Iterator<Vector.Element> it = vector.iterateNonZero();
-            boolean countUser = false;
-            while (it.hasNext()) {
-                if (it.next().get() >= 100) {
-                    edgeCount++;
-                    if (!countUser) {
-                        uCount++;
-                        countUser = true;
-                    }
-                }
-            }
-        }
-        HadoopHelper.log(this, "edgeCount = " + edgeCount);
-        HadoopHelper.log(this, "uCount = " + uCount);
+//        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+//        VectorCache cache = VectorCache.create(userCount, userCount,
+//                new Path(DataSetConfig.getIntersectPath(), "rowVector"), getConf());
+//        int edgeCount = 0;
+//        int uCount = 0;
+//        for (int i=0; i<userCount; i++) {
+//            Vector vector = cache.get(i);
+//            Iterator<Vector.Element> it = vector.iterateNonZero();
+//            boolean countUser = false;
+//            while (it.hasNext()) {
+//                if (it.next().get() >= 100) {
+//                    edgeCount++;
+//                    if (!countUser) {
+//                        uCount++;
+//                        countUser = true;
+//                    }
+//                }
+//            }
+//        }
+//        HadoopHelper.log(this, "edgeCount = " + edgeCount);
+//        HadoopHelper.log(this, "uCount = " + uCount);
     }
     
     private void testItemBased() throws IOException {

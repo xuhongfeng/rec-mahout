@@ -31,11 +31,16 @@ public class DataSetConfig {
 //    public static Path inputTraining = new Path("data/movielens-xiefeng/training.dat");
 //    public static Path inputTest = new Path("data/movielens-xiefeng/test.dat");
 //    public static Path ROOT = new Path("movielens-xiefeng");
-    
+//    
     public static Path inputAll = new Path("data/movielens/all.dat");
     public static Path inputTraining = new Path("data/movielens/training.dat");
     public static Path inputTest = new Path("data/movielens/test.dat");
     public static Path ROOT = new Path("movielens");
+    
+//    public static Path inputAll = new Path("data/appchina/all.dat");
+//    public static Path inputTraining = new Path("data/appchina/training.dat");
+//    public static Path inputTest = new Path("data/appchina/test.dat");
+//    public static Path ROOT = new Path("appchina");
     
     public static Path getRootPath() {
         return ROOT;
@@ -156,8 +161,16 @@ public class DataSetConfig {
         return  new Path(getMiscPath(), "countIUUIOneZero");
     }
     
-    public static Path getIntersectPath() {
+    private static Path getIntersectDir() {
         return  new Path(getMiscPath(), "intersect");
+    }
+    
+    public static Path getUserIntersectPath() {
+        return  new Path(getIntersectDir(), "user");
+    }
+    
+    public static Path getItemIntersectPath() {
+        return  new Path(getIntersectDir(), "item");
     }
     
     /*************** similarity ***************************/
@@ -321,12 +334,20 @@ public class DataSetConfig {
         Path dir = new Path(getThresholdV2Dir(), "user-multiply-allocate");
         return new Path(dir, String.valueOf(threshold));
     }
+    public static Path getV2ItemMultiplyAllocate(int threshold) {
+        Path dir = new Path(getThresholdV2Dir(), "item-multiply-allocate");
+        return new Path(dir, String.valueOf(threshold));
+    }
     public static Path getV2ItemAllocateAverage(int threshold) {
         Path dir = new Path(getThresholdV2Dir(), "item-allocate-average");
         return new Path(dir, String.valueOf(threshold));
     }
     public static Path getV2UUThresholdPath(int threshold) {
         Path dir = new Path(getThresholdV2Dir(), "uu");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    public static Path getV2ItemDoAllocate(int threshold) {
+        Path dir = new Path(getThresholdV2Dir(), "do-allocate-item");
         return new Path(dir, String.valueOf(threshold));
     }
     public static Path getV2UserDoAllocate(int threshold) {

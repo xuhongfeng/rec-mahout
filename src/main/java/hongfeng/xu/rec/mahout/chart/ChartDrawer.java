@@ -5,6 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.chart;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +56,8 @@ public class ChartDrawer {
         CategoryDataset dataSet = createDataSet();
         JFreeChart chart = ChartFactory.createLineChart(title, XLABEL, yLabel, 
                 dataSet, PlotOrientation.VERTICAL, true, true, false);
+        chart.setBackgroundPaint(Color.WHITE);
+        chart.getPlot().setBackgroundPaint(Color.WHITE);
         CategoryPlot plot = (CategoryPlot) chart.getPlot();
         NumberAxis axis = (NumberAxis) plot.getRangeAxis();
         axis.setNumberFormatOverride(numberFormat);
