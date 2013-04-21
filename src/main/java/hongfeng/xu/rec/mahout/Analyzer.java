@@ -93,7 +93,8 @@ public class Analyzer extends BaseJob {
     }
     
     private void calItemBasedPredictable(Path iiPath, Path output, String title, String imgFile) throws Exception {
-        int[] KList = new int[]{10, 20, 50, 80, 100, 150, 200, 250, 300, 350,
+        int[] KList = new int[]{150, 180, 200,
+                230, 250, 280, 300, 350,
                 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950
                 , 1000, 1100, 1200, 1300, 1400, 1500};
         ItembasedPredictableRateJob job = new ItembasedPredictableRateJob(KList, iiPath);

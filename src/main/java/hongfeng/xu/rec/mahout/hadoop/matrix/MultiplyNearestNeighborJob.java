@@ -6,6 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.structure.FixedSizePriorityQueue;
 
 import java.io.IOException;
@@ -60,7 +61,11 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
-            this.k = context.getConfiguration().getInt("k", 100);
+            this.k = context.getConfiguration().getInt("k", -1);
+            HadoopHelper.log(this, "k=" + k);
+            if (k == -1) {
+                throw new RuntimeException();
+            }
             this.type = context.getConfiguration().getInt("type", TYPE_USER_BASED);
             queue = new FixedSizePriorityQueue<Pair<Double,Double>>(k,
                 new Comparator<Pair<Double, Double>>() {

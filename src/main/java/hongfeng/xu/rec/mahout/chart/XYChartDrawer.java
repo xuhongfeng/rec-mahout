@@ -43,6 +43,10 @@ public class XYChartDrawer extends BaseDrawer<XYChartDrawer, DefaultXYDataset> {
                 return null;
             }
         });
+        
+        axis.setAutoRange(true);
+        axis.setAutoRangeIncludesZero(false);
+        
         return chart;
     }
     

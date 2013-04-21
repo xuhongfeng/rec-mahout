@@ -31,7 +31,7 @@ public class UserBasedRecommender extends BaseRecommender {
         
         calculateUUUI();
         
-        recommend(DataSetConfig.getUserBasedMatrix());
+        recommend(DataSetConfig.getUserBasedMatrix(k));
         
 //        drawMatrix();
         
@@ -49,7 +49,7 @@ public class UserBasedRecommender extends BaseRecommender {
         MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(n1,
                 n2, n3, multipyerPath, type, k);
         runJob(multiplyNearestNeighborJob, new Path(DataSetConfig.getUserSimilarityPath(), "rowVector"),
-                DataSetConfig.getUserBasedMatrix(), true);
+                DataSetConfig.getUserBasedMatrix(k), true);
     }
     
     private void calculateSimilarity() throws Exception {
@@ -67,7 +67,7 @@ public class UserBasedRecommender extends BaseRecommender {
         String title = "uuui";
         String[] subTitles = new String[0];
         Path[] matrixDirs = new Path[] {
-                DataSetConfig.getUserBasedMatrix()
+                DataSetConfig.getUserBasedMatrix(k)
         };
         String[] series = new String[] {
                 "uuui"

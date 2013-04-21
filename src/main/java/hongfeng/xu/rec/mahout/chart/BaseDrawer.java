@@ -66,12 +66,13 @@ public abstract class BaseDrawer<T extends BaseDrawer, DATA extends AbstractData
         dataSet = createDataSet();
     }
 
-    public final void draw() throws IOException {
+    public T draw() throws IOException {
         JFreeChart chart = createChart();
         chart.setBackgroundPaint(Color.WHITE);
         chart.getPlot().setBackgroundPaint(Color.WHITE);
         BufferedImage image = chart.createBufferedImage(width, height);
         ImageIO.write(image, FORMAT, new File(imgFile));
+        return (T) this;
     }
     
     protected abstract JFreeChart createChart();

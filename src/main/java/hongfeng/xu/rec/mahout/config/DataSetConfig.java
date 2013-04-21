@@ -246,8 +246,9 @@ public class DataSetConfig {
         return new Path(getItemBasedDir(), "evaluate");
     }
     
-    public static Path getItemBasedMatrix() {
-        return new Path(getItemBasedDir(), "matrix");
+    public static Path getItemBasedMatrix(int k) {
+        Path dir = new Path(getItemBasedDir(), "matrix");
+        return new Path(dir, ""+k);
     }
     
     
@@ -264,8 +265,9 @@ public class DataSetConfig {
         return new Path(getUserBasedDir(), "evaluate");
     }
     
-    public static Path getUserBasedMatrix() {
-        return new Path(getUserBasedDir(), "matrix");
+    public static Path getUserBasedMatrix(int k) {
+        Path dir = new Path(getUserBasedDir(), "matrix");
+        return new Path(dir, ""+k);
     }
     
     /*************** Threshold ***************************/
@@ -400,5 +402,24 @@ public class DataSetConfig {
     public static Path getV2ItemThresholdEvaluate(int threshold) {
         Path dir = new Path(getThresholdV2Dir(), "evaluateItem");
         return new Path(dir, String.valueOf(threshold));
+    }
+    
+    //KNN
+    private static Path getKNNDir() {
+        return new Path(getRootPath(), "knn");
+    }
+    
+    public static Path getKnnItemBasedDir() {
+        return new Path(getKNNDir(), "itemBased");
+    }
+    public static Path getKnnItemBased(int k) {
+        return new Path(getKnnItemBasedDir(), ""+k);
+    }
+    
+    public static Path getKnnUserBasedDir() {
+        return new Path(getKNNDir(), "userBased");
+    }
+    public static Path getKnnUserBased(int k) {
+        return new Path(getKnnUserBasedDir(), ""+k);
     }
 }

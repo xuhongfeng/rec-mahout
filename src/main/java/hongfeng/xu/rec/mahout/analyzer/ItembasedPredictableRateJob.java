@@ -68,8 +68,8 @@ public class ItembasedPredictableRateJob extends BasePredictableRateJob {
                 throws IOException, InterruptedException {
             Vector uiVector = value.get();
             
-            int[] c = new int[KList.length];
-            int[] t = new int[KList.length];
+            double[] c = new double[KList.length];
+            double[] t = new double[KList.length];
             for (int i=0; i<c.length; i++) {
                 c[i] = 0;
                 t[i] = 0;
@@ -92,18 +92,22 @@ public class ItembasedPredictableRateJob extends BasePredictableRateJob {
                         Pair<Double, Integer> pair = new Pair<Double, Integer>(sim, count);
                         queue.add(pair);
                     }
-                    List<Integer> list = new ArrayList<Integer>();
+                    List<Pair<Double, Integer>> list = new ArrayList<Pair<Double, Integer>>();
                     while (!queue.isEmpty()) {
-                        list.add(0, queue.poll().getSecond());
+                        Pair<Double, Integer> pair = queue.poll();
+                        list.add(0, pair);
                     }
                     for (int i=0; i<KList.length; i++) {
                         int k = KList[i];
-                        int count = 0;
+                        double cc = 0;
+                        double ss = 0;
                         for (int j=0; j<k; j++) {
-                            count += list.get(j);
+                            Pair<Double, Integer> pair = list.get(j);
+                            cc += pair.getFirst()*pair.getSecond();
+                            ss += pair.getFirst();
                         }
-                        c[i] += count;
-                        t[i] += k;
+                        c[i] += cc;
+                        t[i] += ss;
                     }
                 }
             }

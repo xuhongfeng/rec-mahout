@@ -76,17 +76,21 @@ public class UserbasedPredictableRateJob extends BasePredictableRateJob {
                     queue.add(pair);
                 }
             }
-            List<Integer> list = new ArrayList<Integer>();
+            List<Pair<Double, Integer>> list = new ArrayList<Pair<Double, Integer>>();
             while (!queue.isEmpty()) {
-                list.add(0, queue.poll().getSecond());
+                Pair<Double, Integer> pair = queue.poll();
+                list.add(0, pair);
             }
             for (int k:KList) {
-                int count = 0;
+                double r = 0.0;
+                double s = 0.0;
                 for (int i=0; i<k; i++) {
-                    count += list.get(i);
+                    Pair<Double, Integer> pair = list.get(i);
+                    int total = uiVector.size() - uiVector.getNumNondefaultElements() - 1;
+                    r += pair.getFirst()*pair.getSecond()/total;
+                    s += pair.getFirst();
                 }
-                int total = k*(uiVector.size() - uiVector.getNumNondefaultElements() - 1);
-                double rate = count*1.0/total;
+                double rate = r/s;
                 keyWritable.set(k);
                 valueWritable.set(rate);
                 HadoopHelper.log(this, "map "+ keyWritable.get() + ", " + valueWritable.get());

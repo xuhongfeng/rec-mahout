@@ -263,7 +263,7 @@ public class Main extends BaseJob {
 
     private void drawUserBasedUI() throws Exception {
         Path[] matrixDir = new Path[] {
-            DataSetConfig.getUserBasedMatrix(),
+            DataSetConfig.getUserBasedMatrix(k),
             DataSetConfig.getV2UUUIThresholdPath(14)
         };
         String[] series = new String[] {
@@ -526,10 +526,10 @@ public class Main extends BaseJob {
     private void evaluate() throws Exception {
 //        evaluateRandom();
 //        evaluatePopular();
-//        evaluateUserbased();
+        evaluateUserbased();
 //        evaluateUserbasedV2();
-        evaluateItembased();
-        evaluateItembasedV2();
+//        evaluateItembased();
+//        evaluateItembasedV2();
 
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage",
                 "img/coverage.png", coverageResult, true);

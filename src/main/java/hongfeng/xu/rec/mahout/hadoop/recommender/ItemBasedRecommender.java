@@ -31,7 +31,7 @@ public class ItemBasedRecommender extends BaseRecommender {
         
         calculateUIII();
         
-        recommend(DataSetConfig.getItemBasedMatrix());
+        recommend(DataSetConfig.getItemBasedMatrix(k));
         
 //        drawMatrix();
         
@@ -49,7 +49,7 @@ public class ItemBasedRecommender extends BaseRecommender {
         MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(n1,
                 n2, n3, multipyerPath, type, k);
         runJob(multiplyNearestNeighborJob, DataSetConfig.getUserItemVectorPath(),
-                DataSetConfig.getItemBasedMatrix(), true);
+                DataSetConfig.getItemBasedMatrix(k), true);
     }
     
     private void calculateSimilarity() throws Exception {
@@ -67,7 +67,7 @@ public class ItemBasedRecommender extends BaseRecommender {
         String title = "uiii";
         String[] subTitles = new String[0];
         Path[] matrixDirs = new Path[] {
-                DataSetConfig.getItemBasedMatrix()
+                DataSetConfig.getItemBasedMatrix(k)
         };
         String[] series = new String[] {
                 "uiii"
