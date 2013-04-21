@@ -44,7 +44,7 @@ public class UserBasedRecommender extends BaseRecommender {
         int n1 = userCount;
         int n2 = n1;
         int n3 = itemCount;
-        int type = MultiplyNearestNeighborJob.TYPE_FIRST;
+        int type = MultiplyNearestNeighborJob.TYPE_USER_BASED;
         Path multipyerPath = DataSetConfig.getItemUserVectorPath();
         MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(n1,
                 n2, n3, multipyerPath, type, k);

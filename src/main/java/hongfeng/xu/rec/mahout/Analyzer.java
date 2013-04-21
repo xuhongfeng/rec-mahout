@@ -5,6 +5,8 @@
  */
 package hongfeng.xu.rec.mahout;
 
+import hongfeng.xu.rec.mahout.analyzer.ItembasedPredictableRateJob;
+import hongfeng.xu.rec.mahout.analyzer.UserbasedPredictableRateJob;
 import hongfeng.xu.rec.mahout.chart.BarChartDrawer;
 import hongfeng.xu.rec.mahout.chart.XYChartDrawer;
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.common.Pair;
@@ -30,15 +33,102 @@ import org.apache.mahout.math.VectorWritable;
  *
  */
 public class Analyzer extends BaseJob {
+    private static final int WIDTH = 600;
+    private static final int HEIGHT = 300;
 
     @Override
     protected int innerRun() throws Exception {
         
-        itemBasedSimilarity();
+        calPredictableRate();
         
         return 0;
     }
+    
+    private void calPredictableRate() throws Exception {
+        calUserBasedPredictable(new Path(DataSetConfig.getUserSimilarityPath(), "rowVector"),
+                DataSetConfig.getPredictableRateOriginUser(),
+                "UserBased Predictable Rate",
+                "img/others/predictable-user-based.png");
+        calItemBasedPredictable(new Path(DataSetConfig.getItemSimilarityPath(), "rowVector"),
+                DataSetConfig.getPredictableRateOriginItem(),
+                "ItemBased Predictable Rate",
+                "img/others/predictable-item-based.png");
+    }
+    
+    private void calUserBasedPredictable(Path uuPath, Path output, String title, String imageFile) throws Exception {
+        int[] KList = new int[]{10, 20, 50, 80, 100, 150, 200, 250, 300, 350,
+                400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 942};
+        UserbasedPredictableRateJob job = new UserbasedPredictableRateJob(KList);
+        runJob(job, uuPath, output, true);
         
+        XYChartDrawer drawer = new XYChartDrawer();
+        drawer.setPercentageFormat(true);
+        drawer.setXLabel("k");
+        drawer.setYLabel("rate");
+        drawer.setTitle(title);
+        drawer.setOutputFile(imageFile);
+        drawer.setWidth(WIDTH);
+        drawer.setHeight(HEIGHT);
+        double[][] values = new double[2][KList.length];
+        for (int i=0; i<KList.length; i++) {
+            values[0][i] = KList[i];
+        }
+        SequenceFileDirIterator<IntWritable, DoubleWritable> it =
+                open(IntWritable.class, DoubleWritable.class, output);
+        while (it.hasNext()) {
+            Pair<IntWritable, DoubleWritable> pair = it.next();
+            int k = pair.getFirst().get();
+            double value = pair.getSecond().get();
+            for (int i=0; i<KList.length; i++) {
+                if (values[0][i] == k) {
+                    values[1][i] = value;
+                    HadoopHelper.log(this, "k="+k+", value="+value);
+                    break;
+                }
+            }
+        }
+        it.close();
+        drawer.addSeries("", values);
+        drawer.draw();
+    }
+    
+    private void calItemBasedPredictable(Path iiPath, Path output, String title, String imgFile) throws Exception {
+        int[] KList = new int[]{10, 20, 50, 80, 100, 150, 200, 250, 300, 350,
+                400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950
+                , 1000, 1100, 1200, 1300, 1400, 1500};
+        ItembasedPredictableRateJob job = new ItembasedPredictableRateJob(KList, iiPath);
+        runJob(job, DataSetConfig.getUserItemVectorPath(), output, true);
+        
+        XYChartDrawer drawer = new XYChartDrawer();
+        drawer.setPercentageFormat(true);
+        drawer.setXLabel("k");
+        drawer.setYLabel("rate");
+        drawer.setTitle(title);
+        drawer.setOutputFile(imgFile);
+        drawer.setWidth(WIDTH);
+        drawer.setHeight(HEIGHT);
+        double[][] values = new double[2][KList.length];
+        for (int i=0; i<KList.length; i++) {
+            values[0][i] = KList[i];
+        }
+        SequenceFileDirIterator<IntWritable, DoubleWritable> it =
+                open(IntWritable.class, DoubleWritable.class, output);
+        while (it.hasNext()) {
+            Pair<IntWritable, DoubleWritable> pair = it.next();
+            int k = pair.getFirst().get();
+            double value = pair.getSecond().get();
+            for (int i=0; i<KList.length; i++) {
+                if (values[0][i] == k) {
+                    values[1][i] = value;
+                    HadoopHelper.log(this, "k="+k+", value="+value);
+                    break;
+                }
+            }
+        }
+        it.close();
+        drawer.addSeries("", values);
+        drawer.draw();
+    }
     
     private void itemBasedSimilarity() throws IOException {
         double start = 0.0, end = 1.0, step=0.1;

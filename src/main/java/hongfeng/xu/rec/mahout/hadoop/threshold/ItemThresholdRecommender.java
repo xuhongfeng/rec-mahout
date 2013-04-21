@@ -67,8 +67,8 @@ public class ItemThresholdRecommender extends BaseRecommender {
     }
     
     private void calculateUIThreshold() throws Exception {
-        int type = MultiplyNearestNeighborJob.TYPE_SECOND;
-        Path multipyerPath = new Path(DataSetConfig.getIIThresholdPath(threshold), "rowVector");
+        int type = MultiplyNearestNeighborJob.TYPE_ITEM_BASED;
+        Path multipyerPath = new Path(DataSetConfig.getIIThresholdPath(threshold), "columnVector");
         Path input = DataSetConfig.getUserItemVectorPath();
         MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(
                 userCount(),itemCount(), itemCount(), multipyerPath, type, k);

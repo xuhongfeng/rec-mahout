@@ -69,6 +69,19 @@ public class HadoopHelper {
                 }, null, true, conf);
     }
     
+    public static int sub(Vector vector1, Vector vector2) {
+        if (vector1.size() != vector2.size()) {
+            throw new RuntimeException();
+        }
+        int count = 0;
+        for (int i=0; i<vector1.size(); i++) {
+            if (vector1.get(i)!=0.0 && vector2.get(i)==0.0) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
     public static int intersect(Vector vector1, Vector vector2) {
         return (int) vector1.aggregate(vector2, aggregator, combiner);
     }

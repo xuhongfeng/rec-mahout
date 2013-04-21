@@ -12,7 +12,7 @@ import org.apache.hadoop.fs.Path;
  *
  */
 public class DataSetConfig {
-    public static final int REDUCE_COUNT = 13;
+    public static final int REDUCE_COUNT = 23;
     
     public static final int TOP_N = 100;
     public static final boolean ONE_ZERO = true;
@@ -151,6 +151,21 @@ public class DataSetConfig {
     /********** misc **********/
     public static Path getMiscPath() {
         return new Path(getRootPath(), "misc");
+    }
+    
+    private static Path getPredictableRateDir() {
+        return new Path(getMiscPath(), "predictableRate");
+    }
+    
+    private static Path getPredictableRateOrigin() {
+        return new Path(getPredictableRateDir(), "origin");
+    }
+    
+    public static Path getPredictableRateOriginUser() {
+        return new Path(getPredictableRateOrigin(), "userBased");
+    }
+    public static Path getPredictableRateOriginItem() {
+        return new Path(getPredictableRateOrigin(), "itemBased");
     }
     
     public static Path getCountUIIUOneZeroPath() {
@@ -352,6 +367,10 @@ public class DataSetConfig {
     }
     public static Path getV2UserDoAllocate(int threshold) {
         Path dir = new Path(getThresholdV2Dir(), "do-allocate");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    public static Path getV2EveIIPath(int threshold) {
+        Path dir = new Path(getThresholdV2Dir(), "eve-ii");
         return new Path(dir, String.valueOf(threshold));
     }
     public static Path getV2IIThresholdPath(int threshold) {

@@ -12,6 +12,7 @@ import hongfeng.xu.rec.mahout.hadoop.matrix.VectorCache;
 import hongfeng.xu.rec.mahout.structure.FixedSizePriorityQueue;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -114,7 +115,22 @@ public class RecommendJob extends BaseJob {
             if (recommendedItemList.size() != DataSetConfig.TOP_N) {
                 throw new RuntimeException();
             }
+            Collections.sort(recommendedItemList.getItems(), COMPARATOR);
             context.write(key, recommendedItemList);
         }
     }
+    
+    public static final Comparator<RecommendedItem> COMPARATOR = new Comparator<RecommendedItem>() {
+        
+        @Override
+        public int compare(RecommendedItem o1, RecommendedItem o2) {
+            if (o1.getValue() > o2.getValue()) {
+                return -1;
+            }
+            if (o1.getValue() < o2.getValue()) {
+                return 1;
+            }
+            return 0;
+        }
+    };
 }

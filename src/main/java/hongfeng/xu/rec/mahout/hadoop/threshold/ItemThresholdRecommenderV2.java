@@ -6,6 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
+import hongfeng.xu.rec.mahout.hadoop.matrix.InsertMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyNearestNeighborJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
@@ -35,11 +36,13 @@ public class ItemThresholdRecommenderV2 extends BaseRecommender {
         
         doAllocate();
         
+        calculateEveII();
+        
         calculateIIThreshold();
         
         calculateUIThreshold();
         
-        recommend(DataSetConfig.getV2UUUIThresholdPath(threshold));
+        recommend(DataSetConfig.getV2UIIIThresholdPath(threshold));
         
         return 0;
     }
@@ -81,7 +84,7 @@ public class ItemThresholdRecommenderV2 extends BaseRecommender {
         runJob(doAllocateJob, input, output, true);
     }
     
-    private void calculateIIThreshold() throws Exception {
+    private void calculateEveII() throws Exception {
         Path doAllocatePath = new Path(DataSetConfig.getV2ItemDoAllocate(threshold)
                 , "rowVector");
         MultiplyThresholdMatrixJob multiplyThresholdMatrixJob =
@@ -89,12 +92,22 @@ public class ItemThresholdRecommenderV2 extends BaseRecommender {
                         DataSetConfig.getItemUserVectorPath(),
                         threshold, doAllocatePath);
         runJob(multiplyThresholdMatrixJob, DataSetConfig.getItemUserVectorPath(),
-                DataSetConfig.getV2IIThresholdPath(threshold), true);
+                DataSetConfig.getV2EveIIPath(threshold), true);
+    }
+    
+    private void calculateIIThreshold() throws Exception {
+        Path zeroThresholdPath = new Path(DataSetConfig.getV2EveIIPath(0), "columnVector");
+        InsertMatrixJob insertMatrixJob = new InsertMatrixJob(itemCount(),
+                itemCount(), itemCount(), zeroThresholdPath);
+        Path input = new Path(DataSetConfig.getV2EveIIPath(threshold), "rowVector");
+        Path output = DataSetConfig.getV2IIThresholdPath(threshold);
+        runJob(insertMatrixJob, input, output, true);
+        
     }
     
     private void calculateUIThreshold() throws Exception {
-        int type = MultiplyNearestNeighborJob.TYPE_SECOND;
-        Path multipyerPath = new Path(DataSetConfig.getV2IIThresholdPath(threshold), "rowVector");
+        int type = MultiplyNearestNeighborJob.TYPE_ITEM_BASED;
+        Path multipyerPath = new Path(DataSetConfig.getV2IIThresholdPath(threshold), "columnVector");
         Path input = DataSetConfig.getUserItemVectorPath();
         MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(userCount(),
                 itemCount(), itemCount(), multipyerPath, type, k);

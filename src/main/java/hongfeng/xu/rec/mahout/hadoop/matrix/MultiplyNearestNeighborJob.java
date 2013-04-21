@@ -23,8 +23,8 @@ import org.apache.mahout.math.Vector.Element;
  *
  */
 public class MultiplyNearestNeighborJob extends BaseMatrixJob {
-    public static final int TYPE_FIRST = 0;
-    public static final int TYPE_SECOND = TYPE_FIRST + 1;
+    public static final int TYPE_USER_BASED = 0;
+    public static final int TYPE_ITEM_BASED = TYPE_USER_BASED + 1;
     
     private final int type;
     private final int k;
@@ -61,7 +61,7 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
         protected void setup(Context context) throws IOException, InterruptedException {
             super.setup(context);
             this.k = context.getConfiguration().getInt("k", 100);
-            this.type = context.getConfiguration().getInt("type", TYPE_FIRST);
+            this.type = context.getConfiguration().getInt("type", TYPE_USER_BASED);
             queue = new FixedSizePriorityQueue<Pair<Double,Double>>(k,
                 new Comparator<Pair<Double, Double>>() {
                     @Override
@@ -85,7 +85,7 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
                 return 0.0;
             }
             queue.clear();
-            if (type == TYPE_FIRST) {
+            if (type == TYPE_USER_BASED) {
                 Iterator<Element> iterator = vector1.iterateNonZero();
                 while (iterator.hasNext()) {
                     Element e = iterator.next();

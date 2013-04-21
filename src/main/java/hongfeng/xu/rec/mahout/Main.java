@@ -46,14 +46,18 @@ public class Main extends BaseJob {
 
     private Map<String, Result> recallResult = new HashMap<String, Result>();
 
-    private static final int k = 1000;
+    private static final int k = 2000;
 
     private int[] thresholdList = new int[] {
 //        0, 20, 40, 60, 80, 100, 120, 150, 200, 500
 //        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 40, 60
 //        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 40, 60
 //        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20
-          16, 40
+//          16, 40
+//            1, 3, 5, 7, 9, 11, 13, 15, 17, 19
+//            0, 14, 40
+//            0, 20
+            20
     };
 
     @Override
@@ -62,31 +66,32 @@ public class Main extends BaseJob {
 //
 //        toVector();
 
-//        evaluate();
+        evaluate();
         
 //        drawThreshold();
 //        
-//        drawSimilarity();
+//        drawItemSimilarity();
 //        
 //        drawUserBasedUI();
 //        
 //        drawIntersect();
-        float precision = 0.0001f;
-        String imageFile = "img/others/item-similarity.png";
-        String title = "Item Similarity";
-        String[] subTitles = new String[0];
-        Path[] matrixDirs = new Path[] {
-            DataSetConfig.getItemSimilarityPath(),
-        };
-        String[] series = new String[] {
-            "ItemSimilarity"
-        };
-        boolean withZero = true;
-        boolean diagonalOnly = false;
-        DrawMatrixJob drawJob = new DrawMatrixJob(precision, imageFile, title,
-                subTitles, matrixDirs, series, withZero, diagonalOnly);
-        runJob(drawJob, new Path("test"), new Path("test"), false);
         
+//        float precision = 0.0001f;
+//        String imageFile = "img/others/item-similarity.png";
+//        String title = "Item Similarity";
+//        String[] subTitles = new String[0];
+//        Path[] matrixDirs = new Path[] {
+//            DataSetConfig.getItemSimilarityPath(),
+//        };
+//        String[] series = new String[] {
+//            "ItemSimilarity"
+//        };
+//        boolean withZero = true;
+//        boolean diagonalOnly = false;
+//        DrawMatrixJob drawJob = new DrawMatrixJob(precision, imageFile, title,
+//                subTitles, matrixDirs, series, withZero, diagonalOnly);
+//        runJob(drawJob, new Path("test"), new Path("test"), false);
+//        
         return 0;
     }
     
@@ -392,13 +397,46 @@ public class Main extends BaseJob {
         // "rawData-test", getConf()).draw("img/others/rawData-test.png");
     }
 
-    private void drawSimilarity() throws Exception {
+    private void drawItemSimilarity() throws Exception {
         for (int threshold: thresholdList) {
-            drawSimilarity(threshold);
+            drawItemSimilarity(threshold);
         }
     }
 
-    private void drawSimilarity(int threshold) throws Exception {
+    private void drawUserSimilarity() throws Exception {
+        for (int threshold: thresholdList) {
+            drawUserSimilarity(threshold);
+        }
+    }
+
+    private void drawItemSimilarity(int threshold) throws Exception {
+        float precision = 0.0001f;
+        String imageFile = "img/others/item-similarity-" + threshold
+                + ".png";
+        String title = "similarity";
+        String[] subTitles = new String[0];
+        Path[] matrixDirs = new Path[] {
+            DataSetConfig.getItemSimilarityPath(),
+            DataSetConfig.getItemSimilarityThresholdPath(threshold),
+            DataSetConfig.getV2ItemAllocate(threshold),
+            DataSetConfig.getV2ItemMultiplyAllocate(threshold),
+            DataSetConfig.getV2ItemDoAllocate(threshold),
+            DataSetConfig.getV2EveIIPath(threshold),
+            DataSetConfig.getV2IIThresholdPath(threshold)
+        };
+        String[] series = new String[] {
+            "origin", "filter-" + threshold, "allocate-" + threshold,
+            "multiply-allocate-" + threshold, "do-allocate-" + threshold,
+            "eve-ii-" + threshold, "threshold-" + threshold
+        };
+        boolean withZero = true;
+        boolean diagonalOnly = false;
+        DrawMatrixJob drawJob = new DrawMatrixJob(precision, imageFile, title,
+                subTitles, matrixDirs, series, withZero, diagonalOnly);
+        runJob(drawJob, new Path("test"), new Path("test"), false);
+    }
+
+    private void drawUserSimilarity(int threshold) throws Exception {
         float precision = 0.0001f;
         String imageFile = "img/others/similarity_distribution-" + threshold
                 + ".png";
@@ -486,7 +524,7 @@ public class Main extends BaseJob {
     }
 
     private void evaluate() throws Exception {
-        evaluateRandom();
+//        evaluateRandom();
 //        evaluatePopular();
 //        evaluateUserbased();
 //        evaluateUserbasedV2();
