@@ -18,7 +18,8 @@ import org.apache.hadoop.fs.Path;
  *
  */
 public class ThresholdRecommenderV2 extends BaseRecommender {
-    private final int threshold, k;
+    private final int threshold;
+    protected final int k;
     
     public ThresholdRecommenderV2(int threshold, int k) {
         super();
@@ -44,7 +45,7 @@ public class ThresholdRecommenderV2 extends BaseRecommender {
         return 0;
     }
     
-    private void calculateThresholdSimilarity() throws Exception {
+    protected void calculateThresholdSimilarity() throws Exception {
         Path multiplyerPath = DataSetConfig.getUserItemVectorPath();
         ThresholdCosineSimilarityJob thresholdCosineSimilarityJob =
                 new ThresholdCosineSimilarityJob(userCount(), itemCount(), userCount(),
@@ -53,7 +54,7 @@ public class ThresholdRecommenderV2 extends BaseRecommender {
                 DataSetConfig.getUserSimilarityThresholdPath(threshold), true);
     }
     
-    private void calculateAllocateMatrix() throws Exception {
+    protected void calculateAllocateMatrix() throws Exception {
         Path similarityVectorPath = new Path(DataSetConfig.getUserSimilarityThresholdPath(threshold),
                 "rowVector");
         AllocateMatrixJob allocateMatrixJob = new AllocateMatrixJob(userCount(),
@@ -62,7 +63,7 @@ public class ThresholdRecommenderV2 extends BaseRecommender {
         runJob(allocateMatrixJob, similarityVectorPath, output, true);
     }
     
-    private void multiplyAllocateMatrix() throws Exception {
+    protected void multiplyAllocateMatrix() throws Exception {
         Path input = new Path(DataSetConfig.getV2UserAllocate(threshold), "rowVector");
         Path multiplyerPath = new Path(DataSetConfig.getV2UserAllocate(threshold), "columnVector");
         MultiplyMatrixJob matrixAverageJob = new MultiplyMatrixJob(userCount(), userCount(),
@@ -71,7 +72,7 @@ public class ThresholdRecommenderV2 extends BaseRecommender {
                 , true);
     }
     
-    private void doAllocate() throws Exception {
+    protected void doAllocate() throws Exception {
         Path input = new Path(DataSetConfig.getUserSimilarityThresholdPath(threshold), "rowVector");
         Path multiplyer = new Path(DataSetConfig.getV2UserMultiplyAllocate(threshold),
                 "columnVector");
@@ -81,7 +82,7 @@ public class ThresholdRecommenderV2 extends BaseRecommender {
         runJob(doAllocateJob, input, output, true);
     }
     
-    private void calculateUUThreshold() throws Exception {
+    protected void calculateUUThreshold() throws Exception {
         Path doAllocatePath = new Path(DataSetConfig.getV2UserDoAllocate(threshold)
                 , "rowVector");
         MultiplyThresholdMatrixJob multiplyThresholdMatrixJob =

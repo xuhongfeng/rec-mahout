@@ -11,11 +11,11 @@ import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.DrawMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
-import hongfeng.xu.rec.mahout.hadoop.misc.ComputeIntersectJob;
 import hongfeng.xu.rec.mahout.hadoop.parser.RawDataParser;
 import hongfeng.xu.rec.mahout.hadoop.recommender.ItemBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.PopularRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.RandomRecommender;
+import hongfeng.xu.rec.mahout.hadoop.recommender.ThresholdV3;
 import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommenderV2;
@@ -57,7 +57,7 @@ public class Main extends BaseJob {
 //            1, 3, 5, 7, 9, 11, 13, 15, 17, 19
 //            0, 14, 40
 //            0, 20
-            20
+            0
     };
 
     @Override
@@ -73,8 +73,6 @@ public class Main extends BaseJob {
 //        drawItemSimilarity();
 //        
 //        drawUserBasedUI();
-//        
-//        drawIntersect();
         
 //        float precision = 0.0001f;
 //        String imageFile = "img/others/item-similarity.png";
@@ -317,19 +315,14 @@ public class Main extends BaseJob {
         calculateResult(DataSetConfig.getItemBasedEvaluate(), "ItemBased");
     }
 
+    private void evaluateUserbasedV3() throws Exception {
+        EvaluateRecommenderJob<ThresholdV3> job = new EvaluateRecommenderJob<ThresholdV3>
+            (new ThresholdV3(k), DataSetConfig.getV3Result());
+        runJob(job, DataSetConfig.getUserItemVectorPath(), DataSetConfig.getV3Evaluate(), true);
+        calculateResult(DataSetConfig.getV3Evaluate(), "V3");
+    }
+
     private void evaluateUserbasedV2() throws Exception {
-        /* threshold recommender */
-        // int[] thresholdList = new int[] {100};
-        // for (int threshold:thresholdList) {
-        // EvaluateRecommenderJob<ThresholdRecommender> evaluateThreshold =
-        // new EvaluateRecommenderJob<ThresholdRecommender>(new
-        // ThresholdRecommender(threshold, k),
-        // DataSetConfig.getUserThresholdResult(threshold));
-        // runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
-        // DataSetConfig.getUserThresholdEvaluate(threshold), true);
-        // calculateResult(DataSetConfig.getUserThresholdEvaluate(threshold),
-        // "User-Threshold-" + threshold);
-        // }
         for (int threshold: thresholdList) {
             EvaluateRecommenderJob<ThresholdRecommenderV2> evaluateThreshold = new EvaluateRecommenderJob<ThresholdRecommenderV2>(
                     new ThresholdRecommenderV2(threshold, k),
@@ -340,7 +333,6 @@ public class Main extends BaseJob {
                     DataSetConfig.getV2UserThresholdEvaluate(threshold),
                     "User-Threshold-V2-" + threshold);
         }
-
     }
 
     private void evaluateUserbased() throws Exception {
@@ -493,41 +485,13 @@ public class Main extends BaseJob {
         precisionResult.put(name, resultPrecision);
         recallResult.put(name, resultRecall);
     }
-
-    private void drawIntersect() throws Exception {
-
-        ComputeIntersectJob computeIntersectJob = new ComputeIntersectJob(
-                userCount(), itemCount(), userCount(),
-                DataSetConfig.getUserItemVectorPath());
-        runJob(computeIntersectJob, DataSetConfig.getUserItemVectorPath(),
-                DataSetConfig.getUserIntersectPath(), true);
-        DrawMatrixJob drawIntersect = new DrawMatrixJob(0.1f,
-                "img/others/intersect-user.png", "", new String[0], new Path[] {
-                    DataSetConfig.getUserIntersectPath()
-                }, new String[] {
-                    "intersect"
-                }, false, true);
-        runJob(drawIntersect, new Path("test"), new Path("test"), false);
-
-        computeIntersectJob = new ComputeIntersectJob(
-                itemCount(), userCount(), itemCount(),
-                DataSetConfig.getItemUserVectorPath());
-        runJob(computeIntersectJob, DataSetConfig.getItemUserVectorPath(),
-                DataSetConfig.getItemIntersectPath(), true);
-        drawIntersect = new DrawMatrixJob(0.1f,
-                "img/others/intersect-item.png", "", new String[0], new Path[] {
-                    DataSetConfig.getItemIntersectPath()
-                }, new String[] {
-                    "intersect"
-                }, false, true);
-        runJob(drawIntersect, new Path("test"), new Path("test"), false);
-    }
-
+    
     private void evaluate() throws Exception {
 //        evaluateRandom();
 //        evaluatePopular();
         evaluateUserbased();
-//        evaluateUserbasedV2();
+        evaluateUserbasedV2();
+//        evaluateUserbasedV3();
 //        evaluateItembased();
 //        evaluateItembasedV2();
 

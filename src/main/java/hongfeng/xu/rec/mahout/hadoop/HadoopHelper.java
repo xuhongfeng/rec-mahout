@@ -10,6 +10,9 @@ import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -21,6 +24,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.mahout.common.iterator.sequencefile.PathType;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.Vector.Element;
 import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.function.DoubleDoubleFunction;
 import org.apache.mahout.math.function.DoubleFunction;
@@ -73,10 +77,15 @@ public class HadoopHelper {
         if (vector1.size() != vector2.size()) {
             throw new RuntimeException();
         }
+        Set<Integer> set = new HashSet<Integer>();
+        Iterator<Element> it = vector2.iterateNonZero();
+        while (it.hasNext()) {
+            set.add(it.next().index());
+        }
         int count = 0;
-        for (int i=0; i<vector1.size(); i++) {
-            if (vector1.get(i)!=0.0 && vector2.get(i)==0.0) {
-                count++;
+        while (it.hasNext()) {
+            if (!set.contains(it.next().index())) {
+                count ++;
             }
         }
         return count;

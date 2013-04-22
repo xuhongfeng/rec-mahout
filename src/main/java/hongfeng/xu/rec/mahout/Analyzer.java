@@ -12,6 +12,9 @@ import hongfeng.xu.rec.mahout.chart.XYChartDrawer;
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
+import hongfeng.xu.rec.mahout.hadoop.matrix.DrawMatrixJob;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MatrixDrawer;
+import hongfeng.xu.rec.mahout.hadoop.misc.ComputeIntersectJob;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.IOException;
@@ -38,8 +41,12 @@ public class Analyzer extends BaseJob {
 
     @Override
     protected int innerRun() throws Exception {
+        MatrixDrawer.WIDTH = WIDTH;
+        MatrixDrawer.HEIGHT = HEIGHT;
         
-        calPredictableRate();
+//        calPredictableRate();
+        
+        drawIntersect();
         
         return 0;
     }
@@ -324,6 +331,36 @@ public class Analyzer extends BaseJob {
             .addSeries("", values)
             .draw();
     }
+
+    private void drawIntersect() throws Exception {
+
+        ComputeIntersectJob computeIntersectJob = new ComputeIntersectJob(
+                userCount(), itemCount(), userCount(),
+                DataSetConfig.getUserItemVectorPath());
+        runJob(computeIntersectJob, DataSetConfig.getUserItemVectorPath(),
+                DataSetConfig.getUserIntersectPath(), true);
+        DrawMatrixJob drawIntersect = new DrawMatrixJob(0.1f,
+                "img/others/intersect-user.png", "", new String[0], new Path[] {
+                    DataSetConfig.getUserIntersectPath()
+                }, new String[] {
+                    "intersect"
+                }, false, true);
+        runJob(drawIntersect, new Path("test"), new Path("test"), false);
+
+        computeIntersectJob = new ComputeIntersectJob(
+                itemCount(), userCount(), itemCount(),
+                DataSetConfig.getItemUserVectorPath());
+        runJob(computeIntersectJob, DataSetConfig.getItemUserVectorPath(),
+                DataSetConfig.getItemIntersectPath(), true);
+        drawIntersect = new DrawMatrixJob(0.1f,
+                "img/others/intersect-item.png", "", new String[0], new Path[] {
+                    DataSetConfig.getItemIntersectPath()
+                }, new String[] {
+                    "intersect"
+                }, false, true);
+        runJob(drawIntersect, new Path("test"), new Path("test"), false);
+    }
+
 
 
     public static void main(String[] args) {

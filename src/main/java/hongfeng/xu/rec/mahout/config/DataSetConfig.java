@@ -422,4 +422,18 @@ public class DataSetConfig {
     public static Path getKnnUserBased(int k) {
         return new Path(getKnnUserBasedDir(), ""+k);
     }
+    
+    //V3
+    public static Path getThresholdV3Dir() {
+        return new Path(getRootPath(), "threshold-v3");
+    }
+    public static Path getV3UUUIThresholdPath() {
+        return new Path(getThresholdV3Dir(), "uuui");
+    }
+    public static Path getV3Evaluate() {
+        return new Path(getThresholdV3Dir(), "evaluate");
+    }
+    public static Path getV3Result() {
+        return new Path(getThresholdV3Dir(), "result");
+    }
 }

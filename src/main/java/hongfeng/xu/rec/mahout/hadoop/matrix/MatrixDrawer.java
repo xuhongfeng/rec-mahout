@@ -7,6 +7,7 @@ package hongfeng.xu.rec.mahout.hadoop.matrix;
 
 import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +43,8 @@ import org.jfree.data.xy.XYDataset;
  *
  */
 public class MatrixDrawer {
-    private static final int WIDTH = 1280;
-    private static final int HEIGHT = 800;
+    public static int WIDTH = 1280;
+    public static int HEIGHT = 800;
     private static final String FORMAT = "png";
     
     private final Path[] inputPaths;
@@ -97,6 +98,8 @@ public class MatrixDrawer {
         JFreeChart chart = ChartFactory.createXYLineChart(title,
                 "", "value", dataSet, PlotOrientation.VERTICAL, true, true, false);
         XYPlot plot = (XYPlot) chart.getPlot();
+        chart.setBackgroundPaint(Color.WHITE);
+        chart.getPlot().setBackgroundPaint(Color.WHITE);
         NumberAxis axis = (NumberAxis) plot.getRangeAxis();
         axis.setNumberFormatOverride(numberFormat);
         
