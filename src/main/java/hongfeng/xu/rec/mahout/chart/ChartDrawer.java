@@ -62,6 +62,9 @@ public class ChartDrawer {
         NumberAxis axis = (NumberAxis) plot.getRangeAxis();
         axis.setNumberFormatOverride(numberFormat);
         
+        axis.setAutoRange(true);
+        axis.setAutoRangeIncludesZero(false);
+        
         BufferedImage image = chart.createBufferedImage(WIDTH, HEIGHT);
         ImageIO.write(image, FORMAT, new File(outputFile));
     }

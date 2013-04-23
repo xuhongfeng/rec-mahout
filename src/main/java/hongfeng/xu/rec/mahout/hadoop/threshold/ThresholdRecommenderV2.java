@@ -6,7 +6,7 @@
 package hongfeng.xu.rec.mahout.hadoop.threshold;
 
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
-import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixJob;
+import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyMatrixAverageJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.MultiplyNearestNeighborJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.BaseRecommender;
 import hongfeng.xu.rec.mahout.hadoop.similarity.ThresholdCosineSimilarityJob;
@@ -66,7 +66,7 @@ public class ThresholdRecommenderV2 extends BaseRecommender {
     protected void multiplyAllocateMatrix() throws Exception {
         Path input = new Path(DataSetConfig.getV2UserAllocate(threshold), "rowVector");
         Path multiplyerPath = new Path(DataSetConfig.getV2UserAllocate(threshold), "columnVector");
-        MultiplyMatrixJob matrixAverageJob = new MultiplyMatrixJob(userCount(), userCount(),
+        MultiplyMatrixAverageJob matrixAverageJob = new MultiplyMatrixAverageJob(userCount(), userCount(),
                 userCount(), multiplyerPath);
         runJob(matrixAverageJob, input, DataSetConfig.getV2UserMultiplyAllocate(threshold)
                 , true);
