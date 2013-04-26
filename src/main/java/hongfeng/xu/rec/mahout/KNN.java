@@ -12,6 +12,8 @@ import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.ItemBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
+import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommenderV2;
+import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -54,8 +56,68 @@ public class KNN extends BaseJob {
                             resultPath);
             runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
         }
+        int threshold = 0;
+        for (int k:KList) {
+            Path knnDir = DataSetConfig.getKnnItemBasedV2(k);
+            Path resultPath = getResultPath(knnDir);
+            Path evaluatePath = getEvaluatePath(knnDir);
+            ItemThresholdRecommenderV2 recommender = new ItemThresholdRecommenderV2(threshold, k);
+            EvaluateRecommenderJob<ItemThresholdRecommenderV2> job =
+                    new EvaluateRecommenderJob<ItemThresholdRecommenderV2> (recommender,
+                            resultPath);
+            runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
+        }
         
-        draw(DataSetConfig.getKnnItemBasedDir(), "ItemBased", KList);
+        double[][][] itemBasedResult = parseResult(DataSetConfig.getKnnItemBasedDir(), KList);
+        double[][][] itemBasedV2Result = parseResult(DataSetConfig.getKnnItemBasedV2Dir(), KList);
+        
+        new XYChartDrawer()
+            .setXLabel("k")
+            .setYLabel("precision")
+            .setTitle("Precision")
+            .setOutputFile("img/others/knn-precision-itemBased.png")
+            .setPercentageFormat(true)
+            .addSeries("itemBased", itemBasedResult[0])
+            .addSeries("itemBasedV2", itemBasedV2Result[0])
+            .setWidth(WIDTH)
+            .setHeight(HEIGHT)
+            .draw();
+        
+        new XYChartDrawer()
+            .setXLabel("k")
+            .setYLabel("recall")
+            .setTitle("Recall")
+            .setOutputFile("img/others/knn-recall-itemBased.png")
+            .setPercentageFormat(true)
+            .addSeries("itemBased", itemBasedResult[1])
+            .addSeries("itemBasedV2", itemBasedV2Result[1])
+            .setWidth(WIDTH)
+            .setHeight(HEIGHT)
+            .draw();
+        
+        new XYChartDrawer()
+            .setXLabel("k")
+            .setYLabel("coverage")
+            .setTitle("Coverage")
+            .setOutputFile("img/others/knn-coverage-itemBased.png")
+            .setPercentageFormat(true)
+            .addSeries("itemBased", itemBasedResult[2])
+            .addSeries("itemBasedV2", itemBasedV2Result[2])
+            .setWidth(WIDTH)
+            .setHeight(HEIGHT)
+            .draw();
+        
+        new XYChartDrawer()
+            .setXLabel("k")
+            .setYLabel("popularity")
+            .setTitle("Popularity")
+            .setOutputFile("img/others/knn-popularity-itemBased.png")
+            .setPercentageFormat(false)
+            .addSeries("itemBased", itemBasedResult[3])
+            .addSeries("itemBasedV2", itemBasedV2Result[3])
+            .setWidth(WIDTH)
+            .setHeight(HEIGHT)
+            .draw();
     }
     
     private void evaluateUserBased() throws Exception {
@@ -71,11 +133,71 @@ public class KNN extends BaseJob {
                             resultPath);
             runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
         }
+        int threshold = 6;
+        for (int k:KList) {
+            Path knnDir = DataSetConfig.getKnnUserBasedV2(k);
+            Path resultPath = getResultPath(knnDir);
+            Path evaluatePath = getEvaluatePath(knnDir);
+            ThresholdRecommenderV2 recommender = new ThresholdRecommenderV2(threshold, k);
+            EvaluateRecommenderJob<ThresholdRecommenderV2> job =
+                    new EvaluateRecommenderJob<ThresholdRecommenderV2> (recommender,
+                            resultPath);
+            runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
+        }
         
-        draw(DataSetConfig.getKnnUserBasedDir(), "UserBased", KList);
+        double[][][] userBasedResult = parseResult(DataSetConfig.getKnnUserBasedDir(), KList);
+        double[][][] userBasedV2Result = parseResult(DataSetConfig.getKnnUserBasedV2Dir(), KList);
+        
+        new XYChartDrawer()
+            .setXLabel("k")
+            .setYLabel("precision")
+            .setTitle("Precision")
+            .setOutputFile("img/others/knn-precision-userBased.png")
+            .setPercentageFormat(true)
+            .addSeries("userBased", userBasedResult[0])
+            .addSeries("userBasedV2", userBasedV2Result[0])
+            .setWidth(WIDTH)
+            .setHeight(HEIGHT)
+            .draw();
+        
+        new XYChartDrawer()
+            .setXLabel("k")
+            .setYLabel("recall")
+            .setTitle("Recall")
+            .setOutputFile("img/others/knn-recall-userBased.png")
+            .setPercentageFormat(true)
+            .addSeries("userBased", userBasedResult[1])
+            .addSeries("userBasedV2", userBasedV2Result[1])
+            .setWidth(WIDTH)
+            .setHeight(HEIGHT)
+            .draw();
+        
+        new XYChartDrawer()
+            .setXLabel("k")
+            .setYLabel("coverage")
+            .setTitle("Coverage")
+            .setOutputFile("img/others/knn-coverage-userBased.png")
+            .setPercentageFormat(true)
+            .addSeries("userBased", userBasedResult[2])
+            .addSeries("userBasedV2", userBasedV2Result[2])
+            .setWidth(WIDTH)
+            .setHeight(HEIGHT)
+            .draw();
+        
+        new XYChartDrawer()
+            .setXLabel("k")
+            .setYLabel("popularity")
+            .setTitle("Popularity")
+            .setOutputFile("img/others/knn-popularity-userBased.png")
+            .setPercentageFormat(false)
+            .addSeries("userBased", userBasedResult[3])
+            .addSeries("userBasedV2", userBasedV2Result[3])
+            .setWidth(WIDTH)
+            .setHeight(HEIGHT)
+            .draw();
     }
     
-    private void draw(Path knnDir, String titlePrefix, int[] KList) throws IOException {
+    private double[][][] parseResult(Path knnDir, int[] KList) throws IOException {
         double[][] precisionValues = new double[2][KList.length];
         double[][] recallValues = new double[2][KList.length];
         double[][] coverageValues = new double[2][KList.length];
@@ -111,49 +233,12 @@ public class KNN extends BaseJob {
             it.close();
         }
         
-        new XYChartDrawer()
-            .setXLabel("k")
-            .setYLabel("precision")
-            .setTitle(titlePrefix + " Precision")
-            .setOutputFile("img/others/knn-precision-" + titlePrefix + ".png")
-            .setPercentageFormat(true)
-            .addSeries("", precisionValues)
-            .setWidth(WIDTH)
-            .setHeight(HEIGHT)
-            .draw();
-        
-        new XYChartDrawer()
-            .setXLabel("k")
-            .setYLabel("recall")
-            .setTitle(titlePrefix + " Recall")
-            .setOutputFile("img/others/knn-recall-" + titlePrefix + ".png")
-            .setPercentageFormat(true)
-            .addSeries("", recallValues)
-            .setWidth(WIDTH)
-            .setHeight(HEIGHT)
-            .draw();
-        
-        new XYChartDrawer()
-            .setXLabel("k")
-            .setYLabel("coverage")
-            .setTitle(titlePrefix + " Coverage")
-            .setOutputFile("img/others/knn-coverage-" + titlePrefix + ".png")
-            .setPercentageFormat(true)
-            .addSeries("", coverageValues)
-            .setWidth(WIDTH)
-            .setHeight(HEIGHT)
-            .draw();
-        
-        new XYChartDrawer()
-            .setXLabel("k")
-            .setYLabel("popularity")
-            .setTitle(titlePrefix + " Popularity")
-            .setOutputFile("img/others/knn-popularity-" + titlePrefix + ".png")
-            .setPercentageFormat(false)
-            .addSeries("", popularityValues)
-            .setWidth(WIDTH)
-            .setHeight(HEIGHT)
-            .draw();
+        return new double[][][] {
+                precisionValues,
+                recallValues,
+                coverageValues,
+                popularityValues
+        };
     }
     
     private Path getEvaluatePath(Path knnDir) {

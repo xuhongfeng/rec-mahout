@@ -40,7 +40,7 @@ public class ThresholdRecommenderV2 extends BaseRecommender {
         
         calculateUIThreshold();
         
-        recommend(DataSetConfig.getV2UUUIThresholdPath(threshold));
+        recommend(DataSetConfig.getV2UUUIThresholdPath(threshold, k));
         
         return 0;
     }
@@ -100,6 +100,6 @@ public class ThresholdRecommenderV2 extends BaseRecommender {
         MultiplyNearestNeighborJob multiplyNearestNeighborJob = new MultiplyNearestNeighborJob(userCount(),
                 userCount(), itemCount(), multipyerPath, type, k);
         runJob(multiplyNearestNeighborJob, input,
-                DataSetConfig.getV2UUUIThresholdPath(threshold), true);
+                DataSetConfig.getV2UUUIThresholdPath(threshold, k), true);
     }
 }

@@ -51,12 +51,12 @@ public class Main extends BaseJob {
     private int[] thresholdList = new int[] {
 //        0, 20, 40, 60, 80, 100, 120, 150, 200, 500
 //        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 40, 60
-        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 40, 60
+//        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 40, 60
 //        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20
 //          16, 40
-//            1, 3, 5, 7, 9, 11, 13, 15, 17, 19
-//            0, 14, 40
+//            1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 30, 40, 50, 60, 70, 80, 90, 100
 //          0, 2, 4, 6, 8, 10
+            6
     };
 
     @Override
@@ -70,6 +70,8 @@ public class Main extends BaseJob {
         drawThreshold();
 //        
 //        drawItemSimilarity();
+        
+//        drawUserSimilarity();
 //        
 //        drawUserBasedUI();
         
@@ -412,13 +414,12 @@ public class Main extends BaseJob {
             DataSetConfig.getV2ItemAllocate(threshold),
             DataSetConfig.getV2ItemMultiplyAllocate(threshold),
             DataSetConfig.getV2ItemDoAllocate(threshold),
-            DataSetConfig.getV2EveIIPath(threshold),
             DataSetConfig.getV2IIThresholdPath(threshold)
         };
         String[] series = new String[] {
             "origin", "filter-" + threshold, "allocate-" + threshold,
             "multiply-allocate-" + threshold, "do-allocate-" + threshold,
-            "eve-ii-" + threshold, "threshold-" + threshold
+            "threshold-" + threshold
         };
         boolean withZero = true;
         boolean diagonalOnly = false;
@@ -429,7 +430,7 @@ public class Main extends BaseJob {
 
     private void drawUserSimilarity(int threshold) throws Exception {
         float precision = 0.0001f;
-        String imageFile = "img/others/similarity_distribution-" + threshold
+        String imageFile = "img/others/user-similarity-" + threshold
                 + ".png";
         String title = "similarity";
         String[] subTitles = new String[0];
@@ -488,11 +489,11 @@ public class Main extends BaseJob {
     private void evaluate() throws Exception {
 //        evaluateRandom();
 //        evaluatePopular();
-        evaluateUserbased();
-        evaluateUserbasedV2();
-//        evaluateUserbasedV3();
 //        evaluateItembased();
 //        evaluateItembasedV2();
+        evaluateUserbased();
+        evaluateUserbasedV2();
+        evaluateUserbasedV3();
 
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage",
                 "img/coverage.png", coverageResult, true);

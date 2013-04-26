@@ -387,13 +387,16 @@ public class DataSetConfig {
         Path dir = new Path(getThresholdV2Dir(), "evaluateUser");
         return new Path(dir, String.valueOf(threshold));
     }
-    public static Path getV2UUUIThresholdPath(int threshold) {
+    public static Path getV2UUUIThresholdPath(int threshold, int k) {
         Path dir = new Path(getThresholdV2Dir(), "uuui");
-        return new Path(dir, String.valueOf(threshold));
+        Path uuuiDir = new Path(dir, String.valueOf(threshold));
+        return new Path(uuuiDir, String.valueOf(k));
     }
-    public static Path getV2UIIIThresholdPath(int threshold) {
+    
+    public static Path getV2UIIIThresholdPath(int threshold, int k) {
         Path dir = new Path(getThresholdV2Dir(), "uiii");
-        return new Path(dir, String.valueOf(threshold));
+        Path uiiiDir = new Path(dir, String.valueOf(threshold));
+        return new Path(uiiiDir, String.valueOf(k));
     }
     public static Path getV2ItemThresholdResult(int threshold) {
         Path dir = new Path(getThresholdV2Dir(), "resultItem");
@@ -421,6 +424,27 @@ public class DataSetConfig {
     }
     public static Path getKnnUserBased(int k) {
         return new Path(getKnnUserBasedDir(), ""+k);
+    }
+    
+    public static Path getKnnUserBasedV3Dir() {
+        return new Path(getKNNDir(), "userBasedV3");
+    }
+    public static Path getKnnUserBasedV3(int k) {
+        return new Path(getKnnUserBasedV3Dir(), ""+k);
+    }
+    
+    public static Path getKnnItemBasedV2Dir() {
+        return new Path(getKNNDir(), "itemBasedV2");
+    }
+    public static Path getKnnItemBasedV2(int k) {
+        return new Path(getKnnItemBasedV2Dir(), ""+k);
+    }
+    
+    public static Path getKnnUserBasedV2Dir() {
+        return new Path(getKNNDir(), "userBasedV2");
+    }
+    public static Path getKnnUserBasedV2(int k) {
+        return new Path(getKnnUserBasedV2Dir(), ""+k);
     }
     
     //V3
