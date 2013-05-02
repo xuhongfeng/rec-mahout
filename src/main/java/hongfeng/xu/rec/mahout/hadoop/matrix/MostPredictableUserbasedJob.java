@@ -49,6 +49,9 @@ public class MostPredictableUserbasedJob extends BaseMatrixJob {
         private int k;
         private FixedSizePriorityQueue<Pair<Double, Integer>> queue;
         private VectorCache uiCache;
+        private int queueUserId= -1;
+        private int userCount;
+        private int itemCount;
 
         public MyReducer() {
             super();
@@ -62,8 +65,8 @@ public class MostPredictableUserbasedJob extends BaseMatrixJob {
             if (k == -1) {
                 throw new RuntimeException();
             }
-            int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), conf);
-            int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), conf);
+            userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), conf);
+            itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), conf);
             uiCache = VectorCache.create(userCount, itemCount, DataSetConfig.getUserItemVectorPath(), conf);
             queue = new FixedSizePriorityQueue<Pair<Double, Integer>>(k,
                 new Comparator<Pair<Double, Integer>>() {
@@ -85,15 +88,20 @@ public class MostPredictableUserbasedJob extends BaseMatrixJob {
         protected double calculate(int i, int j, Vector simVector, Vector iuVector) {
             int userId = i;
             Vector uiVector = uiCache.get(userId);
-            queue.clear();
-            Iterator<Element> simIt = simVector.iterateNonZero();
-            while (simIt.hasNext()) {
-                Element simEle = simIt.next();
-                int otherUserId = simEle.index();
-                double sim = simEle.get();
-                Vector otherUiVector = uiCache.get(otherUserId);
-                int sub = HadoopHelper.sub(otherUiVector, uiVector);
-                queue.add(new Pair<Double, Integer>(sim*sub, otherUserId));
+            if (queueUserId != userId) {
+                queue.clear();
+                Iterator<Element> simIt = simVector.iterateNonZero();
+                int countUserNotPref = itemCount-uiVector.getNumNondefaultElements();
+                while (simIt.hasNext()) {
+                    Element simEle = simIt.next();
+                    int otherUserId = simEle.index();
+                    double sim = simEle.get();
+                    Vector otherUiVector = uiCache.get(otherUserId);
+                    double recRate = HadoopHelper.sub(otherUiVector, uiVector)*1.0/countUserNotPref;
+                    HadoopHelper.log(this, "sim=" + sim + ", recRate" + recRate);
+                    queue.add(new Pair<Double, Integer>(sim-sim%0.01+recRate*0.01, otherUserId));
+                }
+                queueUserId = userId;
             }
             if (DataSetConfig.ONE_ZERO) {
                 double total = 0.0;

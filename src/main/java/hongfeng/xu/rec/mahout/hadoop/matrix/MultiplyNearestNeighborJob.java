@@ -89,6 +89,7 @@ public class MultiplyNearestNeighborJob extends BaseMatrixJob {
 //            if (i == j) {
 //                return 0;
 //            }
+            //TODO cache queue
             queue.clear();
             if (type == TYPE_USER_BASED) {
                 Iterator<Element> iterator = vector1.iterateNonZero();

@@ -451,13 +451,17 @@ public class DataSetConfig {
     public static Path getThresholdV3Dir() {
         return new Path(getRootPath(), "threshold-v3");
     }
-    public static Path getV3UUUIThresholdPath() {
-        return new Path(getThresholdV3Dir(), "uuui");
+    public static Path getV3UUUIThresholdPath(int threshold, int k) {
+        Path dir = new Path(getThresholdV3Dir(), "uuui");
+        Path uuuiDir = new Path(dir, String.valueOf(threshold));
+        return new Path(uuuiDir, String.valueOf(k));
     }
-    public static Path getV3Evaluate() {
-        return new Path(getThresholdV3Dir(), "evaluate");
+    public static Path getV3Evaluate(int threshold) {
+        Path dir = new Path(getThresholdV3Dir(), "evaluate");
+        return new Path(dir, String.valueOf(threshold));
     }
-    public static Path getV3Result() {
-        return new Path(getThresholdV3Dir(), "result");
+    public static Path getV3Result(int threshold) {
+        Path dir = new Path(getThresholdV3Dir(), "result");
+        return new Path(dir, String.valueOf(threshold));
     }
 }

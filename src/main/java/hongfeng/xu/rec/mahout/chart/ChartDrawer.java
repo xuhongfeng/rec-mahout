@@ -31,8 +31,10 @@ import org.jfree.data.category.DefaultCategoryDataset;
  *
  */
 public class ChartDrawer {
-    private static final int WIDTH = 1280;
-    private static final int HEIGHT = 800;
+//    private static final int WIDTH = 1280;
+//    private static final int HEIGHT = 800;
+    private static final int WIDTH = 800;
+    private static final int HEIGHT = 500;
     private static final String XLABEL = "N";
     private static final String FORMAT = "png";
     

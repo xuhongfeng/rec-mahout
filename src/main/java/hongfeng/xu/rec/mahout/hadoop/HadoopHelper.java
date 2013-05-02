@@ -82,10 +82,12 @@ public class HadoopHelper {
         while (it.hasNext()) {
             set.add(it.next().index());
         }
+        
+        it = vector1.iterateNonZero();
         int count = 0;
         while (it.hasNext()) {
             if (!set.contains(it.next().index())) {
-                count ++;
+                count++;
             }
         }
         return count;

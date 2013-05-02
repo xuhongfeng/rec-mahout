@@ -11,6 +11,7 @@ import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.ItemBasedRecommender;
+import hongfeng.xu.rec.mahout.hadoop.recommender.ThresholdV3;
 import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommenderV2;
@@ -38,7 +39,7 @@ public class KNN extends BaseJob {
     protected int innerRun() throws Exception {
         
         evaluateUserBased();
-        evaluateItemBased();
+//        evaluateItemBased();
         
         return 0;
     }
@@ -123,6 +124,8 @@ public class KNN extends BaseJob {
     private void evaluateUserBased() throws Exception {
         int[] KList = new int[] {10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
                 150, 200, 250, 300, 400, 500, 600, 700, 800, 900};
+//        int[] KList = new int[] {10, 50, 100, 150, 200, 300, 500, 900};
+//        int[] KList = new int[] {100};
         for (int k:KList) {
             Path knnDir = DataSetConfig.getKnnUserBased(k);
             Path resultPath = getResultPath(knnDir);
@@ -144,9 +147,21 @@ public class KNN extends BaseJob {
                             resultPath);
             runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
         }
+//        for (int k:KList) {
+//            Path knnDir = DataSetConfig.getKnnUserBasedV3(k);
+//            Path resultPath = getResultPath(knnDir);
+//            Path evaluatePath = getEvaluatePath(knnDir);
+//            ThresholdV3 recommender = new ThresholdV3(threshold, k);
+//            EvaluateRecommenderJob<ThresholdV3> job =
+//                    new EvaluateRecommenderJob<ThresholdV3> (recommender,
+//                            resultPath);
+//            runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
+//        }
+        
         
         double[][][] userBasedResult = parseResult(DataSetConfig.getKnnUserBasedDir(), KList);
         double[][][] userBasedV2Result = parseResult(DataSetConfig.getKnnUserBasedV2Dir(), KList);
+//        double[][][] userBasedV3Result = parseResult(DataSetConfig.getKnnUserBasedV3Dir(), KList);
         
         new XYChartDrawer()
             .setXLabel("k")
@@ -156,6 +171,7 @@ public class KNN extends BaseJob {
             .setPercentageFormat(true)
             .addSeries("userBased", userBasedResult[0])
             .addSeries("userBasedV2", userBasedV2Result[0])
+//            .addSeries("userBasedV3", userBasedV3Result[0])
             .setWidth(WIDTH)
             .setHeight(HEIGHT)
             .draw();
@@ -168,6 +184,7 @@ public class KNN extends BaseJob {
             .setPercentageFormat(true)
             .addSeries("userBased", userBasedResult[1])
             .addSeries("userBasedV2", userBasedV2Result[1])
+//            .addSeries("userBasedV3", userBasedV3Result[1])
             .setWidth(WIDTH)
             .setHeight(HEIGHT)
             .draw();
@@ -180,6 +197,7 @@ public class KNN extends BaseJob {
             .setPercentageFormat(true)
             .addSeries("userBased", userBasedResult[2])
             .addSeries("userBasedV2", userBasedV2Result[2])
+//            .addSeries("userBasedV3", userBasedV3Result[2])
             .setWidth(WIDTH)
             .setHeight(HEIGHT)
             .draw();
@@ -192,6 +210,7 @@ public class KNN extends BaseJob {
             .setPercentageFormat(false)
             .addSeries("userBased", userBasedResult[3])
             .addSeries("userBasedV2", userBasedV2Result[3])
+//            .addSeries("userBasedV3", userBasedV3Result[3])
             .setWidth(WIDTH)
             .setHeight(HEIGHT)
             .draw();
@@ -217,16 +236,19 @@ public class KNN extends BaseJob {
                     if (type == TypeAndNWritable.TYPE_PRECISION) {
                         precisionValues[0][i] = k;
                         precisionValues[1][i] = value;
-                        HadoopHelper.log(this, "k="+k+", value="+value);
+                        HadoopHelper.log(this, "Precision : k="+k+", value="+value);
                     } else if (type == TypeAndNWritable.TYPE_RECALL) {
                         recallValues[0][i] = k;
                         recallValues[1][i] = value;
+                        HadoopHelper.log(this, "Recall : k="+k+", value="+value);
                     } else if (type == TypeAndNWritable.TYPE_COVERAGE) {
                         coverageValues[0][i] = k;
                         coverageValues[1][i] = value;
+                        HadoopHelper.log(this, "Coverage : k="+k+", value="+value);
                     } else if (type == TypeAndNWritable.TYPE_POPULARITY) {
                         popularityValues[0][i] = k;
                         popularityValues[1][i] = value;
+                        HadoopHelper.log(this, "Popularity : k="+k+", value="+value);
                     }
                 }
             }

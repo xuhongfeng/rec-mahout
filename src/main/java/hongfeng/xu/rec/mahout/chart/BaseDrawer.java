@@ -20,8 +20,10 @@ import org.jfree.data.general.AbstractDataset;
  *
  */
 public abstract class BaseDrawer<T extends BaseDrawer, DATA extends AbstractDataset> {
-    private static final int DEFAULT_WIDTH = 1280;
-    private static final int DEFAULT_HEIGHT = 800;
+//    private static final int DEFAULT_WIDTH = 1280;
+//    private static final int DEFAULT_HEIGHT = 800;
+    private static final int DEFAULT_WIDTH = 800;
+    private static final int DEFAULT_HEIGHT = 500;
     private static final String FORMAT = "png";
     
     protected DATA dataSet;

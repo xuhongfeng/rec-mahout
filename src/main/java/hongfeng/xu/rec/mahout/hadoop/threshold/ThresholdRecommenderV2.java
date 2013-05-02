@@ -18,7 +18,7 @@ import org.apache.hadoop.fs.Path;
  *
  */
 public class ThresholdRecommenderV2 extends BaseRecommender {
-    private final int threshold;
+    protected final int threshold;
     protected final int k;
     
     public ThresholdRecommenderV2(int threshold, int k) {

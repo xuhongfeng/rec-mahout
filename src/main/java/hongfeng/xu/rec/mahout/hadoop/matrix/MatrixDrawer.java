@@ -5,6 +5,7 @@
  */
 package hongfeng.xu.rec.mahout.hadoop.matrix;
 
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.MultipleSequenceOutputFormat;
 
 import java.awt.Color;
@@ -31,12 +32,16 @@ import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.Title;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYDataset;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.TextAnchor;
 
 /**
  * @author xuhongfeng
@@ -103,6 +108,19 @@ public class MatrixDrawer {
         NumberAxis axis = (NumberAxis) plot.getRangeAxis();
         axis.setNumberFormatOverride(numberFormat);
         
+//        Marker xMarker = new ValueMarker(317085.0);
+//        xMarker.setPaint(Color.GREEN);
+//        xMarker.setLabel("%80");
+//        xMarker.setLabelAnchor(RectangleAnchor.TOP_RIGHT);
+//        xMarker.setLabelTextAnchor(TextAnchor.TOP_LEFT);
+//        plot.addDomainMarker(xMarker);
+//        Marker yMarker = new ValueMarker(13.90000057220459);
+//        yMarker.setLabel("14");
+//        yMarker.setLabelAnchor(RectangleAnchor.BOTTOM_RIGHT);
+//        yMarker.setLabelTextAnchor(TextAnchor.TOP_RIGHT);
+//        yMarker.setPaint(Color.GREEN);
+//        plot.addRangeMarker(yMarker);
+        
         if (subTitles != null) {
             for (int i=0; i<subTitles.length; i++) {
                 Title title = new TextTitle(subTitles[i]);
@@ -123,9 +141,11 @@ public class MatrixDrawer {
             int num = pair.getSecond();
             values[0][j] = Double.valueOf(i);
             values[1][j++] = v;
+            HadoopHelper.log(this, values[0][j-1] + ", " + values[1][j-1]);
             i += num;
             values[0][j] = Double.valueOf(i-1);
             values[1][j++] = v;
+            HadoopHelper.log(this, values[0][j-1] + ", " + values[1][j-1]);
         }
         dataSet.addSeries(series, values);
         

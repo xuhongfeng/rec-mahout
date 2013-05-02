@@ -17,9 +17,9 @@ import org.apache.hadoop.fs.Path;
  */
 public class ThresholdV3 extends ThresholdRecommenderV2 {
     
-
-    public ThresholdV3(int k) {
-        super(0, k);
+    
+    public ThresholdV3(int threshold, int k) {
+        super(threshold, k);
     }
 
     @Override
@@ -36,18 +36,18 @@ public class ThresholdV3 extends ThresholdRecommenderV2 {
         
         calculateUIThreshold();
         
-        recommend(DataSetConfig.getV3UUUIThresholdPath());
+        recommend(DataSetConfig.getV3UUUIThresholdPath(threshold, k));
         
         return 0;
     }
     
     private void calculateUIThreshold() throws Exception {
         Path multipyerPath = DataSetConfig.getItemUserVectorPath();
-        Path input = new Path(DataSetConfig.getV2UUThresholdPath(0), "rowVector");
+        Path input = new Path(DataSetConfig.getV2UUThresholdPath(threshold), "rowVector");
         MostPredictableUserbasedJob job = new MostPredictableUserbasedJob(userCount(),
                 userCount(), itemCount(), multipyerPath, k);
         runJob(job, input,
-                DataSetConfig.getV3UUUIThresholdPath(), true);
+                DataSetConfig.getV3UUUIThresholdPath(threshold, k), true);
     }
 
 }

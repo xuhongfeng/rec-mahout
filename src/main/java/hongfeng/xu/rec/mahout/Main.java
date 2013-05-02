@@ -8,6 +8,7 @@ import hongfeng.xu.rec.mahout.chart.Result;
 import hongfeng.xu.rec.mahout.chart.XYChartDrawer;
 import hongfeng.xu.rec.mahout.config.DataSetConfig;
 import hongfeng.xu.rec.mahout.hadoop.BaseJob;
+import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.DrawMatrixJob;
 import hongfeng.xu.rec.mahout.hadoop.matrix.ToVectorJob;
@@ -54,9 +55,11 @@ public class Main extends BaseJob {
 //        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 40, 60
 //        0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20
 //          16, 40
-//            1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 30, 40, 50, 60, 70, 80, 90, 100
+//            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+//            30, 40, 50, 60, 70, 80, 90, 100
 //          0, 2, 4, 6, 8, 10
             6
+//            0, 10
     };
 
     @Override
@@ -67,7 +70,7 @@ public class Main extends BaseJob {
 
         evaluate();
         
-        drawThreshold();
+//        drawThreshold();
 //        
 //        drawItemSimilarity();
         
@@ -95,14 +98,15 @@ public class Main extends BaseJob {
     }
     
     private void drawThreshold() throws IOException {
-        double[][][] coverageUser = new double[10][2][thresholdList.length];
-        double[][][] coverageItem = new double[10][2][thresholdList.length];
-        double[][][] recallUser = new double[10][2][thresholdList.length];
-        double[][][] recallItem = new double[10][2][thresholdList.length];
-        double[][][] precesionUser = new double[10][2][thresholdList.length];
-        double[][][] precesionItem = new double[10][2][thresholdList.length];
-        double[][][] popularityUser = new double[10][2][thresholdList.length];
-        double[][][] popularityItem = new double[10][2][thresholdList.length];
+        int COUNT = 1;
+        double[][][] coverageUser = new double[COUNT][2][thresholdList.length];
+        double[][][] coverageItem = new double[COUNT][2][thresholdList.length];
+        double[][][] recallUser = new double[COUNT][2][thresholdList.length];
+        double[][][] recallItem = new double[COUNT][2][thresholdList.length];
+        double[][][] precesionUser = new double[COUNT][2][thresholdList.length];
+        double[][][] precesionItem = new double[COUNT][2][thresholdList.length];
+        double[][][] popularityUser = new double[COUNT][2][thresholdList.length];
+        double[][][] popularityItem = new double[COUNT][2][thresholdList.length];
         
         for (int i=0; i<thresholdList.length; i++) {
             int threshold = thresholdList[i];
@@ -114,23 +118,34 @@ public class Main extends BaseJob {
                 int type = pair.getFirst().getType();
                 int n = pair.getFirst().getN();
                 int idx = n/10 - 1;
+                if (idx >= COUNT) {
+                    continue;
+                }
                 double value = pair.getSecond().get();
                 switch (type) {
                     case TypeAndNWritable.TYPE_RECALL:
                         recallUser[idx][0][i] = threshold;
                         recallUser[idx][1][i] = value;
+                        HadoopHelper.log(this, String.format("Recall : threshold=%d, n=%d, value=%.3f"
+                                , threshold, n, value));
                         break;
                     case TypeAndNWritable.TYPE_PRECISION:
                         precesionUser[idx][0][i] = threshold;
                         precesionUser[idx][1][i] = value;
+                        HadoopHelper.log(this, String.format("Precision : threshold=%d, n=%d, value=%.3f"
+                                , threshold, n, value));
                         break;
                     case TypeAndNWritable.TYPE_POPULARITY:
                         popularityUser[idx][0][i] = threshold;
                         popularityUser[idx][1][i] = value;
+                        HadoopHelper.log(this, String.format("Popularity : threshold=%d, n=%d, value=%.3f"
+                                , threshold, n, value));
                         break;
                     case TypeAndNWritable.TYPE_COVERAGE:
                         coverageUser[idx][0][i] = threshold;
                         coverageUser[idx][1][i] = value;
+                        HadoopHelper.log(this, String.format("Coverage: threshold=%d, n=%d, value=%.3f"
+                                , threshold, n, value));
                         break;
                 }
             }
@@ -147,6 +162,9 @@ public class Main extends BaseJob {
                 int type = pair.getFirst().getType();
                 int n = pair.getFirst().getN();
                 int idx = n/10 - 1;
+                if (idx >= COUNT) {
+                    continue;
+                }
                 double value = pair.getSecond().get();
                 switch (type) {
                     case TypeAndNWritable.TYPE_RECALL:
@@ -260,19 +278,19 @@ public class Main extends BaseJob {
         drawer.draw();
     }
 
-    private void drawUserBasedUI() throws Exception {
-        Path[] matrixDir = new Path[] {
-            DataSetConfig.getUserBasedMatrix(k),
-            DataSetConfig.getV2UUUIThresholdPath(14)
-        };
-        String[] series = new String[] {
-            "UserBased", "Threshold-v2"
-        };
-        DrawMatrixJob drawUI = new DrawMatrixJob(0.0001f, "img/others/ui.png",
-                "", new String[0], matrixDir, series, true, false);
-        runJob(drawUI, new Path("test"), new Path("test"), false);
-
-    }
+//    private void drawUserBasedUI() throws Exception {
+//        Path[] matrixDir = new Path[] {
+//            DataSetConfig.getUserBasedMatrix(k),
+//            DataSetConfig.getV2UUUIThresholdPath(14)
+//        };
+//        String[] series = new String[] {
+//            "UserBased", "Threshold-v2"
+//        };
+//        DrawMatrixJob drawUI = new DrawMatrixJob(0.0001f, "img/others/ui.png",
+//                "", new String[0], matrixDir, series, true, false);
+//        runJob(drawUI, new Path("test"), new Path("test"), false);
+//
+//    }
 
     private void evaluateRandom() throws Exception {
         /* random recommender */
@@ -317,10 +335,12 @@ public class Main extends BaseJob {
     }
 
     private void evaluateUserbasedV3() throws Exception {
-        EvaluateRecommenderJob<ThresholdV3> job = new EvaluateRecommenderJob<ThresholdV3>
-            (new ThresholdV3(k), DataSetConfig.getV3Result());
-        runJob(job, DataSetConfig.getUserItemVectorPath(), DataSetConfig.getV3Evaluate(), true);
-        calculateResult(DataSetConfig.getV3Evaluate(), "V3");
+        for (int threshold: thresholdList) {
+            EvaluateRecommenderJob<ThresholdV3> job = new EvaluateRecommenderJob<ThresholdV3>
+                (new ThresholdV3(threshold, k), DataSetConfig.getV3Result(threshold));
+            runJob(job, DataSetConfig.getUserItemVectorPath(), DataSetConfig.getV3Evaluate(threshold), true);
+            calculateResult(DataSetConfig.getV3Evaluate(threshold), "V3-" + threshold);
+        }
     }
 
     private void evaluateUserbasedV2() throws Exception {
@@ -332,7 +352,7 @@ public class Main extends BaseJob {
                     DataSetConfig.getV2UserThresholdEvaluate(threshold), true);
             calculateResult(
                     DataSetConfig.getV2UserThresholdEvaluate(threshold),
-                    "User-Threshold-V2-" + threshold);
+                    "Advanced-UserBased");
         }
     }
 
@@ -468,16 +488,27 @@ public class Main extends BaseJob {
             int type = pair.getFirst().getType();
             int n = pair.getFirst().getN();
             double value = pair.getSecond().get();
+            String typeStr = "";
+            String valueStr = "";
             if (type == TypeAndNWritable.TYPE_COVERAGE) {
+                typeStr = "Coverage";
                 resultCoverage.put(n, value);
+                valueStr = String.format("%.1f%%",value*100);
             } else if (type == TypeAndNWritable.TYPE_PRECISION) {
                 resultPrecision.put(n, value);
+                typeStr = "Precision";
+                valueStr = String.format("%.1f%%",value*100);
             } else if (type == TypeAndNWritable.TYPE_RECALL) {
                 resultRecall.put(n, value);
+                typeStr = "Recall";
+                valueStr = String.format("%.1f%%",value*100);
             } else if (type == TypeAndNWritable.TYPE_POPULARITY) {
+                typeStr = "Popularity";
                 resultPopularity.put(n, value);
+                valueStr = String.format("%.2f",value);
             }
-            // HadoopHelper.log(this, pair.toString());
+            HadoopHelper.log(this, String.format("%s[type=%s; n=%d; value=%s]",
+                    name, typeStr, n, valueStr));
         }
         iterator.close();
         coverageResult.put(name, resultCoverage);
@@ -493,7 +524,7 @@ public class Main extends BaseJob {
 //        evaluateItembasedV2();
         evaluateUserbased();
         evaluateUserbasedV2();
-        evaluateUserbasedV3();
+//        evaluateUserbasedV3();
 
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage",
                 "img/coverage.png", coverageResult, true);
