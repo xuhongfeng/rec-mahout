@@ -464,4 +464,43 @@ public class DataSetConfig {
         Path dir = new Path(getThresholdV3Dir(), "result");
         return new Path(dir, String.valueOf(threshold));
     }
+    
+    //v4
+    public static Path getV4Dir(int bottom, int top) {
+        Path dir = new Path(getRootPath(), "v4");
+        return new Path(dir, bottom + "-" + top);
+    }
+    public static Path getV4ThresholdSimilarity(int bottom, int top) {
+        Path dir = getV4Dir(bottom, top);
+        return new Path(dir, "similarity");
+    }
+    public static Path getV4AllocatePath(int bottom, int top) {
+        Path dir = getV4Dir(bottom, top);
+        return new Path(dir, "allocate");
+    }
+    public static Path getV4AverageAllocatePath(int bottom, int top) {
+        Path dir = getV4Dir(bottom, top);
+        return new Path(dir, "averageAllocate");
+    }
+    public static Path getV4DoAllocatePath(int bottom, int top) {
+        Path dir = getV4Dir(bottom, top);
+        return new Path(dir, "doAllocate");
+    }
+    public static Path getV4UUPath(int bottom, int top) {
+        Path dir = getV4Dir(bottom, top);
+        return new Path(dir, "uu");
+    }
+    public static Path getV4UIPath(int bottom, int top, int k) {
+        Path dir = getV4Dir(bottom, top);
+        dir = new Path(dir, "ui");
+        return new Path(dir, ""+k);
+    }
+    public static Path getV4ResultPath(int bottom, int top) {
+        Path dir = getV4Dir(bottom, top);
+        return new Path(dir, "result");
+    }
+    public static Path getV4EvaluatePath(int bottom, int top) {
+        Path dir = getV4Dir(bottom, top);
+        return new Path(dir, "evaluate");
+    }
 }

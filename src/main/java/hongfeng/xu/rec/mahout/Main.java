@@ -20,6 +20,7 @@ import hongfeng.xu.rec.mahout.hadoop.recommender.ThresholdV3;
 import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommenderV2;
+import hongfeng.xu.rec.mahout.hadoop.threshold.v4.ThresholdRecommenderV4;
 import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
@@ -356,6 +357,21 @@ public class Main extends BaseJob {
         }
     }
 
+    private void evaluateUserbasedV4() throws Exception {
+        int bottom = 6;
+        int[] topList = new int[] {55, 60, 65, 70, 75, 80, 85, 90, 95};
+        for (int top:topList) {
+            EvaluateRecommenderJob<ThresholdRecommenderV4> evaluateThreshold = new EvaluateRecommenderJob<ThresholdRecommenderV4>(
+                    new ThresholdRecommenderV4(bottom, top, k),
+                    DataSetConfig.getV4ResultPath(bottom, top));
+            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+                    DataSetConfig.getV4EvaluatePath(bottom, top), true);
+            calculateResult(
+                    DataSetConfig.getV4EvaluatePath(bottom, top),
+                    "V4-"+top);
+        }
+    }
+
     private void evaluateUserbased() throws Exception {
         /* user based recommender */
         EvaluateRecommenderJob<UserBasedRecommender> evaluateUserBased = new EvaluateRecommenderJob<UserBasedRecommender>(
@@ -520,11 +536,12 @@ public class Main extends BaseJob {
     private void evaluate() throws Exception {
 //        evaluateRandom();
 //        evaluatePopular();
-//        evaluateItembased();
+        evaluateItembased();
 //        evaluateItembasedV2();
         evaluateUserbased();
         evaluateUserbasedV2();
 //        evaluateUserbasedV3();
+        evaluateUserbasedV4();
 
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage",
                 "img/coverage.png", coverageResult, true);
