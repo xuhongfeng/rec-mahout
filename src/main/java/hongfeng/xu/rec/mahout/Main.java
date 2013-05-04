@@ -21,12 +21,20 @@ import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.hadoop.threshold.v4.ThresholdRecommenderV4;
+import hongfeng.xu.rec.mahout.hadoop.threshold.v5.ThresholdRecommenderV5;
 import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
@@ -48,7 +56,10 @@ public class Main extends BaseJob {
 
     private Map<String, Result> recallResult = new HashMap<String, Result>();
 
-    private static final int k = 2000;
+    private static int k = DataSetConfig.ROOT.toString().contains("appchina")?5000:2000;
+    
+    private ExecutorService threadPool = Executors.newCachedThreadPool();
+    private List<Future<Void>> tasks = new ArrayList<Future<Void>> ();
 
     private int[] thresholdList = new int[] {
 //        0, 20, 40, 60, 80, 100, 120, 150, 200, 500
@@ -59,19 +70,20 @@ public class Main extends BaseJob {
 //            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
 //            30, 40, 50, 60, 70, 80, 90, 100
 //          0, 2, 4, 6, 8, 10
-            6
-//            0, 10
+//            0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30, 35, 40, 45, 50 
+//            6
+            3
     };
 
     @Override
     protected int innerRun() throws Exception {
-//        parseRawData();
+        parseRawData();
 //
-//        toVector();
+        toVector();
 
         evaluate();
         
-//        drawThreshold();
+        drawThreshold();
 //        
 //        drawItemSimilarity();
         
@@ -96,6 +108,13 @@ public class Main extends BaseJob {
 //        runJob(drawJob, new Path("test"), new Path("test"), false);
 //        
         return 0;
+    }
+    
+    private void waitForTasks() throws InterruptedException, ExecutionException {
+        for (Future<Void> future:tasks) {
+            future.get();
+        }
+        tasks.clear();
     }
     
     private void drawThreshold() throws IOException {
@@ -345,17 +364,45 @@ public class Main extends BaseJob {
     }
 
     private void evaluateUserbasedV2() throws Exception {
-        for (int threshold: thresholdList) {
-            EvaluateRecommenderJob<ThresholdRecommenderV2> evaluateThreshold = new EvaluateRecommenderJob<ThresholdRecommenderV2>(
-                    new ThresholdRecommenderV2(threshold, k),
-                    DataSetConfig.getV2UserThresholdResult(threshold));
-            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
-                    DataSetConfig.getV2UserThresholdEvaluate(threshold), true);
-            calculateResult(
-                    DataSetConfig.getV2UserThresholdEvaluate(threshold),
-                    "Advanced-UserBased");
+        for (final int threshold: thresholdList) {
+            Future<Void> future = threadPool.submit(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    EvaluateRecommenderJob<ThresholdRecommenderV2> evaluateThreshold = new EvaluateRecommenderJob<ThresholdRecommenderV2>(
+                            new ThresholdRecommenderV2(threshold, k),
+                            DataSetConfig.getV2UserThresholdResult(threshold));
+                    try {
+                        String title = "ImprovedUserBased";
+                        if (thresholdList.length > 1) {
+                            title = title + "-" + threshold;
+                        }
+                        runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+                                DataSetConfig.getV2UserThresholdEvaluate(threshold), true);
+                        calculateResult(
+                                DataSetConfig.getV2UserThresholdEvaluate(threshold),
+                                title);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                }});
+            tasks.add(future);
         }
     }
+
+    private void evaluateUserbasedV5() throws Exception {
+        for (int threshold: thresholdList) {
+            EvaluateRecommenderJob<ThresholdRecommenderV5> evaluateThreshold = new EvaluateRecommenderJob<ThresholdRecommenderV5>(
+                    new ThresholdRecommenderV5(threshold, k),
+                    DataSetConfig.getV5Result(threshold));
+            runJob(evaluateThreshold, DataSetConfig.getUserItemVectorPath(),
+                    DataSetConfig.getV5Evaluate(threshold), true);
+            calculateResult(
+                    DataSetConfig.getV5Evaluate(threshold),
+                    "V5-" + threshold);
+        }
+    }
+
 
     private void evaluateUserbasedV4() throws Exception {
         int bottom = 6;
@@ -471,17 +518,18 @@ public class Main extends BaseJob {
         String title = "similarity";
         String[] subTitles = new String[0];
         Path[] matrixDirs = new Path[] {
-            DataSetConfig.getUserSimilarityPath(),
-            DataSetConfig.getUserSimilarityThresholdPath(threshold),
-            DataSetConfig.getV2UserAllocate(threshold),
-            DataSetConfig.getV2UserMultiplyAllocate(threshold),
+//            DataSetConfig.getUserSimilarityPath(),
+//            DataSetConfig.getUserSimilarityThresholdPath(threshold),
+//            DataSetConfig.getV2UserAllocate(threshold),
+//            DataSetConfig.getV2UserMultiplyAllocate(threshold),
             DataSetConfig.getV2UserDoAllocate(threshold),
-            DataSetConfig.getV2UUThresholdPath(threshold)
+//            DataSetConfig.getV2UUThresholdPath(threshold)
         };
         String[] series = new String[] {
-            "origin", "filter-" + threshold, "allocate-" + threshold,
-            "multiply-allocate-" + threshold, "do-allocate-" + threshold,
-            "threshold-" + threshold
+//            "origin", "filter-" + threshold, "allocate-" + threshold,
+//            "multiply-allocate-" + threshold,
+            "do-allocate-" + threshold,
+//            "threshold-" + threshold
         };
         boolean withZero = true;
         boolean diagonalOnly = false;
@@ -536,13 +584,16 @@ public class Main extends BaseJob {
     private void evaluate() throws Exception {
 //        evaluateRandom();
 //        evaluatePopular();
-        evaluateItembased();
+//        evaluateItembased();
 //        evaluateItembasedV2();
         evaluateUserbased();
         evaluateUserbasedV2();
 //        evaluateUserbasedV3();
-        evaluateUserbasedV4();
-
+//        evaluateUserbasedV4();
+//        evaluateUserbasedV5();
+        
+        waitForTasks();
+        
         ChartDrawer chartDrawer = new ChartDrawer("Coverage Rate", "coverage",
                 "img/coverage.png", coverageResult, true);
         chartDrawer.draw();

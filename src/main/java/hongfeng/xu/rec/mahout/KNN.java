@@ -11,7 +11,6 @@ import hongfeng.xu.rec.mahout.hadoop.BaseJob;
 import hongfeng.xu.rec.mahout.hadoop.HadoopHelper;
 import hongfeng.xu.rec.mahout.hadoop.eval.EvaluateRecommenderJob;
 import hongfeng.xu.rec.mahout.hadoop.recommender.ItemBasedRecommender;
-import hongfeng.xu.rec.mahout.hadoop.recommender.ThresholdV3;
 import hongfeng.xu.rec.mahout.hadoop.recommender.UserBasedRecommender;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ItemThresholdRecommenderV2;
 import hongfeng.xu.rec.mahout.hadoop.threshold.ThresholdRecommenderV2;
@@ -19,10 +18,18 @@ import hongfeng.xu.rec.mahout.structure.TypeAndNWritable;
 import hongfeng.xu.rec.mahout.util.L;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.mahout.common.HadoopUtil;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.common.iterator.sequencefile.SequenceFileDirIterator;
 
@@ -34,10 +41,17 @@ public class KNN extends BaseJob {
     private final int N = 20;
     private static final int WIDTH = 600;
     private static final int HEIGHT = 300;
+    
+    private ExecutorService threadPool = Executors.newCachedThreadPool();
+    private List<Future<Void>> tasks = new ArrayList<Future<Void>> ();
 
     @Override
     protected int innerRun() throws Exception {
         
+        int itemCount = HadoopUtil.readInt(DataSetConfig.getItemCountPath(), getConf());
+        int userCount = HadoopUtil.readInt(DataSetConfig.getUserCountPath(), getConf());
+        HadoopHelper.log(this, "itemCount=" + itemCount);
+        HadoopHelper.log(this, "userCount=" + userCount);
         evaluateUserBased();
 //        evaluateItemBased();
         
@@ -125,27 +139,54 @@ public class KNN extends BaseJob {
         int[] KList = new int[] {10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
                 150, 200, 250, 300, 400, 500, 600, 700, 800, 900};
 //        int[] KList = new int[] {10, 50, 100, 150, 200, 300, 500, 900};
-//        int[] KList = new int[] {100};
-        for (int k:KList) {
-            Path knnDir = DataSetConfig.getKnnUserBased(k);
-            Path resultPath = getResultPath(knnDir);
-            Path evaluatePath = getEvaluatePath(knnDir);
-            UserBasedRecommender recommender = new UserBasedRecommender(k);
-            EvaluateRecommenderJob<UserBasedRecommender> job =
-                    new EvaluateRecommenderJob<UserBasedRecommender> (recommender,
-                            resultPath);
-            runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
+//        int[] KList = new int[] {100, 2000};
+        for (final int k:KList) {
+            Future<Void> future = threadPool.submit(new Callable<Void>() {
+                @Override
+                public Void call() {
+                    Path knnDir = DataSetConfig.getKnnUserBased(k);
+                    Path resultPath = getResultPath(knnDir);
+                    Path evaluatePath = getEvaluatePath(knnDir);
+                    UserBasedRecommender recommender = new UserBasedRecommender(k);
+                    EvaluateRecommenderJob<UserBasedRecommender> job =
+                            new EvaluateRecommenderJob<UserBasedRecommender> (recommender,
+                                    resultPath);
+                    try {
+                        runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                }
+            });
+            tasks.add(future);
         }
-        int threshold = 6;
-        for (int k:KList) {
-            Path knnDir = DataSetConfig.getKnnUserBasedV2(k);
-            Path resultPath = getResultPath(knnDir);
-            Path evaluatePath = getEvaluatePath(knnDir);
-            ThresholdRecommenderV2 recommender = new ThresholdRecommenderV2(threshold, k);
-            EvaluateRecommenderJob<ThresholdRecommenderV2> job =
-                    new EvaluateRecommenderJob<ThresholdRecommenderV2> (recommender,
-                            resultPath);
-            runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
+        
+        int t = 6;
+        if (DataSetConfig.ROOT.toString().contains("appchina")) {
+            t = 3;
+        }
+        final int threshold = t;
+        for (final int k:KList) {
+            Future<Void> future = threadPool.submit(new Callable<Void>() {
+                @Override
+                public Void call() {
+                    Path knnDir = DataSetConfig.getKnnUserBasedV2(k);
+                    Path resultPath = getResultPath(knnDir);
+                    Path evaluatePath = getEvaluatePath(knnDir);
+                    ThresholdRecommenderV2 recommender = new ThresholdRecommenderV2(threshold, k);
+                    EvaluateRecommenderJob<ThresholdRecommenderV2> job =
+                            new EvaluateRecommenderJob<ThresholdRecommenderV2> (recommender,
+                                    resultPath);
+                    try {
+                        runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                }
+            });
+            tasks.add(future);
         }
 //        for (int k:KList) {
 //            Path knnDir = DataSetConfig.getKnnUserBasedV3(k);
@@ -157,11 +198,23 @@ public class KNN extends BaseJob {
 //                            resultPath);
 //            runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
 //        }
+//        for (int k:KList) {
+//            Path knnDir = DataSetConfig.getKnnUserBasedV5(k);
+//            Path resultPath = getResultPath(knnDir);
+//            Path evaluatePath = getEvaluatePath(knnDir);
+//            ThresholdRecommenderV5 recommender = new ThresholdRecommenderV5(threshold, k);
+//            EvaluateRecommenderJob<ThresholdRecommenderV5> job =
+//                    new EvaluateRecommenderJob<ThresholdRecommenderV5> (recommender,
+//                            resultPath);
+//            runJob(job, DataSetConfig.getUserItemVectorPath(), evaluatePath, true);
+//        }
         
+        waitForTasks();
         
         double[][][] userBasedResult = parseResult(DataSetConfig.getKnnUserBasedDir(), KList);
         double[][][] userBasedV2Result = parseResult(DataSetConfig.getKnnUserBasedV2Dir(), KList);
 //        double[][][] userBasedV3Result = parseResult(DataSetConfig.getKnnUserBasedV3Dir(), KList);
+//        double[][][] userBasedV5Result = parseResult(DataSetConfig.getKnnUserBasedV5Dir(), KList);
         
         new XYChartDrawer()
             .setXLabel("k")
@@ -172,6 +225,7 @@ public class KNN extends BaseJob {
             .addSeries("userBased", userBasedResult[0])
             .addSeries("userBasedV2", userBasedV2Result[0])
 //            .addSeries("userBasedV3", userBasedV3Result[0])
+//            .addSeries("userBasedV5", userBasedV5Result[0])
             .setWidth(WIDTH)
             .setHeight(HEIGHT)
             .draw();
@@ -185,6 +239,7 @@ public class KNN extends BaseJob {
             .addSeries("userBased", userBasedResult[1])
             .addSeries("userBasedV2", userBasedV2Result[1])
 //            .addSeries("userBasedV3", userBasedV3Result[1])
+//            .addSeries("userBasedV5", userBasedV5Result[1])
             .setWidth(WIDTH)
             .setHeight(HEIGHT)
             .draw();
@@ -198,6 +253,7 @@ public class KNN extends BaseJob {
             .addSeries("userBased", userBasedResult[2])
             .addSeries("userBasedV2", userBasedV2Result[2])
 //            .addSeries("userBasedV3", userBasedV3Result[2])
+//            .addSeries("userBasedV5", userBasedV5Result[2])
             .setWidth(WIDTH)
             .setHeight(HEIGHT)
             .draw();
@@ -211,6 +267,7 @@ public class KNN extends BaseJob {
             .addSeries("userBased", userBasedResult[3])
             .addSeries("userBasedV2", userBasedV2Result[3])
 //            .addSeries("userBasedV3", userBasedV3Result[3])
+//            .addSeries("userBasedV5", userBasedV5Result[3])
             .setWidth(WIDTH)
             .setHeight(HEIGHT)
             .draw();
@@ -278,5 +335,12 @@ public class KNN extends BaseJob {
         } catch (Exception e) {
             L.e(job, e);
         }
+    }
+    
+    private void waitForTasks() throws InterruptedException, ExecutionException {
+        for (Future<Void> future:tasks) {
+            future.get();
+        }
+        tasks.clear();
     }
 }

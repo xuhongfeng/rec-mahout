@@ -21,10 +21,10 @@ import javax.imageio.ImageIO;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.DefaultXYDataset;
 
 /**
  * @author xuhongfeng
@@ -55,17 +55,23 @@ public class ChartDrawer {
     }
 
     public void draw() throws IOException {
-        CategoryDataset dataSet = createDataSet();
-        JFreeChart chart = ChartFactory.createLineChart(title, XLABEL, yLabel, 
+        DefaultXYDataset dataSet = createDataSet();
+        JFreeChart chart = ChartFactory.createXYLineChart(title, XLABEL, yLabel, 
                 dataSet, PlotOrientation.VERTICAL, true, true, false);
         chart.setBackgroundPaint(Color.WHITE);
         chart.getPlot().setBackgroundPaint(Color.WHITE);
-        CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        XYPlot plot = chart.getXYPlot();
         NumberAxis axis = (NumberAxis) plot.getRangeAxis();
         axis.setNumberFormatOverride(numberFormat);
         
         axis.setAutoRange(true);
         axis.setAutoRangeIncludesZero(false);
+        
+        final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        for (int i=0; i<dataSet.getSeriesCount(); i++) {
+            renderer.setSeriesShapesVisible(i, i!=0);
+        }
+        plot.setRenderer(renderer);
         
         BufferedImage image = chart.createBufferedImage(WIDTH, HEIGHT);
         ImageIO.write(image, FORMAT, new File(outputFile));
@@ -96,16 +102,20 @@ public class ChartDrawer {
         }
     };
     
-    private CategoryDataset createDataSet() {
-        DefaultCategoryDataset dataSet = new DefaultCategoryDataset();
+    private DefaultXYDataset createDataSet() {
+        DefaultXYDataset dataSet = new DefaultXYDataset();
         Set<String> series = resultMap.keySet();
         for (String serie:series) {
             Result result = resultMap.get(serie);
             List<Integer> listN = result.listN();
+            double values[][] = new double[2][listN.size()];
+            int i = 0;
             for (Integer N:listN) {
                 double value = result.getValue(N);
-                dataSet.addValue(value, serie, N);
+                values[0][i] = N;
+                values[1][i++] = value;
             }
+            dataSet.addSeries(serie, values);
         }
         return dataSet;
     }

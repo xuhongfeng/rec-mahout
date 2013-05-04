@@ -32,15 +32,15 @@ public class DataSetConfig {
 //    public static Path inputTest = new Path("data/movielens-xiefeng/test.dat");
 //    public static Path ROOT = new Path("movielens-xiefeng");
 //    
-    public static Path inputAll = new Path("data/movielens/all.dat");
-    public static Path inputTraining = new Path("data/movielens/training.dat");
-    public static Path inputTest = new Path("data/movielens/test.dat");
-    public static Path ROOT = new Path("movielens");
+//    public static Path inputAll = new Path("data/movielens/all.dat");
+//    public static Path inputTraining = new Path("data/movielens/training.dat");
+//    public static Path inputTest = new Path("data/movielens/test.dat");
+//    public static Path ROOT = new Path("movielens");
     
-//    public static Path inputAll = new Path("data/appchina/all.dat");
-//    public static Path inputTraining = new Path("data/appchina/training.dat");
-//    public static Path inputTest = new Path("data/appchina/test.dat");
-//    public static Path ROOT = new Path("appchina");
+    public static Path inputAll = new Path("data/appchina/all.dat");
+    public static Path inputTraining = new Path("data/appchina/training.dat");
+    public static Path inputTest = new Path("data/appchina/test.dat");
+    public static Path ROOT = new Path("appchina");
     
     public static Path getRootPath() {
         return ROOT;
@@ -447,6 +447,13 @@ public class DataSetConfig {
         return new Path(getKnnUserBasedV2Dir(), ""+k);
     }
     
+    public static Path getKnnUserBasedV5Dir() {
+        return new Path(getKNNDir(), "userBasedV5");
+    }
+    public static Path getKnnUserBasedV5(int k) {
+        return new Path(getKnnUserBasedV5Dir(), ""+k);
+    }
+    
     //V3
     public static Path getThresholdV3Dir() {
         return new Path(getRootPath(), "threshold-v3");
@@ -502,5 +509,24 @@ public class DataSetConfig {
     public static Path getV4EvaluatePath(int bottom, int top) {
         Path dir = getV4Dir(bottom, top);
         return new Path(dir, "evaluate");
+    }
+    
+    //v5
+    public static Path getV5Dir(int threshold) {
+        Path dir = new Path(getRootPath(), "v5");
+        return new Path(dir, String.valueOf(threshold));
+    }
+    public static Path getV5UU(int threshold) {
+        return new Path(getV5Dir(threshold), "uu");
+    }
+    public static Path getV5UI(int threshold, int k) {
+        Path dir = new Path(getV5Dir(threshold), String.valueOf(k));
+        return new Path(dir, "ui");
+    }
+    public static Path getV5Result(int threshold) {
+        return new Path(getV5Dir(threshold), "result");
+    }
+    public static Path getV5Evaluate(int threshold) {
+        return new Path(getV5Dir(threshold), "evaluate");
     }
 }

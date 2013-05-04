@@ -44,7 +44,7 @@ public class TestMatrix extends BaseJob {
 //        testItemOneZeroCount();
 //        testUserItemVector();
 //        testItemBased();
-        testIntersect();
+//        testIntersect();
         return 0;
     }
 
